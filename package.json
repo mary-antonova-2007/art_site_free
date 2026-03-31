@@ -1,0 +1,19 @@
+{
+  "name": "artsite",
+  "private": true,
+  "packageManager": "pnpm@10.8.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter @artsite/blocks typecheck && pnpm --filter @artsite/db typecheck && pnpm --filter @artsite/ui typecheck && pnpm --filter web typecheck",
+    "test": "pnpm --filter web test",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "docker:build": "docker build -f infra/docker/web/Dockerfile -t artsite-web .",
+    "docker:up": "docker compose up --build"
+  }
+}
