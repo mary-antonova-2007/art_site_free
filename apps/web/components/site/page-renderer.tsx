@@ -25,7 +25,13 @@ export function PageRenderer({ page }: { page: SitePageRecord }) {
 }
 
 function assetPath(assetId: string, fallback: string) {
-  if (assetId.startsWith("http://") || assetId.startsWith("https://") || assetId.startsWith("/")) {
+  if (
+    assetId.startsWith("http://") ||
+    assetId.startsWith("https://") ||
+    assetId.startsWith("/") ||
+    assetId.startsWith("data:") ||
+    assetId.startsWith("blob:")
+  ) {
     return assetId;
   }
 
@@ -200,8 +206,8 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={galleryData.title ?? ""} />
           </h2>
           <div className="gallery-grid">
-            {(galleryData.items ?? []).map((item: { mediaAssetId?: string; caption?: string; alt?: string }) => (
-              <article key={item.mediaAssetId ?? item.caption ?? "item"} className="gallery-card">
+            {(galleryData.items ?? []).map((item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number) => (
+              <article key={`${item.mediaAssetId ?? item.caption ?? "item"}-${index}`} className="gallery-card">
                 <img
                   src={assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg")}
                   alt={item.caption ?? item.mediaAssetId ?? t("media.galleryItem")}
@@ -325,8 +331,8 @@ function RenderedBlock<TType extends BlockType>({
             }
           >
             {((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
-              (itemId: string) => (
-                <article key={itemId} className="collection-card">
+              (itemId: string, index: number) => (
+                <article key={`${itemId}-${index}`} className="collection-card">
                   <img
                     src={assetPath(itemId, "/art-04.svg")}
                     alt={itemId}

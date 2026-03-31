@@ -297,10 +297,14 @@ export async function uploadEditorImage(input: {
   category?: MediaCategory;
 }) {
   if (!hasSupabaseEnv()) {
+    const mimeType = input.fileType || "image/png";
+    const base64 = Buffer.from(input.data).toString("base64");
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+
     const asset = createDemoMediaAsset({
       fileName: input.fileName,
       category: input.category,
-      previewUrl: "/art-04.svg"
+      previewUrl: dataUrl
     });
 
     return {
