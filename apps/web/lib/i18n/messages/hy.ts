@@ -39,6 +39,9 @@ export const hyMessages = {
     createPage: "Ստեղծել էջ",
     saveDraft: "Պահել սևագիրը",
     publish: "Հրապարակել",
+    openPanel: "Բացել վահանակը",
+    closePanel: "Փակել վահանակը",
+    choosePage: "Ընտրել էջը",
     signOut: "Դուրս գալ",
     leaveEditor: "Դուրս գալ խմբագրից",
     pageLabel: "Էջ՝ {title}",
@@ -159,6 +162,28 @@ export const hyMessages = {
     query: "Հարցմամբ"
   },
   media: {
+    libraryEyebrow: "Մեդիադարան",
+    libraryTitle: "Պատկերների գրադարան",
+    libraryHint: "Ընտրեք պատրաստի պատկեր ըստ կատեգորիայի կամ բեռնեք նորը անմիջապես գրադարան։",
+    libraryLoading: "Մեդիադարանն է բեռնվում...",
+    libraryLoadFailed: "Չհաջողվեց բեռնել մեդիադարանը։",
+    libraryReady: "Մեդիադարանը պատրաստ է։",
+    uploadNew: "Բեռնել պատկեր",
+    manageImages: "Պատկերներ",
+    addImages: "Ավելացնել պատկերներ",
+    emptyCategory: "Այս կատեգորիայում դեռ պատկերներ չկան։",
+    assetInserted: '«{title}» պատկերը տեղադրվեց բլոկում։',
+    categories: {
+      all: "Բոլորը",
+      featured: "Գլխավոր",
+      portraits: "Դիմանկարներ",
+      works: "Աշխատանքներ",
+      details: "Մանրամասներ",
+      spaces: "Տարածքներ",
+      uploaded: "Բեռնվածներ"
+    },
+    currentImages: "Ընթացիկ պատկերներ",
+    searchPlaceholder: "Որոնել պատկերներ",
     heroImage: "Գլխավոր պատկեր",
     image: "Պատկեր",
     galleryItem: "Պատկերասրահի տարր"

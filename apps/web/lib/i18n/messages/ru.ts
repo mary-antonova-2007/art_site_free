@@ -8,7 +8,7 @@ export const ruMessages = {
     switchTo: "Переключить язык на {language}"
   },
   header: {
-    kicker: "Raw editorial / live publishing",
+    kicker: "Редакционный арт-сайт / живая публикация",
     primaryNav: "Основная навигация"
   },
   auth: {
@@ -40,6 +40,9 @@ export const ruMessages = {
     createPage: "Создать страницу",
     saveDraft: "Сохранить черновик",
     publish: "Опубликовать",
+    openPanel: "Открыть панель",
+    closePanel: "Закрыть панель",
+    choosePage: "Выбрать страницу",
     signOut: "Выйти",
     leaveEditor: "Выйти из редактора",
     pageLabel: "Страница: {title}",
@@ -95,7 +98,7 @@ export const ruMessages = {
     divider: "Разделитель"
   },
   blockLabels: {
-    hero: "Hero",
+    hero: "Главный блок",
     richText: "Текстовый блок",
     image: "Изображение",
     imageText: "Изображение + текст",
@@ -161,6 +164,28 @@ export const ruMessages = {
     query: "По запросу"
   },
   media: {
+    libraryEyebrow: "Медиатека",
+    libraryTitle: "Библиотека изображений",
+    libraryHint: "Выберите готовое изображение по категории или загрузите новое прямо в библиотеку.",
+    libraryLoading: "Загружаем медиатеку...",
+    libraryLoadFailed: "Не удалось загрузить медиатеку.",
+    libraryReady: "Медиатека готова.",
+    uploadNew: "Загрузить изображение",
+    manageImages: "Изображения",
+    addImages: "Добавить изображения",
+    emptyCategory: "В этой категории пока нет изображений.",
+    assetInserted: 'Изображение "{title}" вставлено в блок.',
+    categories: {
+      all: "Все",
+      featured: "Главные",
+      portraits: "Портреты",
+      works: "Работы",
+      details: "Детали",
+      spaces: "Пространства",
+      uploaded: "Загрузки"
+    },
+    currentImages: "Текущие изображения",
+    searchPlaceholder: "Поиск изображений",
     heroImage: "Главное изображение",
     image: "Изображение",
     galleryItem: "Элемент галереи"

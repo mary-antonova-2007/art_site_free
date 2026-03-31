@@ -65,7 +65,7 @@ function RenderedBlock<TType extends BlockType>({
   type: TType;
   data: BlockDataMap[TType];
 }) {
-  const { enabled, updateBlockField } = useEditor();
+  const { enabled, updateBlockField, openMediaLibrary } = useEditor();
   const t = useTranslations();
   const definition = getBlockDefinition(type);
 
@@ -101,6 +101,7 @@ function RenderedBlock<TType extends BlockType>({
               src={assetPath(heroData.image?.mediaAssetId ?? "hero", "/art-hero.svg")}
               alt={heroData.image?.alt ?? ""}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
             <div className="media-label">{heroData.image?.alt ?? t("media.heroImage")}</div>
           </div>
@@ -141,6 +142,7 @@ function RenderedBlock<TType extends BlockType>({
               src={assetPath(imageData.image?.mediaAssetId ?? "sample-image", "/art-03.svg")}
               alt={imageData.alt ?? imageData.image?.alt ?? ""}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
             <div className="media-label">{imageData.alt ?? imageData.image?.alt ?? t("media.image")}</div>
           </div>
@@ -159,6 +161,7 @@ function RenderedBlock<TType extends BlockType>({
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
+              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
           ) : null}
           <div className="section-stack">
@@ -183,6 +186,7 @@ function RenderedBlock<TType extends BlockType>({
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
+              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
           ) : null}
         </section>
@@ -207,6 +211,11 @@ function RenderedBlock<TType extends BlockType>({
               </article>
             ))}
           </div>
+          {enabled ? (
+            <button className="insert-button" type="button" onClick={() => void openMediaLibrary(blockId, "append")}>
+              {t("media.addImages")}
+            </button>
+          ) : null}
         </section>
       );
     }
@@ -304,7 +313,17 @@ function RenderedBlock<TType extends BlockType>({
           <h2 className="section-title">
             <InlineEditableText blockId={blockId} field="title" value={collectionData.title ?? ""} />
           </h2>
-          <div className="collection-grid" style={{ gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }}>
+          <div
+            className={cn(
+              "collection-grid",
+              collectionData.layout === "carousel" ? "collection-grid--carousel" : undefined
+            )}
+            style={
+              collectionData.layout === "carousel"
+                ? undefined
+                : { gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }
+            }
+          >
             {((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
               (itemId: string) => (
                 <article key={itemId} className="collection-card">
@@ -318,6 +337,11 @@ function RenderedBlock<TType extends BlockType>({
               )
             )}
           </div>
+          {enabled ? (
+            <button className="insert-button" type="button" onClick={() => void openMediaLibrary(blockId, "append")}>
+              {t("media.addImages")}
+            </button>
+          ) : null}
         </section>
       );
     }
@@ -371,7 +395,17 @@ function RenderedBlock<TType extends BlockType>({
   }
 }
 
-function ImagePanel({ alt, caption, src }: { alt: string; caption: string; src: string }) {
+function ImagePanel({
+  alt,
+  caption,
+  src,
+  onClick
+}: {
+  alt: string;
+  caption: string;
+  src: string;
+  onClick?: () => void;
+}) {
   return (
     <div className="section-stack">
       <div className="image-panel">
@@ -379,6 +413,7 @@ function ImagePanel({ alt, caption, src }: { alt: string; caption: string; src: 
           src={assetPath(src, "/portrait.svg")}
           alt={alt}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          onClick={onClick}
         />
         <div className="media-label">{alt}</div>
       </div>

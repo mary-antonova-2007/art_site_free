@@ -40,6 +40,9 @@ export const esMessages = {
     createPage: "Crear página",
     saveDraft: "Guardar borrador",
     publish: "Publicar",
+    openPanel: "Abrir panel",
+    closePanel: "Cerrar panel",
+    choosePage: "Elegir página",
     signOut: "Cerrar sesión",
     leaveEditor: "Salir del editor",
     pageLabel: "Página: {title}",
@@ -161,6 +164,28 @@ export const esMessages = {
     query: "Consulta"
   },
   media: {
+    libraryEyebrow: "Mediateca",
+    libraryTitle: "Biblioteca de imágenes",
+    libraryHint: "Elige una imagen existente por categoría o sube una nueva directamente a la biblioteca.",
+    libraryLoading: "Cargando la biblioteca de imágenes...",
+    libraryLoadFailed: "No se pudo cargar la biblioteca de imágenes.",
+    libraryReady: "La biblioteca de imágenes está lista.",
+    uploadNew: "Subir imagen",
+    manageImages: "Imágenes",
+    addImages: "Agregar imágenes",
+    emptyCategory: "Todavía no hay imágenes en esta categoría.",
+    assetInserted: 'La imagen "{title}" se insertó en el bloque.',
+    categories: {
+      all: "Todas",
+      featured: "Destacadas",
+      portraits: "Retratos",
+      works: "Obras",
+      details: "Detalles",
+      spaces: "Espacios",
+      uploaded: "Subidas"
+    },
+    currentImages: "Imágenes actuales",
+    searchPlaceholder: "Buscar imágenes",
     heroImage: "Imagen principal",
     image: "Imagen",
     galleryItem: "Elemento de galería"

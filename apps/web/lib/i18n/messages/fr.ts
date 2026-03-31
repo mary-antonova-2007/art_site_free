@@ -40,6 +40,9 @@ export const frMessages = {
     createPage: "Créer une page",
     saveDraft: "Enregistrer le brouillon",
     publish: "Publier",
+    openPanel: "Ouvrir le panneau",
+    closePanel: "Fermer le panneau",
+    choosePage: "Choisir la page",
     signOut: "Se déconnecter",
     leaveEditor: "Quitter l’éditeur",
     pageLabel: "Page : {title}",
@@ -161,6 +164,28 @@ export const frMessages = {
     query: "Requête"
   },
   media: {
+    libraryEyebrow: "Médiathèque",
+    libraryTitle: "Bibliothèque d’images",
+    libraryHint: "Choisissez une image existante par catégorie ou téléversez-en une nouvelle directement dans la bibliothèque.",
+    libraryLoading: "Chargement de la médiathèque...",
+    libraryLoadFailed: "Échec du chargement de la médiathèque.",
+    libraryReady: "La médiathèque est prête.",
+    uploadNew: "Téléverser une image",
+    manageImages: "Images",
+    addImages: "Ajouter des images",
+    emptyCategory: "Aucune image dans cette catégorie pour le moment.",
+    assetInserted: 'L’image « {title} » a été insérée dans le bloc.',
+    categories: {
+      all: "Toutes",
+      featured: "À la une",
+      portraits: "Portraits",
+      works: "Œuvres",
+      details: "Détails",
+      spaces: "Espaces",
+      uploaded: "Téléversements"
+    },
+    currentImages: "Images actuelles",
+    searchPlaceholder: "Rechercher des images",
     heroImage: "Image hero",
     image: "Image",
     galleryItem: "Élément de galerie"

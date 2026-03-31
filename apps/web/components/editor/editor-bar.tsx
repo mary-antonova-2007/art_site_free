@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
@@ -9,8 +10,19 @@ import { useEditor } from "./editor-provider";
 
 export function EditorBar() {
   const t = useTranslations();
-  const { draftState, page, pages, createPage, saveDraft, publish, statusMessage, lastSavedAt } =
-    useEditor();
+  const router = useRouter();
+  const {
+    draftState,
+    page,
+    pages,
+    createPage,
+    saveDraft,
+    publish,
+    statusMessage,
+    lastSavedAt,
+    panelOpen,
+    togglePanel
+  } = useEditor();
 
   return (
     <div className="editor-bar" data-testid={testIds.publishBar}>
@@ -24,6 +36,19 @@ export function EditorBar() {
         <span className="editor-chip" data-testid={testIds.pageTitle}>
           {t("editor.pageLabel", { title: page.title })}
         </span>
+        <label className="editor-page-picker">
+          <span className="sr-only">{t("editor.choosePage")}</span>
+          <select
+            value={page.slug}
+            onChange={(event) => router.push(`/${event.currentTarget.value}?editor=1`)}
+          >
+            {pages.map((pageOption) => (
+              <option key={pageOption.id} value={pageOption.slug}>
+                {pageOption.title}
+              </option>
+            ))}
+          </select>
+        </label>
         <span className="editor-chip">{statusMessage ?? t("editor.ready")}</span>
         {lastSavedAt ? (
           <span className="editor-chip">
@@ -37,6 +62,16 @@ export function EditorBar() {
         ) : null}
       </div>
       <div className="editor-bar-group">
+        <button
+          className="editor-button"
+          type="button"
+          onClick={togglePanel}
+        >
+          {panelOpen ? t("editor.closePanel") : t("editor.openPanel")}
+        </button>
+        <Link className="editor-button" href="/media?editor=1">
+          {t("media.libraryTitle")}
+        </Link>
         <button
           className="editor-button"
           type="button"

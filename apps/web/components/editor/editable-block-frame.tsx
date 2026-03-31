@@ -1,6 +1,4 @@
 "use client";
-
-import { useRef } from "react";
 import type { ReactNode } from "react";
 import { Copy, Eye, EyeOff, Pencil, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
@@ -40,7 +38,8 @@ export function EditableBlockFrame({
     enabled,
     activeBlockId,
     setActiveBlockId,
-    replaceBlockMedia,
+    openPanel,
+    openMediaLibrary,
     duplicateBlock,
     moveBlock,
     removeBlock,
@@ -50,9 +49,7 @@ export function EditableBlockFrame({
   const hasMedia =
     "image" in block.data ||
     "items" in block.data ||
-    "socialLinks" in block.data ||
     block.blockType === "gallery";
-  const mediaInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!enabled) {
     return block.isHidden ? null : <>{children}</>;
@@ -74,10 +71,23 @@ export function EditableBlockFrame({
         className="editable-frame"
         data-active={activeBlockId === block.id}
         data-testid={testIds.blockFrame}
-        onClick={() => setActiveBlockId(block.id)}
+        onClick={() => {
+          setActiveBlockId(block.id);
+          openPanel();
+        }}
       >
         <div className="block-actions">
-          <button className="action-button" type="button" title={t("blockActions.edit")} data-testid={testIds.editorAction}>
+          <button
+            className="action-button"
+            type="button"
+            title={t("blockActions.edit")}
+            data-testid={testIds.editorAction}
+            onClick={(event) => {
+              event.stopPropagation();
+              setActiveBlockId(block.id);
+              openPanel();
+            }}
+          >
             <Pencil size={15} />
           </button>
           <button
@@ -85,7 +95,10 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.moveUp")}
             data-testid={testIds.editorAction}
-            onClick={() => moveBlock(block.id, "up")}
+            onClick={(event) => {
+              event.stopPropagation();
+              moveBlock(block.id, "up");
+            }}
           >
             <ChevronUp size={15} />
           </button>
@@ -94,7 +107,10 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.moveDown")}
             data-testid={testIds.editorAction}
-            onClick={() => moveBlock(block.id, "down")}
+            onClick={(event) => {
+              event.stopPropagation();
+              moveBlock(block.id, "down");
+            }}
           >
             <ChevronDown size={15} />
           </button>
@@ -103,7 +119,10 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.duplicate")}
             data-testid={testIds.editorAction}
-            onClick={() => duplicateBlock(block.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              duplicateBlock(block.id);
+            }}
           >
             <Copy size={15} />
           </button>
@@ -112,7 +131,10 @@ export function EditableBlockFrame({
             type="button"
             title={block.isHidden ? t("blockActions.show") : t("blockActions.hide")}
             data-testid={testIds.editorAction}
-            onClick={() => toggleHidden(block.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleHidden(block.id);
+            }}
           >
             {block.isHidden ? <Eye size={15} /> : <EyeOff size={15} />}
           </button>
@@ -121,7 +143,10 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.remove")}
             data-testid={testIds.editorAction}
-            onClick={() => removeBlock(block.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              removeBlock(block.id);
+            }}
           >
             <Trash2 size={15} />
           </button>
@@ -131,7 +156,10 @@ export function EditableBlockFrame({
               type="button"
               title={t("blockActions.replaceImage")}
               data-testid={testIds.mediaReplace}
-              onClick={() => mediaInputRef.current?.click()}
+              onClick={(event) => {
+                event.stopPropagation();
+                void openMediaLibrary(block.id);
+              }}
             >
               <Pencil size={15} />
             </button>
@@ -143,24 +171,6 @@ export function EditableBlockFrame({
         {block.isHidden ? <div className="mini-note">{t("blockActions.hiddenInPublishedView")}</div> : null}
         {children}
       </section>
-      {hasMedia ? (
-        <input
-          ref={mediaInputRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(event) => {
-            const file = event.currentTarget.files?.[0];
-
-            if (!file) {
-              return;
-            }
-
-            void replaceBlockMedia(block.id, file);
-            event.currentTarget.value = "";
-          }}
-        />
-      ) : null}
       <div className="insert-zone" data-testid={testIds.addBlockSlot}>
         {quickInsertTypes.map((item) => (
           <button

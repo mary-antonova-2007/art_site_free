@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { EditorBar } from "@/components/editor/editor-bar";
 import { EditorProvider } from "@/components/editor/editor-provider";
 import { EditorSheet } from "@/components/editor/editor-sheet";
+import { MediaLibraryDialog } from "@/components/editor/media-library-dialog";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getPageForRequest } from "@/lib/content-service";
@@ -37,6 +38,7 @@ export async function PageScreen({
         {editorEnabled ? <EditorBar /> : null}
         <PageRenderer page={page} />
         {editorEnabled ? <EditorSheet /> : null}
+        {editorEnabled ? <MediaLibraryDialog /> : null}
       </div>
     </EditorProvider>
   );

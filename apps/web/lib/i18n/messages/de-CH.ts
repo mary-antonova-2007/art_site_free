@@ -39,6 +39,9 @@ export const deCHMessages = {
     createPage: "Site erstelle",
     saveDraft: "Entwurf speichere",
     publish: "Publiziere",
+    openPanel: "Panel öffne",
+    closePanel: "Panel schliesse",
+    choosePage: "Site wähle",
     signOut: "Abmälde",
     leaveEditor: "Editor verlasse",
     pageLabel: "Site: {title}",
@@ -160,6 +163,28 @@ export const deCHMessages = {
     query: "Abfrag"
   },
   media: {
+    libraryEyebrow: "Mediathek",
+    libraryTitle: "Bildbibliothek",
+    libraryHint: "Wähl es bestehends Bild nach Kategorie oder lad es nöi grad i d Bibliothek.",
+    libraryLoading: "Mediathek wird glade...",
+    libraryLoadFailed: "Mediathek het nöd chönne glade werde.",
+    libraryReady: "Mediathek isch parat.",
+    uploadNew: "Bild ufelade",
+    manageImages: "Bilder",
+    addImages: "Bilder hinzuefüege",
+    emptyCategory: "I dere Kategorie het's no kei Bilder.",
+    assetInserted: 'S Bild "{title}" isch i de Block igfüegt worde.',
+    categories: {
+      all: "Alli",
+      featured: "Hauptbilder",
+      portraits: "Porträts",
+      works: "Arbeite",
+      details: "Details",
+      spaces: "Rüüm",
+      uploaded: "Uploads"
+    },
+    currentImages: "Aktuelli Bilder",
+    searchPlaceholder: "Bilder sueche",
     heroImage: "Hero-Bild",
     image: "Bild",
     galleryItem: "Galerie-Element"

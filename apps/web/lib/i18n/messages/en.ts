@@ -40,6 +40,9 @@ export const enMessages = {
     createPage: "Create page",
     saveDraft: "Save draft",
     publish: "Publish",
+    openPanel: "Open panel",
+    closePanel: "Close panel",
+    choosePage: "Choose page",
     signOut: "Sign out",
     leaveEditor: "Leave editor",
     pageLabel: "Page: {title}",
@@ -161,6 +164,28 @@ export const enMessages = {
     query: "Query"
   },
   media: {
+    libraryEyebrow: "Media",
+    libraryTitle: "Image library",
+    libraryHint: "Choose an existing image by category or upload a new one directly into the library.",
+    libraryLoading: "Loading media library...",
+    libraryLoadFailed: "Media library failed to load.",
+    libraryReady: "Media library is ready.",
+    uploadNew: "Upload image",
+    manageImages: "Images",
+    addImages: "Add images",
+    emptyCategory: "No images in this category yet.",
+    assetInserted: '"{title}" inserted into the block.',
+    categories: {
+      all: "All",
+      featured: "Featured",
+      portraits: "Portraits",
+      works: "Works",
+      details: "Details",
+      spaces: "Spaces",
+      uploaded: "Uploads"
+    },
+    currentImages: "Current images",
+    searchPlaceholder: "Search images",
     heroImage: "Hero image",
     image: "Image",
     galleryItem: "Gallery item"

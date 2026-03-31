@@ -17,12 +17,30 @@ export type SitePageRecord = {
   blocks: SiteBlockRecord[];
 };
 
+export type MediaCategory =
+  | "featured"
+  | "portraits"
+  | "works"
+  | "details"
+  | "spaces"
+  | "uploaded";
+
+export type MediaLibraryAsset = {
+  id: string;
+  mediaAssetId: string;
+  previewUrl: string;
+  title: string;
+  alt: string;
+  category: MediaCategory;
+};
+
 type CreateDemoPageInput = {
   title: string;
   slug: string;
 };
 
 let demoPages = createSeedPages();
+let demoMediaLibrary = createDemoMediaLibrary();
 
 export function getDemoPageBySlug(slug: string) {
   const page = demoPages.find((entry) => entry.slug === slug);
@@ -78,6 +96,30 @@ export function publishDemoPage(pageId: string) {
   return page ? clonePage(page) : undefined;
 }
 
+export function listDemoMediaLibrary() {
+  return JSON.parse(JSON.stringify(demoMediaLibrary)) as MediaLibraryAsset[];
+}
+
+export function createDemoMediaAsset(input: {
+  fileName: string;
+  category?: MediaCategory;
+  previewUrl?: string;
+}) {
+  const category = input.category ?? "uploaded";
+  const nextAsset: MediaLibraryAsset = {
+    id: `media-${crypto.randomUUID()}`,
+    mediaAssetId: input.previewUrl ?? `/art-04.svg`,
+    previewUrl: input.previewUrl ?? "/art-04.svg",
+    title: input.fileName,
+    alt: input.fileName,
+    category
+  };
+
+  demoMediaLibrary = [nextAsset, ...demoMediaLibrary];
+
+  return JSON.parse(JSON.stringify(nextAsset)) as MediaLibraryAsset;
+}
+
 export function sanitizeSlug(value: string) {
   return value
     .trim()
@@ -91,7 +133,7 @@ function createSeedPages(): SitePageRecord[] {
     {
       id: "page-home",
       slug: "home",
-      title: "Home",
+      title: "Главная",
       source: "demo",
       availablePages: [],
       blocks: [
@@ -99,9 +141,15 @@ function createSeedPages(): SitePageRecord[] {
           ...block("hero", 0),
           data: {
             ...createDefaultBlock("hero"),
+            eyebrow: "Редакционный арт-сайт",
+            title: "Спокойная система для сильных визуальных историй.",
+            subtitle:
+              "Публикуйте и редактируйте страницы прямо на живом сайте без тяжёлой админки и лишней сложности.",
+            buttonText: "Открыть архив",
+            buttonLink: "/about",
             image: {
               mediaAssetId: "hero",
-              alt: "Hero artwork"
+              alt: "Главное изображение"
             }
           }
         },
@@ -109,18 +157,20 @@ function createSeedPages(): SitePageRecord[] {
           ...block("sectionHeader", 1),
           data: {
             ...createDefaultBlock("sectionHeader"),
-            eyebrow: "Featured",
-            title: "A controlled system for visual publishing."
+            eyebrow: "Избранное",
+            title: "Управляемая система для визуальной публикации.",
+            description:
+              "Блоки сохраняют ритм, масштаб и композицию, а редактор меняет только содержимое."
           }
         },
         {
           ...block("gallery", 2),
           data: {
             ...createDefaultBlock("gallery"),
-            title: "Selected works",
+            title: "Избранные работы",
             items: [
-              { mediaAssetId: "gallery-1", caption: "Installation study" },
-              { mediaAssetId: "gallery-2", caption: "Light composition" }
+              { mediaAssetId: "gallery-1", caption: "Этюд инсталляции" },
+              { mediaAssetId: "gallery-2", caption: "Световая композиция" }
             ]
           }
         },
@@ -128,65 +178,203 @@ function createSeedPages(): SitePageRecord[] {
           ...block("richText", 3),
           data: {
             ...createDefaultBlock("richText"),
-            title: "Edit directly on the live site.",
-            text: "The owner changes text and imagery in context, while the composition stays disciplined."
+            title: "Редактирование прямо на живом сайте.",
+            text:
+              "Владелец меняет тексты и изображения в контексте страницы, а продуманный шаблон удерживает композицию в порядке."
           }
         },
         {
           ...block("imageText", 4),
           data: {
             ...createDefaultBlock("imageText"),
+            title: "Сайт для спокойной и точной работы с контентом.",
+            text:
+              "Шаблоны удерживают баланс, пропорции и типографику, пока редактор меняет историю, изображения и акценты.",
+            caption: "Портрет, 2026",
             image: {
               mediaAssetId: "portrait",
-              alt: "Portrait"
+              alt: "Портрет"
             }
           }
         },
-        block("quote", 5),
+        {
+          ...block("quote", 5),
+          data: {
+            ...createDefaultBlock("quote"),
+            quote:
+              "Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.",
+            author: "Заметка студии"
+          }
+        },
         {
           ...block("worksGrid", 6),
           data: {
             ...createDefaultBlock("worksGrid"),
+            title: "Подборка работ",
             itemIds: ["gallery-1", "gallery-2", "sample-image"]
           }
         },
-        block("cta", 7),
-        block("contact", 8)
+        {
+          ...block("cta", 7),
+          data: {
+            ...createDefaultBlock("cta"),
+            title: "Начнем разговор.",
+            text: "Пригласите посетителя к следующему точному шагу без лишнего шума.",
+            buttonText: "Связаться",
+            buttonLink: "/contact"
+          }
+        },
+        {
+          ...block("contact", 8),
+          data: {
+            ...createDefaultBlock("contact"),
+            title: "Контакты",
+            text: "Для заказов, выставок и визитов в студию.",
+            email: "studio@example.com",
+            phone: "+7 000 000 0000",
+            socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
+          }
+        }
       ]
     },
     {
       id: "page-about",
       slug: "about",
-      title: "About",
+      title: "О проекте",
       source: "demo",
       availablePages: [],
       blocks: [
-        block("sectionHeader", 0),
-        block("richText", 1),
+        {
+          ...block("sectionHeader", 0),
+          data: {
+            ...createDefaultBlock("sectionHeader"),
+            eyebrow: "О проекте",
+            title: "Продуманная система вместо хаотичного конструктора.",
+            description:
+              "Редактор меняет данные блоков прямо на странице, а визуальная логика остается под контролем шаблонов."
+          }
+        },
+        {
+          ...block("richText", 1),
+          data: {
+            ...createDefaultBlock("richText"),
+            title: "Редактирование без тяжелой админки.",
+            text:
+              "Этот сайт создан для владельца, который хочет просто нажать на текст или изображение, внести изменение и сразу увидеть результат на живой странице."
+          }
+        },
         {
           ...block("imageText", 2),
           data: {
             ...createDefaultBlock("imageText"),
+            title: "Дизайн остается собранным.",
+            text:
+              "Даже когда контент меняется часто, блоковая система сохраняет ритм, иерархию и характер сайта.",
+            caption: "Студийный портрет, 2026",
             image: {
               mediaAssetId: "portrait",
-              alt: "Portrait"
+              alt: "Портрет"
             }
           }
         },
-        block("linksList", 3)
+        {
+          ...block("linksList", 3),
+          data: {
+            ...createDefaultBlock("linksList"),
+            title: "Разделы",
+            items: [
+              { label: "Главная", href: "/" },
+              { label: "Контакты", href: "/contact" }
+            ]
+          }
+        }
       ]
     },
     {
       id: "page-contact",
       slug: "contact",
-      title: "Contact",
+      title: "Контакты",
       source: "demo",
       availablePages: [],
-      blocks: [block("sectionHeader", 0), block("contact", 1)]
+      blocks: [
+        {
+          ...block("sectionHeader", 0),
+          data: {
+            ...createDefaultBlock("sectionHeader"),
+            eyebrow: "Контакты",
+            title: "Свяжитесь со студией.",
+            description: "Для заказов, выставок, публикаций и личных визитов."
+          }
+        },
+        {
+          ...block("contact", 1),
+          data: {
+            ...createDefaultBlock("contact"),
+            title: "Контакты",
+            text: "Напишите, если хотите обсудить проект, выставку или сотрудничество.",
+            email: "studio@example.com",
+            phone: "+7 000 000 0000",
+            socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
+          }
+        }
+      ]
     }
   ];
 
   return withAvailablePages(pages);
+}
+
+function createDemoMediaLibrary(): MediaLibraryAsset[] {
+  return [
+    {
+      id: "media-hero",
+      mediaAssetId: "hero",
+      previewUrl: "/art-hero.svg",
+      title: "Главный кадр",
+      alt: "Главное изображение",
+      category: "featured"
+    },
+    {
+      id: "media-gallery-1",
+      mediaAssetId: "gallery-1",
+      previewUrl: "/art-01.svg",
+      title: "Этюд инсталляции",
+      alt: "Этюд инсталляции",
+      category: "works"
+    },
+    {
+      id: "media-gallery-2",
+      mediaAssetId: "gallery-2",
+      previewUrl: "/art-02.svg",
+      title: "Световая композиция",
+      alt: "Световая композиция",
+      category: "works"
+    },
+    {
+      id: "media-sample",
+      mediaAssetId: "sample-image",
+      previewUrl: "/art-03.svg",
+      title: "Фрагмент серии",
+      alt: "Фрагмент серии",
+      category: "details"
+    },
+    {
+      id: "media-portrait",
+      mediaAssetId: "portrait",
+      previewUrl: "/portrait.svg",
+      title: "Портрет",
+      alt: "Портрет",
+      category: "portraits"
+    },
+    {
+      id: "media-space",
+      mediaAssetId: "/art-04.svg",
+      previewUrl: "/art-04.svg",
+      title: "Пространство",
+      alt: "Вид пространства",
+      category: "spaces"
+    }
+  ];
 }
 
 function syncAvailablePages() {

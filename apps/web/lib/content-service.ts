@@ -3,9 +3,13 @@ import "server-only";
 import { createDefaultBlock, validateBlock, type BlockType } from "@artsite/blocks";
 
 import {
+  createDemoMediaAsset,
   createDemoPage,
   getDemoPageBySlug,
+  listDemoMediaLibrary,
   listDemoPages,
+  type MediaCategory,
+  type MediaLibraryAsset,
   publishDemoPage,
   sanitizeSlug,
   saveDemoPage,
@@ -290,11 +294,20 @@ export async function uploadEditorImage(input: {
   fileName: string;
   fileType: string;
   data: ArrayBuffer;
+  category?: MediaCategory;
 }) {
   if (!hasSupabaseEnv()) {
+    const asset = createDemoMediaAsset({
+      fileName: input.fileName,
+      category: input.category,
+      previewUrl: "/art-04.svg"
+    });
+
     return {
-      mediaAssetId: input.fileName,
-      publicUrl: `/art-04.svg`
+      mediaAssetId: asset.mediaAssetId,
+      publicUrl: asset.previewUrl,
+      recordId: asset.id,
+      asset
     };
   }
 
@@ -343,8 +356,54 @@ export async function uploadEditorImage(input: {
   return {
     mediaAssetId: publicUrl,
     publicUrl,
-    recordId: mediaAsset.id
+    recordId: mediaAsset.id,
+    asset: {
+      id: mediaAsset.id,
+      mediaAssetId: publicUrl,
+      previewUrl: publicUrl,
+      title: input.fileName,
+      alt: input.fileName,
+      category: input.category ?? "uploaded"
+    } satisfies MediaLibraryAsset
   };
+}
+
+export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
+  if (!hasSupabaseEnv()) {
+    return listDemoMediaLibrary();
+  }
+
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  const admin = createAdminSupabaseClient();
+  const { data, error } = await admin
+    .from("media_assets")
+    .select("id, storage_bucket, storage_path, file_name, alt, caption, is_public")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((asset) => {
+    const {
+      data: { publicUrl }
+    } = admin.storage.from(String(asset.storage_bucket)).getPublicUrl(String(asset.storage_path));
+
+    return {
+      id: String(asset.id),
+      mediaAssetId: publicUrl,
+      previewUrl: publicUrl,
+      title: String(asset.file_name ?? asset.alt ?? asset.caption ?? "Untitled image"),
+      alt: String(asset.alt ?? asset.file_name ?? "Image"),
+      category: inferMediaCategory(String(asset.storage_path))
+    } satisfies MediaLibraryAsset;
+  });
 }
 
 async function getSupabasePageBySlug(slug: string, includeDraft: boolean) {
@@ -417,6 +476,32 @@ async function hydratePage(admin: ReturnType<typeof createAdminSupabaseClient>, 
 async function getSupabasePageList(admin: ReturnType<typeof createAdminSupabaseClient>) {
   const { data } = await admin.from("pages").select("id, slug, title").order("slug");
   return (data ?? []) as Array<{ id: string; slug: string; title: string }>;
+}
+
+function inferMediaCategory(storagePath: string): MediaCategory {
+  const path = storagePath.toLowerCase();
+
+  if (path.includes("portrait")) {
+    return "portraits";
+  }
+
+  if (path.includes("detail")) {
+    return "details";
+  }
+
+  if (path.includes("space")) {
+    return "spaces";
+  }
+
+  if (path.includes("hero") || path.includes("cover")) {
+    return "featured";
+  }
+
+  if (path.includes("upload")) {
+    return "uploaded";
+  }
+
+  return "works";
 }
 
 async function createDraftRevisionFromCurrent(
