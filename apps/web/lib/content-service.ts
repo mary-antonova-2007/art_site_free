@@ -15,6 +15,8 @@ import {
 import { canUseEditor, getEditorIdentity } from "./auth";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
 
+const PUBLIC_BUCKET = process.env.SUPABASE_PUBLIC_BUCKET ?? "site-public";
+
 type RawPageRow = {
   id: string;
   slug: string;
@@ -306,7 +308,7 @@ export async function uploadEditorImage(input: {
   const path = `${input.pageId}/${safeName}`;
 
   const { error: uploadError } = await admin.storage
-    .from("site-public")
+    .from(PUBLIC_BUCKET)
     .upload(path, input.data, {
       contentType: input.fileType,
       upsert: false
@@ -318,12 +320,12 @@ export async function uploadEditorImage(input: {
 
   const {
     data: { publicUrl }
-  } = admin.storage.from("site-public").getPublicUrl(path);
+  } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(path);
 
   const { data: mediaAsset, error: assetError } = await admin
     .from("media_assets")
     .insert({
-      storage_bucket: "site-public",
+      storage_bucket: PUBLIC_BUCKET,
       storage_path: path,
       kind: "image",
       mime_type: input.fileType,

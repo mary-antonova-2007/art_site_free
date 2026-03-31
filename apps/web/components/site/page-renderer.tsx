@@ -190,7 +190,8 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={galleryData.title ?? ""} />
           </h2>
           <div className="gallery-grid">
-            {(galleryData.items ?? []).map((item) => (
+            {(galleryData.items ?? []).map(
+              (item: { mediaAssetId?: string; caption?: string; alt?: string }) => (
               <article key={item.mediaAssetId ?? item.caption ?? "item"} className="gallery-card">
                 <img
                   src={assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg")}
@@ -199,7 +200,8 @@ function RenderedBlock<TType extends BlockType>({
                 />
                 <div className="media-label">{item.caption ?? item.mediaAssetId}</div>
               </article>
-            ))}
+              )
+            )}
           </div>
         </section>
       );
@@ -277,11 +279,13 @@ function RenderedBlock<TType extends BlockType>({
                 <InlineEditableText blockId={blockId} field="phone" value={contactData.phone ?? ""} />
               </a>
             )}
-            {(contactData.socialLinks ?? []).map((item) => (
+            {(contactData.socialLinks ?? []).map(
+              (item: { href: string; label: string; external?: boolean }) => (
               <a className="page-chip" key={item.href} href={item.href}>
                 {item.label}
               </a>
-            ))}
+              )
+            )}
           </div>
         </section>
       );
@@ -294,7 +298,10 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={collectionData.title ?? ""} />
           </h2>
           <div className="collection-grid" style={{ gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }}>
-            {((collectionData.itemIds ?? []).length ? (collectionData.itemIds ?? []) : ["alpha", "beta", "gamma"]).map((itemId) => (
+            {((collectionData.itemIds ?? []).length
+              ? (collectionData.itemIds ?? [])
+              : ["alpha", "beta", "gamma"]
+            ).map((itemId: string) => (
               <article key={itemId} className="collection-card">
                 <img
                   src={assetPath(itemId, "/art-04.svg")}
@@ -315,11 +322,13 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={linksListData.title ?? ""} />
           </h2>
           <div className="page-list">
-            {(linksListData.items ?? []).map((item) => (
+            {(linksListData.items ?? []).map(
+              (item: { href: string; label: string; external?: boolean }) => (
               <a key={item.href} className="page-chip" href={item.href}>
                 {item.label}
               </a>
-            ))}
+              )
+            )}
           </div>
         </section>
       );

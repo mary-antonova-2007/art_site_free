@@ -37,7 +37,7 @@ pnpm dev
 Or use:
 
 ```bash
-./scripts/dev.sh
+./scripts/dev.sh up
 ```
 
 ## Production deployment
@@ -49,6 +49,10 @@ Or use:
 Helper commands:
 
 ```bash
+./scripts/dev.sh build
+./scripts/dev.sh up
+./scripts/dev.sh down
+
 ./scripts/prod.sh build
 ./scripts/prod.sh up
 ./scripts/prod.sh logs nginx

@@ -6,26 +6,38 @@ cd "$ROOT_DIR"
 
 ACTION="${1:-up}"
 
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_CMD=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_CMD=(docker-compose)
+else
+  echo "Docker Compose is not available."
+  exit 1
+fi
+
 case "$ACTION" in
   build)
-    docker build -f infra/docker/web/Dockerfile -t artsite-web .
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml build
     ;;
   up)
-    docker compose up --build -d
+    if [[ ! -f .env && -f .env.example ]]; then
+      cp .env.example .env
+      echo "Created .env from .env.example"
+    fi
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up --build -d
     ;;
   down)
-    docker compose down
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml down
     ;;
   restart)
-    docker compose down
-    docker compose up --build -d
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml down
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up --build -d
     ;;
   logs)
-    docker compose logs -f "${2:-web}"
+    "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml logs -f "${2:-web}"
     ;;
   *)
     echo "Usage: ./scripts/prod.sh [build|up|down|restart|logs [service]]"
     exit 1
     ;;
 esac
-

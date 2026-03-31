@@ -1,10 +1,11 @@
 import { PageScreen } from "@/components/site/page-screen";
 
-type HomePageProps = {
+type HomeAliasPageProps = {
   searchParams: Promise<{ edit?: string; editor?: string }>;
 };
 
-export default async function HomePage({ searchParams }: HomePageProps) {
+export default async function HomeAliasPage({ searchParams }: HomeAliasPageProps) {
   const resolvedSearch = await searchParams;
   return <PageScreen slug="home" edit={resolvedSearch.edit ?? resolvedSearch.editor} />;
 }
+

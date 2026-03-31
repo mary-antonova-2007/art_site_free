@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web/Dockerfile.dev
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - artsite_node_modules:/app/node_modules
+      - artsite_web_node_modules:/app/apps/web/node_modules
+      - artsite_pnpm_store:/root/.local/share/pnpm/store
+    command: >
+      sh -lc "pnpm install &&
+      pnpm --filter web dev --hostname 0.0.0.0 --port 3000"
+
+volumes:
+  artsite_node_modules:
+  artsite_web_node_modules:
+  artsite_pnpm_store:
+

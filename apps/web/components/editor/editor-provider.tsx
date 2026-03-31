@@ -307,7 +307,8 @@ export function EditorProvider({
                 ...block,
                 data: {
                   ...block.data,
-                  items: block.data.items.map((item, index) =>
+                  items: block.data.items.map(
+                    (item: Record<string, unknown>, index: number) =>
                     index === 0
                       ? {
                           ...item,
