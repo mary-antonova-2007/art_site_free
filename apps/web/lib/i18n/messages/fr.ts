@@ -1,0 +1,168 @@
+export const frMessages = {
+  app: {
+    title: "ArtSite",
+    description: "Site artistique éditorial avec édition visuelle inline."
+  },
+  locale: {
+    label: "Langue",
+    switchTo: "Passer la langue en {language}"
+  },
+  header: {
+    kicker: "Raw editorial / live publishing",
+    primaryNav: "Navigation principale"
+  },
+  auth: {
+    eyebrow: "Accès admin",
+    title: "Le mode éditeur s’ouvre seulement après la connexion administrateur.",
+    description: "Utilisez le mot de passe du fichier .env pour activer l’édition inline sur la page live.",
+    passwordLabel: "mot de passe admin",
+    passwordPlaceholder: "Entrez le mot de passe admin",
+    submit: "Entrer dans l’éditeur",
+    missingSetup:
+      "Ajoutez ADMIN_PASSWORD dans .env, redémarrez Docker, puis reconnectez-vous.",
+    passwordRequired: "Entrez le mot de passe administrateur pour continuer.",
+    invalidPassword: "Le mot de passe est incorrect.",
+    missingPassword: "ADMIN_PASSWORD n’est pas encore configuré dans l’environnement."
+  },
+  notFound: {
+    title: "Cette page n’est pas dans l’archive.",
+    description:
+      "Plus tard, le système live chargera les vraies pages depuis la base de données. Pour l’instant, revenez à l’accueil.",
+    returnHome: "Retour à l’accueil"
+  },
+  editor: {
+    mode: "Mode éditeur",
+    published: "Publié",
+    dirty: "Modifications du brouillon non publiées",
+    ready: "Prêt à éditer",
+    draftReady: "Brouillon prêt.",
+    unpublishedChanges: "Modifications non publiées",
+    createPage: "Créer une page",
+    saveDraft: "Enregistrer le brouillon",
+    publish: "Publier",
+    signOut: "Se déconnecter",
+    leaveEditor: "Quitter l’éditeur",
+    pageLabel: "Page : {title}",
+    savedAt: "Enregistré à {time}",
+    creatingPage: "Création de la page...",
+    pageCreateFailed: "Échec de la création de la page.",
+    pageCreated: 'Page "{title}" créée.',
+    savingDraft: "Enregistrement du brouillon...",
+    draftSaveFailed: "Échec de l’enregistrement du brouillon.",
+    draftSaved: "Brouillon enregistré.",
+    publishing: "Publication...",
+    publishFailed: "Échec de la publication.",
+    publishedDone: "Publié.",
+    uploadingImage: "Téléversement de l’image...",
+    uploadFailed: "Échec du téléversement de l’image.",
+    imageUploaded: "Image téléversée. Enregistrez le brouillon pour conserver la modification.",
+    newPageTitle: "Nouvelle page"
+  },
+  editorPanel: {
+    title: "Éditeur",
+    emptyDescription:
+      "Sélectionnez un bloc pour modifier ses champs structurés. Les templates gardent la page visuellement stable.",
+    pages: "Pages",
+    dataOnly:
+      "Vous modifiez uniquement les données. Le template du bloc et sa logique visuelle restent sous contrôle du design."
+  },
+  blockActions: {
+    edit: "Modifier",
+    moveUp: "Monter",
+    moveDown: "Descendre",
+    duplicate: "Dupliquer",
+    hide: "Masquer",
+    show: "Afficher",
+    remove: "Supprimer",
+    replaceImage: "Remplacer l’image",
+    hiddenInPublishedView: "Ce bloc est masqué dans la vue publiée."
+  },
+  insert: {
+    addAbove: "Ajouter un bloc au-dessus"
+  },
+  quickInsert: {
+    sectionHeader: "Section",
+    richText: "Texte",
+    image: "Image",
+    imageText: "Image + texte",
+    gallery: "Galerie",
+    worksGrid: "Œuvres",
+    seriesGrid: "Séries",
+    quote: "Citation",
+    linksList: "Liens",
+    cta: "CTA",
+    contact: "Contact",
+    divider: "Séparateur"
+  },
+  blockLabels: {
+    hero: "Hero",
+    richText: "Texte enrichi",
+    image: "Image",
+    imageText: "Image + texte",
+    gallery: "Galerie",
+    quote: "Citation",
+    sectionHeader: "En-tête de section",
+    divider: "Séparateur",
+    about: "À propos",
+    contact: "Contact",
+    worksGrid: "Grille d’œuvres",
+    seriesGrid: "Grille de séries",
+    linksList: "Liste de liens",
+    cta: "CTA"
+  },
+  fieldLabels: {
+    title: "Titre",
+    text: "Texte",
+    subtitle: "Sous-titre",
+    eyebrow: "Sur-titre",
+    image: "Image",
+    buttonText: "Texte du bouton",
+    buttonLink: "Lien du bouton",
+    caption: "Légende",
+    alt: "Texte alternatif",
+    displayMode: "Mode d’affichage",
+    imagePosition: "Position de l’image",
+    items: "Éléments",
+    layout: "Mise en page",
+    quote: "Citation",
+    author: "Auteur",
+    description: "Description",
+    style: "Style",
+    spacing: "Espacement",
+    email: "E-mail",
+    phone: "Téléphone",
+    socialLinks: "Liens sociaux",
+    sourceMode: "Source",
+    itemIds: "Éléments",
+    columns: "Colonnes",
+    align: "Alignement",
+    width: "Largeur",
+    links: "Liens"
+  },
+  fieldOptions: {
+    left: "Gauche",
+    center: "Centre",
+    right: "Droite",
+    content: "Contenu",
+    wide: "Large",
+    fit: "Adapter",
+    cover: "Recouvrir",
+    original: "Original",
+    grid: "Grille",
+    masonry: "Masonry",
+    carousel: "Carrousel",
+    line: "Ligne",
+    space: "Espace",
+    ornament: "Ornement",
+    compact: "Compact",
+    normal: "Normal",
+    loose: "Aéré",
+    manual: "Manuel",
+    query: "Requête"
+  },
+  media: {
+    heroImage: "Image hero",
+    image: "Image",
+    galleryItem: "Élément de galerie"
+  }
+} as const;

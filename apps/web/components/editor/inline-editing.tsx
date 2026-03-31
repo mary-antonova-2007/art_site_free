@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useEditor } from "./editor-provider";
 
 export function InlineEditableText({
@@ -17,6 +18,7 @@ export function InlineEditableText({
   multiline?: boolean;
   placeholder?: string;
 }) {
+  const t = useTranslations();
   const { enabled, updateBlockField } = useEditor();
 
   if (!enabled) {
@@ -55,6 +57,7 @@ export function InlineEditableImage({
   src: string;
   alt: string;
 }) {
+  const t = useTranslations();
   const { enabled, updateBlockField } = useEditor();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,7 +69,7 @@ export function InlineEditableImage({
     <div className="inline-image-shell">
       <img src={src} alt={alt} />
       <button className="inline-image-shell__button" type="button" onClick={() => inputRef.current?.click()}>
-        Replace image
+        {t("blockActions.replaceImage")}
       </button>
       <input
         ref={inputRef}

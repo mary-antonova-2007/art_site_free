@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 
 import { useEditor } from "./editor-provider";
 
 export function EditorBar() {
+  const t = useTranslations();
   const { draftState, page, pages, createPage, saveDraft, publish, statusMessage, lastSavedAt } =
     useEditor();
 
@@ -14,19 +16,23 @@ export function EditorBar() {
     <div className="editor-bar" data-testid={testIds.publishBar}>
       <div className="editor-bar-group">
         <span className="editor-chip" data-testid={testIds.editorRoot}>
-          Editor mode
+          {t("editor.mode")}
         </span>
         <span className="editor-chip" data-testid={testIds.saveStatus}>
-          {draftState === "dirty" ? "Draft changes not published" : "Published"}
+          {draftState === "dirty" ? t("editor.dirty") : t("editor.published")}
         </span>
         <span className="editor-chip" data-testid={testIds.pageTitle}>
-          Page: {page.title}
+          {t("editor.pageLabel", { title: page.title })}
         </span>
-        <span className="editor-chip">{statusMessage ?? "Ready to edit"}</span>
+        <span className="editor-chip">{statusMessage ?? t("editor.ready")}</span>
         {lastSavedAt ? (
           <span className="editor-chip">
-            Saved at{" "}
-            {new Date(lastSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {t("editor.savedAt", {
+              time: new Date(lastSavedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            })}
           </span>
         ) : null}
       </div>
@@ -36,12 +42,12 @@ export function EditorBar() {
           type="button"
           onClick={() =>
             createPage({
-              title: "New Page",
-              slug: `page-${pages.length + 1}`,
+              title: t("editor.newPageTitle"),
+              slug: `page-${pages.length + 1}`
             })
           }
         >
-          Create page
+          {t("editor.createPage")}
         </button>
         <button
           className="editor-button"
@@ -50,7 +56,7 @@ export function EditorBar() {
           onClick={() => void saveDraft()}
           disabled={draftState !== "dirty"}
         >
-          Save draft
+          {t("editor.saveDraft")}
         </button>
         <button
           className="editor-button editor-button-primary"
@@ -58,13 +64,13 @@ export function EditorBar() {
           data-testid={testIds.editorAction}
           onClick={() => void publish()}
         >
-          Publish
+          {t("editor.publish")}
         </button>
         <Link className="editor-button" href="/auth/sign-out">
-          Sign out
+          {t("editor.signOut")}
         </Link>
         <Link className="editor-button" href={`/${page.slug}`}>
-          Leave editor
+          {t("editor.leaveEditor")}
         </Link>
       </div>
     </div>

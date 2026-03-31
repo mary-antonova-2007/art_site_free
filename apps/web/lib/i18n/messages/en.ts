@@ -1,0 +1,168 @@
+export const enMessages = {
+  app: {
+    title: "ArtSite",
+    description: "Editorial art website with inline visual editing."
+  },
+  locale: {
+    label: "Language",
+    switchTo: "Switch language to {language}"
+  },
+  header: {
+    kicker: "Raw editorial / live publishing",
+    primaryNav: "Primary"
+  },
+  auth: {
+    eyebrow: "Admin access",
+    title: "Editor mode opens only after admin sign in.",
+    description: "Use the password from .env to unlock inline editing on the live page.",
+    passwordLabel: "admin password",
+    passwordPlaceholder: "Enter admin password",
+    submit: "Enter editor",
+    missingSetup:
+      "Add ADMIN_PASSWORD to .env, restart Docker, then sign in again.",
+    passwordRequired: "Enter the admin password to continue.",
+    invalidPassword: "Password is incorrect.",
+    missingPassword: "ADMIN_PASSWORD is not configured in the environment yet."
+  },
+  notFound: {
+    title: "This page is not in the archive.",
+    description:
+      "The live system will eventually route real pages from the database. For now, go back to the home page.",
+    returnHome: "Return home"
+  },
+  editor: {
+    mode: "Editor mode",
+    published: "Published",
+    dirty: "Draft changes not published",
+    ready: "Ready to edit",
+    draftReady: "Draft ready.",
+    unpublishedChanges: "Unpublished changes",
+    createPage: "Create page",
+    saveDraft: "Save draft",
+    publish: "Publish",
+    signOut: "Sign out",
+    leaveEditor: "Leave editor",
+    pageLabel: "Page: {title}",
+    savedAt: "Saved at {time}",
+    creatingPage: "Creating page...",
+    pageCreateFailed: "Page create failed.",
+    pageCreated: 'Created page "{title}".',
+    savingDraft: "Saving draft...",
+    draftSaveFailed: "Draft save failed.",
+    draftSaved: "Draft saved.",
+    publishing: "Publishing...",
+    publishFailed: "Publish failed.",
+    publishedDone: "Published.",
+    uploadingImage: "Uploading image...",
+    uploadFailed: "Upload failed.",
+    imageUploaded: "Image uploaded. Save draft to persist.",
+    newPageTitle: "New Page"
+  },
+  editorPanel: {
+    title: "Editor",
+    emptyDescription:
+      "Select a block to edit its structured fields. Templates control layout so the page remains visually stable.",
+    pages: "Pages",
+    dataOnly:
+      "Editing the data only. The block template and layout stay under design control."
+  },
+  blockActions: {
+    edit: "Edit",
+    moveUp: "Move up",
+    moveDown: "Move down",
+    duplicate: "Duplicate",
+    hide: "Hide",
+    show: "Show",
+    remove: "Delete",
+    replaceImage: "Replace image",
+    hiddenInPublishedView: "This block is hidden in the published view."
+  },
+  insert: {
+    addAbove: "Add block above"
+  },
+  quickInsert: {
+    sectionHeader: "Section",
+    richText: "Text",
+    image: "Image",
+    imageText: "Image + text",
+    gallery: "Gallery",
+    worksGrid: "Works",
+    seriesGrid: "Series",
+    quote: "Quote",
+    linksList: "Links",
+    cta: "CTA",
+    contact: "Contact",
+    divider: "Divider"
+  },
+  blockLabels: {
+    hero: "Hero",
+    richText: "Rich Text",
+    image: "Image",
+    imageText: "Image + Text",
+    gallery: "Gallery",
+    quote: "Quote",
+    sectionHeader: "Section Header",
+    divider: "Divider",
+    about: "About",
+    contact: "Contact",
+    worksGrid: "Works Grid",
+    seriesGrid: "Series Grid",
+    linksList: "Links List",
+    cta: "CTA"
+  },
+  fieldLabels: {
+    title: "Title",
+    text: "Text",
+    subtitle: "Subtitle",
+    eyebrow: "Eyebrow",
+    image: "Image",
+    buttonText: "Button text",
+    buttonLink: "Button link",
+    caption: "Caption",
+    alt: "Alt text",
+    displayMode: "Display mode",
+    imagePosition: "Image position",
+    items: "Items",
+    layout: "Layout",
+    quote: "Quote",
+    author: "Author",
+    description: "Description",
+    style: "Style",
+    spacing: "Spacing",
+    email: "Email",
+    phone: "Phone",
+    socialLinks: "Social links",
+    sourceMode: "Source",
+    itemIds: "Items",
+    columns: "Columns",
+    align: "Align",
+    width: "Width",
+    links: "Links"
+  },
+  fieldOptions: {
+    left: "Left",
+    center: "Center",
+    right: "Right",
+    content: "Content",
+    wide: "Wide",
+    fit: "Fit",
+    cover: "Cover",
+    original: "Original",
+    grid: "Grid",
+    masonry: "Masonry",
+    carousel: "Carousel",
+    line: "Line",
+    space: "Space",
+    ornament: "Ornament",
+    compact: "Compact",
+    normal: "Normal",
+    loose: "Loose",
+    manual: "Manual",
+    query: "Query"
+  },
+  media: {
+    heroImage: "Hero image",
+    image: "Image",
+    galleryItem: "Gallery item"
+  }
+} as const;

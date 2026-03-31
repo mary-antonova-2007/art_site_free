@@ -2,23 +2,24 @@
 
 import { getBlockDefinition } from "@artsite/blocks";
 
+import { getBlockLabel, getFieldLabel, getFieldOptionLabel } from "@/lib/i18n/blocks";
+import { useLocaleMessages, useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 import { useEditor } from "./editor-provider";
 
 export function EditorSheet() {
+  const t = useTranslations();
+  const localeMessages = useLocaleMessages();
   const { activeBlockId, blocks, updateBlockField, pages } = useEditor();
   const activeBlock = blocks.find((block) => block.id === activeBlockId);
 
   if (!activeBlock) {
     return (
       <aside className="editor-panel">
-        <h3>Editor</h3>
-        <p className="mini-note">
-          Select a block to edit its structured fields. Templates control layout so the page
-          remains visually stable.
-        </p>
+        <h3>{t("editorPanel.title")}</h3>
+        <p className="mini-note">{t("editorPanel.emptyDescription")}</p>
         <div className="section-stack">
-          <span className="eyebrow">Pages</span>
+          <span className="eyebrow">{t("editorPanel.pages")}</span>
           <div className="page-list">
             {pages.map((page) => (
               <span key={page.id} className="page-chip">
@@ -35,17 +36,15 @@ export function EditorSheet() {
 
   return (
     <aside className="editor-panel">
-      <h3>{definition.label}</h3>
-      <p className="mini-note">
-        Editing the data only. The block template and layout stay under design control.
-      </p>
+      <h3>{getBlockLabel(localeMessages, activeBlock.blockType, definition.label)}</h3>
+      <p className="mini-note">{t("editorPanel.dataOnly")}</p>
       {definition.fields.map((field) => {
         const value = activeBlock.data[field.name as keyof typeof activeBlock.data];
 
         if (field.kind === "select") {
           return (
             <label className="editor-field" key={field.name} data-testid={testIds.blockField}>
-              <span>{field.name}</span>
+              <span>{getFieldLabel(localeMessages, field.name, field.label)}</span>
               <select
                 id={field.name}
                 value={String(value ?? "")}
@@ -55,7 +54,7 @@ export function EditorSheet() {
               >
                 {(field.options ?? []).map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {getFieldOptionLabel(localeMessages, option.value, option.label)}
                   </option>
                 ))}
               </select>
@@ -66,7 +65,7 @@ export function EditorSheet() {
         if (field.kind === "textarea" || field.kind === "richtext") {
           return (
             <label className="editor-field" key={field.name} data-testid={testIds.blockField}>
-              <span>{field.name}</span>
+              <span>{getFieldLabel(localeMessages, field.name, field.label)}</span>
               <textarea
                 id={field.name}
                 value={typeof value === "string" ? value : JSON.stringify(value, null, 2)}
@@ -80,7 +79,7 @@ export function EditorSheet() {
 
         return (
           <label className="editor-field" key={field.name} data-testid={testIds.blockField}>
-            <span>{field.name}</span>
+            <span>{getFieldLabel(localeMessages, field.name, field.label)}</span>
             <input
               id={field.name}
               value={typeof value === "string" ? value : JSON.stringify(value)}

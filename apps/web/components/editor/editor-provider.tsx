@@ -3,8 +3,9 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-import { createDefaultBlock, getBlockDefinition, type BlockType } from "@artsite/blocks";
+import { getBlockDefinition, type BlockType } from "@artsite/blocks";
 
+import { useTranslations } from "@/lib/i18n/client";
 import type { SiteBlockRecord, SitePageRecord } from "@/lib/content";
 
 type EditorContextValue = {
@@ -43,6 +44,7 @@ export function EditorProvider({
   page: SitePageRecord;
   enabled: boolean;
 }) {
+  const t = useTranslations();
   const [blocks, setBlocks] = useState(page.blocks);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [pages, setPages] = useState(page.availablePages);
@@ -50,7 +52,7 @@ export function EditorProvider({
     enabled ? "dirty" : "published"
   );
   const [statusMessage, setStatusMessage] = useState<string | null>(
-    enabled ? "Draft ready." : null
+    enabled ? t("editor.draftReady") : null
   );
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [createPageOpen, setCreatePageOpen] = useState(false);
@@ -95,7 +97,7 @@ export function EditorProvider({
           )
         );
         setDraftState("dirty");
-        setStatusMessage("Unpublished changes");
+        setStatusMessage(t("editor.unpublishedChanges"));
       },
       insertBlockAfter(index, type) {
         const definition = getBlockDefinition(type);
@@ -114,6 +116,7 @@ export function EditorProvider({
         });
         setActiveBlockId(nextBlock.id);
         setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
       },
       moveBlock(blockId, direction) {
         setBlocks((current) => {
@@ -135,6 +138,7 @@ export function EditorProvider({
           return cloned.map((block, itemIndex) => ({ ...block, position: itemIndex }));
         });
         setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
       },
       duplicateBlock(blockId) {
         const duplicateId = `${blockId}-copy-${crypto.randomUUID()}`;
@@ -154,6 +158,7 @@ export function EditorProvider({
           return next.map((block, itemIndex) => ({ ...block, position: itemIndex }));
         });
         setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
         setActiveBlockId(duplicateId);
       },
       removeBlock(blockId) {
@@ -164,7 +169,7 @@ export function EditorProvider({
         );
         setActiveBlockId((current) => (current === blockId ? null : current));
         setDraftState("dirty");
-        setStatusMessage("Unpublished changes");
+        setStatusMessage(t("editor.unpublishedChanges"));
       },
       toggleHidden(blockId) {
         setBlocks((current) =>
@@ -173,11 +178,11 @@ export function EditorProvider({
           )
         );
         setDraftState("dirty");
-        setStatusMessage("Unpublished changes");
+        setStatusMessage(t("editor.unpublishedChanges"));
       },
       createPage(input) {
         void (async () => {
-          setStatusMessage("Creating page...");
+          setStatusMessage(t("editor.creatingPage"));
 
           const response = await fetch("/api/editor/pages", {
             method: "POST",
@@ -193,25 +198,27 @@ export function EditorProvider({
           };
 
           if (!response.ok || !payload.page) {
-            setStatusMessage(payload.error ?? "Page create failed.");
+            setStatusMessage(payload.error ?? t("editor.pageCreateFailed"));
             return;
           }
+
+          const createdPage = payload.page;
 
           setPages((current) => [
             ...current,
             {
-              id: payload.page!.id,
-              title: payload.page!.title,
-              slug: payload.page!.slug
+              id: createdPage.id,
+              title: createdPage.title,
+              slug: createdPage.slug
             }
           ]);
           setDraftState("dirty");
           setCreatePageOpen(false);
-          setStatusMessage(`Created page "${payload.page.title}".`);
+          setStatusMessage(t("editor.pageCreated", { title: createdPage.title }));
         })();
       },
       async saveDraft() {
-        setStatusMessage("Saving draft...");
+        setStatusMessage(t("editor.savingDraft"));
 
         const response = await fetch(`/api/editor/pages/${page.id}/draft`, {
           method: "POST",
@@ -227,15 +234,15 @@ export function EditorProvider({
         const payload = (await response.json()) as { savedAt?: string; error?: string };
 
         if (!response.ok) {
-          setStatusMessage(payload.error ?? "Draft save failed.");
+          setStatusMessage(payload.error ?? t("editor.draftSaveFailed"));
           return;
         }
 
         setLastSavedAt(payload.savedAt ?? new Date().toISOString());
-        setStatusMessage("Draft saved.");
+        setStatusMessage(t("editor.draftSaved"));
       },
       async publish() {
-        setStatusMessage("Publishing...");
+        setStatusMessage(t("editor.publishing"));
 
         const response = await fetch(`/api/editor/pages/${page.id}/publish`, {
           method: "POST",
@@ -251,16 +258,16 @@ export function EditorProvider({
         const payload = (await response.json()) as { publishedAt?: string; error?: string };
 
         if (!response.ok) {
-          setStatusMessage(payload.error ?? "Publish failed.");
+          setStatusMessage(payload.error ?? t("editor.publishFailed"));
           return;
         }
 
         setDraftState("published");
-        setStatusMessage("Published.");
+        setStatusMessage(t("editor.publishedDone"));
         setLastSavedAt(payload.publishedAt ?? new Date().toISOString());
       },
       async replaceBlockMedia(blockId, file) {
-        setStatusMessage("Uploading image...");
+        setStatusMessage(t("editor.uploadingImage"));
 
         const formData = new FormData();
         formData.append("file", file);
@@ -278,7 +285,7 @@ export function EditorProvider({
         };
 
         if (!response.ok || !payload.mediaAssetId) {
-          setStatusMessage(payload.error ?? "Upload failed.");
+          setStatusMessage(payload.error ?? t("editor.uploadFailed"));
           return;
         }
 
@@ -307,8 +314,7 @@ export function EditorProvider({
                 ...block,
                 data: {
                   ...block.data,
-                  items: block.data.items.map(
-                    (item: Record<string, unknown>, index: number) =>
+                  items: block.data.items.map((item: Record<string, unknown>, index: number) =>
                     index === 0
                       ? {
                           ...item,
@@ -325,10 +331,10 @@ export function EditorProvider({
           })
         );
         setDraftState("dirty");
-        setStatusMessage("Image uploaded. Save draft to persist.");
+        setStatusMessage(t("editor.imageUploaded"));
       }
     }),
-    [activeBlockId, blocks, createPageOpen, draftState, enabled, lastSavedAt, page, pages, statusMessage]
+    [activeBlockId, blocks, createPageOpen, draftState, enabled, lastSavedAt, page, pages, statusMessage, t]
   );
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;

@@ -27,6 +27,32 @@ Media references are intentionally draft-friendly so an editor can insert an ima
 
 Publish-time validation can later enforce stricter asset completeness in the app layer.
 
+## Locale-Aware Fields
+
+Blocks should stay visually stable across locales. Translation should change copy, not layout.
+
+Treat these as locale-specific:
+
+- titles
+- subtitles
+- body copy
+- captions
+- CTA labels
+- link labels
+- SEO text attached to the page
+
+Treat these as shared by default:
+
+- block type
+- order
+- columns
+- alignment
+- display mode
+- visibility
+- spacing rules
+
+Media can be shared across locales unless the image itself contains language-specific text or local-market content.
+
 ## Recommended Split
 
 - `hero`, `richText`, `image`, `imageText`, `gallery`, `quote`, `sectionHeader`, `divider`, `contact`

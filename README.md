@@ -22,6 +22,26 @@ Production-ready editorial art website with inline visual editing on the live pa
 - `supabase`: SQL bootstrap and policies
 - `docs/architecture`: implementation notes
 
+## Localization
+
+The interface now supports these locales:
+
+- `en`
+- `ru`
+- `hy`
+- `de-CH`
+- `fr`
+- `es`
+
+Current scope:
+
+- public/editor interface strings are localized
+- locale is stored in a cookie and switched from the site header
+- the active page stays the same after switching language
+- authored page content is not translated yet
+
+See [docs/architecture/localization.md](/mnt/d/ArtSite/docs/architecture/localization.md) for the full model.
+
 ## Local development
 
 This repository is pinned to `pnpm` and Node 22.

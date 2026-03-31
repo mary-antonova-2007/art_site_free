@@ -19,6 +19,7 @@ export async function PageScreen({
 }) {
   const requestedEdit = isEditorModeEnabled(edit);
   const { page, editorEnabled } = await getPageForRequest(slug, requestedEdit);
+  const currentViewPath = requestedEdit ? `${currentPath}?editor=1` : currentPath;
 
   if (!page) {
     notFound();
@@ -32,7 +33,7 @@ export async function PageScreen({
   return (
     <EditorProvider page={page} enabled={editorEnabled}>
       <div className="site-frame">
-        <SiteHeader currentSlug={page.slug} pages={page.availablePages} />
+        <SiteHeader currentSlug={page.slug} pages={page.availablePages} currentPath={currentViewPath} />
         {editorEnabled ? <EditorBar /> : null}
         <PageRenderer page={page} />
         {editorEnabled ? <EditorSheet /> : null}

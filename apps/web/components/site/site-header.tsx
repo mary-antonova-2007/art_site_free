@@ -1,22 +1,27 @@
 import Link from "next/link";
 
-export function SiteHeader({
+import { getServerI18n } from "@/lib/i18n";
+
+export async function SiteHeader({
   currentSlug,
-  pages
+  pages,
+  currentPath
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
+  currentPath: string;
 }) {
+  const { locale, locales, localeLabels, t } = await getServerI18n();
 
   return (
     <header className="site-header">
       <div className="site-brand">
-        <span className="site-brand-kicker">Raw editorial / live publishing</span>
+        <span className="site-brand-kicker">{t("header.kicker")}</span>
         <Link href="/" className="site-brand-title">
           ArtSite
         </Link>
       </div>
-      <nav className="site-nav" aria-label="Primary">
+      <nav className="site-nav" aria-label={t("header.primaryNav")}>
         {pages.map((page) => (
           <Link
             key={page.id}
@@ -29,6 +34,19 @@ export function SiteHeader({
           </Link>
         ))}
       </nav>
+      <div className="page-list" aria-label={t("locale.label")}>
+        {locales.map((option) => (
+          <Link
+            key={option}
+            className="page-chip"
+            href={`/api/locale?locale=${encodeURIComponent(option)}&next=${encodeURIComponent(currentPath)}`}
+            style={{ opacity: option === locale ? 1 : 0.7 }}
+            aria-label={t("locale.switchTo", { language: localeLabels[option] })}
+          >
+            {option}
+          </Link>
+        ))}
+      </div>
     </header>
   );
 }

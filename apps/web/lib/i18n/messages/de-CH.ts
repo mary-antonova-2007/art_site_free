@@ -1,0 +1,167 @@
+export const deCHMessages = {
+  app: {
+    title: "ArtSite",
+    description: "Editorial-Kunstsite mit inline visuellem Editing."
+  },
+  locale: {
+    label: "Sprache",
+    switchTo: "Sprache uf {language} stelle"
+  },
+  header: {
+    kicker: "Raw editorial / live publishing",
+    primaryNav: "Hauptnavigation"
+  },
+  auth: {
+    eyebrow: "Admin-Zuegang",
+    title: "Dr Editor-Modus chunnt erscht nach em Admin-Login.",
+    description: "Nutze s Passwort us dr .env, zum s Inline-Editing direkt uf dr Live-Site freizschalte.",
+    passwordLabel: "Admin-Passwort",
+    passwordPlaceholder: "Admin-Passwort iigeh",
+    submit: "Editor öffne",
+    missingSetup: "Trag ADMIN_PASSWORD i d .env ii, start Docker neu und probier s nomol.",
+    passwordRequired: "Bitte s Admin-Passwort iigeh zum wiitermache.",
+    invalidPassword: "S Passwort stimmt nöd.",
+    missingPassword: "ADMIN_PASSWORD isch i dr Umgebig no nöd konfiguriert."
+  },
+  notFound: {
+    title: "Die Site isch nöd im Archiv.",
+    description:
+      "S Live-System wird spöter die echte Site us dr Datebank lade. Für jetzt bitte zrugg uf d Startsite.",
+    returnHome: "Zrugg zur Startsite"
+  },
+  editor: {
+    mode: "Editor-Modus",
+    published: "Publiziert",
+    dirty: "Entwurfänderige no nöd publiziert",
+    ready: "Parat zum Bearbeite",
+    draftReady: "Entwurf isch parat.",
+    unpublishedChanges: "Nöd publizierte Änderige",
+    createPage: "Site erstelle",
+    saveDraft: "Entwurf speichere",
+    publish: "Publiziere",
+    signOut: "Abmälde",
+    leaveEditor: "Editor verlasse",
+    pageLabel: "Site: {title}",
+    savedAt: "Gspeichert am {time}",
+    creatingPage: "Site wird erstellt...",
+    pageCreateFailed: "Site het nöd chönne erstellt werde.",
+    pageCreated: 'Site "{title}" isch erstellt worde.',
+    savingDraft: "Entwurf wird gspeichert...",
+    draftSaveFailed: "Entwurf het nöd chönne gspeichert werde.",
+    draftSaved: "Entwurf gspeichert.",
+    publishing: "Am publiziere...",
+    publishFailed: "Publiziere isch gscheiteret.",
+    publishedDone: "Publiziert.",
+    uploadingImage: "Bild wird glade...",
+    uploadFailed: "Bild het nöd chönne glade werde.",
+    imageUploaded: "Bild isch glade. Speichere dr Entwurf zum d Änderig z übernäh.",
+    newPageTitle: "Nöii Site"
+  },
+  editorPanel: {
+    title: "Editor",
+    emptyDescription:
+      "Wähl e Block us, zum sini strukturierte Fälder z bearbeite. D Templates halte s Layout visuell stabil.",
+    pages: "Site",
+    dataOnly:
+      "Es wärde nume d Date bearbeitet. Block-Template und Layout bliibe unter Design-Kontrolle."
+  },
+  blockActions: {
+    edit: "Bearbeite",
+    moveUp: "Nache obe",
+    moveDown: "Nache unde",
+    duplicate: "Dupliziere",
+    hide: "Usblände",
+    show: "Iiblände",
+    remove: "Lösche",
+    replaceImage: "Bild ersetze",
+    hiddenInPublishedView: "Dä Block isch i dr publizierte Aasicht versteckt."
+  },
+  insert: {
+    addAbove: "Block obe iifüege"
+  },
+  quickInsert: {
+    sectionHeader: "Abschnitt",
+    richText: "Text",
+    image: "Bild",
+    imageText: "Bild + Text",
+    gallery: "Galerie",
+    worksGrid: "Werke",
+    seriesGrid: "Serie",
+    quote: "Zitat",
+    linksList: "Links",
+    cta: "CTA",
+    contact: "Kontakt",
+    divider: "Trenner"
+  },
+  blockLabels: {
+    hero: "Hero",
+    richText: "Rich Text",
+    image: "Bild",
+    imageText: "Bild + Text",
+    gallery: "Galerie",
+    quote: "Zitat",
+    sectionHeader: "Abschnittstitel",
+    divider: "Trenner",
+    about: "Über",
+    contact: "Kontakt",
+    worksGrid: "Werke-Raster",
+    seriesGrid: "Serien-Raster",
+    linksList: "Linkliste",
+    cta: "CTA"
+  },
+  fieldLabels: {
+    title: "Titel",
+    text: "Text",
+    subtitle: "Untertitel",
+    eyebrow: "Eyebrow",
+    image: "Bild",
+    buttonText: "Button-Text",
+    buttonLink: "Button-Link",
+    caption: "Legände",
+    alt: "Alt-Text",
+    displayMode: "Darstelligsart",
+    imagePosition: "Bildposition",
+    items: "Element",
+    layout: "Layout",
+    quote: "Zitat",
+    author: "Autor",
+    description: "Beschribig",
+    style: "Stil",
+    spacing: "Abstand",
+    email: "E-Mail",
+    phone: "Telefon",
+    socialLinks: "Social Links",
+    sourceMode: "Quelle",
+    itemIds: "Element",
+    columns: "Spalte",
+    align: "Uusrichtig",
+    width: "Breiti",
+    links: "Links"
+  },
+  fieldOptions: {
+    left: "Links",
+    center: "Mittig",
+    right: "Rächts",
+    content: "Inhalt",
+    wide: "Breit",
+    fit: "Passend",
+    cover: "Deckend",
+    original: "Original",
+    grid: "Raster",
+    masonry: "Masonry",
+    carousel: "Karussell",
+    line: "Linie",
+    space: "Freiraum",
+    ornament: "Ornament",
+    compact: "Kompakt",
+    normal: "Normal",
+    loose: "Locker",
+    manual: "Manuell",
+    query: "Abfrag"
+  },
+  media: {
+    heroImage: "Hero-Bild",
+    image: "Bild",
+    galleryItem: "Galerie-Element"
+  }
+} as const;

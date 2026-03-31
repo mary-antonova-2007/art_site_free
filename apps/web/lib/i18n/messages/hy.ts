@@ -1,0 +1,166 @@
+export const hyMessages = {
+  app: {
+    title: "ArtSite",
+    description: "Խմբագրական արվեստային կայք ներկառուցված վիզուալ խմբագրմամբ։"
+  },
+  locale: {
+    label: "Լեզու",
+    switchTo: "Փոխել լեզուն դեպի {language}"
+  },
+  header: {
+    kicker: "Raw editorial / live publishing",
+    primaryNav: "Հիմնական նավիգացիա"
+  },
+  auth: {
+    eyebrow: "Ադմինի մուտք",
+    title: "Խմբագրի ռեժիմը բացվում է միայն ադմինի մուտքից հետո։",
+    description: ".env ֆայլի գաղտնաբառով բացեք inline խմբագրումը հենց կենդանի էջի վրա։",
+    passwordLabel: "ադմինի գաղտնաբառ",
+    passwordPlaceholder: "Մուտքագրեք ադմինի գաղտնաբառը",
+    submit: "Բացել խմբագիրը",
+    missingSetup: "Ավելացրեք ADMIN_PASSWORD-ը .env-ում, վերագործարկեք Docker-ը և կրկին փորձեք։",
+    passwordRequired: "Շարունակելու համար մուտքագրեք ադմինի գաղտնաբառը։",
+    invalidPassword: "Գաղտնաբառը սխալ է։",
+    missingPassword: "ADMIN_PASSWORD միջավայրային փոփոխականը դեռ չի կարգավորվել։"
+  },
+  notFound: {
+    title: "Այս էջը արխիվում չկա։",
+    description:
+      "Ապագայում կենդանի համակարգը իրական էջերը կբացի բազայից։ Առայժմ վերադարձեք գլխավոր էջ։",
+    returnHome: "Վերադառնալ գլխավոր էջ"
+  },
+  editor: {
+    mode: "Խմբագրի ռեժիմ",
+    published: "Հրապարակված է",
+    dirty: "Կան չհրապարակված փոփոխություններ",
+    ready: "Պատրաստ է խմբագրման",
+    draftReady: "Սևագիրը պատրաստ է։",
+    unpublishedChanges: "Փոփոխությունները դեռ չեն հրապարակվել",
+    createPage: "Ստեղծել էջ",
+    saveDraft: "Պահել սևագիրը",
+    publish: "Հրապարակել",
+    signOut: "Դուրս գալ",
+    leaveEditor: "Դուրս գալ խմբագրից",
+    pageLabel: "Էջ՝ {title}",
+    savedAt: "Պահված է {time}",
+    creatingPage: "Էջը ստեղծվում է...",
+    pageCreateFailed: "Չհաջողվեց ստեղծել էջը։",
+    pageCreated: 'Ստեղծվեց "{title}" էջը։',
+    savingDraft: "Սևագիրը պահվում է...",
+    draftSaveFailed: "Չհաջողվեց պահել սևագիրը։",
+    draftSaved: "Սևագիրը պահված է։",
+    publishing: "Հրապարակվում է...",
+    publishFailed: "Չհաջողվեց հրապարակել։",
+    publishedDone: "Հրապարակված է։",
+    uploadingImage: "Պատկերը բեռնվում է...",
+    uploadFailed: "Չհաջողվեց բեռնել պատկերը։",
+    imageUploaded: "Պատկերը բեռնվել է։ Փոփոխությունը պահպանելու համար պահեք սևագիրը։",
+    newPageTitle: "Նոր էջ"
+  },
+  editorPanel: {
+    title: "Խմբագիր",
+    emptyDescription:
+      "Ընտրեք բլոկը՝ դրա կառուցվածքային դաշտերը խմբագրելու համար։ Թեմփլեյթները պահպանում են կոմպոզիցիան կայուն։",
+    pages: "Էջեր",
+    dataOnly: "Խմբագրվում են միայն տվյալները։ Բլոկի ձևանմուշն ու կառուցվածքը մնում են դիզայնի վերահսկողության տակ։"
+  },
+  blockActions: {
+    edit: "Խմբագրել",
+    moveUp: "Տեղափոխել վերև",
+    moveDown: "Տեղափոխել ներքև",
+    duplicate: "Կրկնօրինակել",
+    hide: "Թաքցնել",
+    show: "Ցույց տալ",
+    remove: "Ջնջել",
+    replaceImage: "Փոխել պատկերը",
+    hiddenInPublishedView: "Այս բլոկը թաքնված է հրապարակված տեսքից։"
+  },
+  insert: {
+    addAbove: "Ավելացնել բլոկ վերևում"
+  },
+  quickInsert: {
+    sectionHeader: "Բաժին",
+    richText: "Տեքստ",
+    image: "Պատկեր",
+    imageText: "Պատկեր + տեքստ",
+    gallery: "Պատկերասրահ",
+    worksGrid: "Աշխատանքներ",
+    seriesGrid: "Սերիաներ",
+    quote: "Մեջբերում",
+    linksList: "Հղումներ",
+    cta: "CTA",
+    contact: "Կոնտակտ",
+    divider: "Բաժանարար"
+  },
+  blockLabels: {
+    hero: "Hero",
+    richText: "Տեքստային բլոկ",
+    image: "Պատկեր",
+    imageText: "Պատկեր + տեքստ",
+    gallery: "Պատկերասրահ",
+    quote: "Մեջբերում",
+    sectionHeader: "Բաժնի վերնագիր",
+    divider: "Բաժանարար",
+    about: "Մասին",
+    contact: "Կոնտակտ",
+    worksGrid: "Աշխատանքների ցանց",
+    seriesGrid: "Սերիաների ցանց",
+    linksList: "Հղումների ցանկ",
+    cta: "CTA"
+  },
+  fieldLabels: {
+    title: "Վերնագիր",
+    text: "Տեքստ",
+    subtitle: "Ենթավերնագիր",
+    eyebrow: "Վերին նշում",
+    image: "Պատկեր",
+    buttonText: "Կոճակի տեքստ",
+    buttonLink: "Կոճակի հղում",
+    caption: "Մեկնաբանություն",
+    alt: "Alt տեքստ",
+    displayMode: "Ցուցադրման ռեժիմ",
+    imagePosition: "Պատկերի դիրք",
+    items: "Տարրեր",
+    layout: "Դասավորություն",
+    quote: "Մեջբերում",
+    author: "Հեղինակ",
+    description: "Նկարագրություն",
+    style: "Ոճ",
+    spacing: "Հեռավորություն",
+    email: "Email",
+    phone: "Հեռախոս",
+    socialLinks: "Սոցցանցեր",
+    sourceMode: "Աղբյուր",
+    itemIds: "Տարրեր",
+    columns: "Սյունակներ",
+    align: "Հավասարեցում",
+    width: "Լայնություն",
+    links: "Հղումներ"
+  },
+  fieldOptions: {
+    left: "Ձախ",
+    center: "Կենտրոն",
+    right: "Աջ",
+    content: "Ըստ բովանդակության",
+    wide: "Լայն",
+    fit: "Տեղավորել",
+    cover: "Լցնել",
+    original: "Բնօրինակ",
+    grid: "Ցանց",
+    masonry: "Masonry",
+    carousel: "Կարուսել",
+    line: "Գիծ",
+    space: "Տարածք",
+    ornament: "Զարդ",
+    compact: "Կոմպակտ",
+    normal: "Սովորական",
+    loose: "Լայն",
+    manual: "Ձեռքով",
+    query: "Հարցմամբ"
+  },
+  media: {
+    heroImage: "Գլխավոր պատկեր",
+    image: "Պատկեր",
+    galleryItem: "Պատկերասրահի տարր"
+  }
+} as const;

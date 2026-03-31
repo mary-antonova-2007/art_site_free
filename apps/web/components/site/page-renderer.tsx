@@ -6,6 +6,7 @@ import { cn } from "@artsite/ui";
 import { EditableBlockFrame } from "@/components/editor/editable-block-frame";
 import { InlineEditableText } from "@/components/editor/inline-editing";
 import { useEditor } from "@/components/editor/editor-provider";
+import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 import type { SitePageRecord } from "@/lib/content";
 
@@ -65,10 +66,11 @@ function RenderedBlock<TType extends BlockType>({
   data: BlockDataMap[TType];
 }) {
   const { enabled, updateBlockField } = useEditor();
+  const t = useTranslations();
   const definition = getBlockDefinition(type);
 
   switch (type) {
-    case "hero":
+    case "hero": {
       const heroData = data as BlockDataMap["hero"];
       return (
         <section className="site-section poster-hero">
@@ -100,11 +102,12 @@ function RenderedBlock<TType extends BlockType>({
               alt={heroData.image?.alt ?? ""}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
-            <div className="media-label">{heroData.image?.alt ?? "Hero image"}</div>
+            <div className="media-label">{heroData.image?.alt ?? t("media.heroImage")}</div>
           </div>
         </section>
       );
-    case "richText":
+    }
+    case "richText": {
       const richTextData = data as BlockDataMap["richText"];
       return (
         <section
@@ -128,7 +131,8 @@ function RenderedBlock<TType extends BlockType>({
           )}
         </section>
       );
-    case "image":
+    }
+    case "image": {
       const imageData = data as BlockDataMap["image"];
       return (
         <section className="site-section width-wide">
@@ -138,21 +142,22 @@ function RenderedBlock<TType extends BlockType>({
               alt={imageData.alt ?? imageData.image?.alt ?? ""}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
-            <div className="media-label">{imageData.alt ?? imageData.image?.alt ?? "Image"}</div>
+            <div className="media-label">{imageData.alt ?? imageData.image?.alt ?? t("media.image")}</div>
           </div>
           <p className="image-caption">
             <InlineEditableText blockId={blockId} field="caption" value={imageData.caption ?? ""} />
           </p>
         </section>
       );
-    case "imageText":
+    }
+    case "imageText": {
       const imageTextData = data as BlockDataMap["imageText"];
       return (
         <section className="site-section image-text-grid">
           {imageTextData.imagePosition === "left" ? (
             <ImagePanel
               caption={imageTextData.caption ?? ""}
-              alt={imageTextData.image?.alt ?? "Image"}
+              alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
             />
           ) : null}
@@ -163,7 +168,7 @@ function RenderedBlock<TType extends BlockType>({
             {enabled ? (
               <textarea
                 className="image-text-body inline-editable inline-editable--textarea"
-              value={imageTextData.text ?? ""}
+                value={imageTextData.text ?? ""}
                 onChange={(event) => updateBlockField(blockId, "text", event.currentTarget.value)}
               />
             ) : (
@@ -176,13 +181,14 @@ function RenderedBlock<TType extends BlockType>({
           {imageTextData.imagePosition === "right" ? (
             <ImagePanel
               caption={imageTextData.caption ?? ""}
-              alt={imageTextData.image?.alt ?? "Image"}
+              alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
             />
           ) : null}
         </section>
       );
-    case "gallery":
+    }
+    case "gallery": {
       const galleryData = data as BlockDataMap["gallery"];
       return (
         <section className="site-section section-stack">
@@ -190,22 +196,21 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={galleryData.title ?? ""} />
           </h2>
           <div className="gallery-grid">
-            {(galleryData.items ?? []).map(
-              (item: { mediaAssetId?: string; caption?: string; alt?: string }) => (
+            {(galleryData.items ?? []).map((item: { mediaAssetId?: string; caption?: string; alt?: string }) => (
               <article key={item.mediaAssetId ?? item.caption ?? "item"} className="gallery-card">
                 <img
                   src={assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg")}
-                  alt={item.caption ?? item.mediaAssetId ?? "Gallery item"}
+                  alt={item.caption ?? item.mediaAssetId ?? t("media.galleryItem")}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
                 <div className="media-label">{item.caption ?? item.mediaAssetId}</div>
               </article>
-              )
-            )}
+            ))}
           </div>
         </section>
       );
-    case "quote":
+    }
+    case "quote": {
       const quoteData = data as BlockDataMap["quote"];
       return (
         <section className="site-section quote-wrap">
@@ -217,7 +222,8 @@ function RenderedBlock<TType extends BlockType>({
           </div>
         </section>
       );
-    case "sectionHeader":
+    }
+    case "sectionHeader": {
       const sectionHeaderData = data as BlockDataMap["sectionHeader"];
       return (
         <section className="site-section section-stack width-medium">
@@ -232,7 +238,8 @@ function RenderedBlock<TType extends BlockType>({
           </p>
         </section>
       );
-    case "divider":
+    }
+    case "divider": {
       const dividerData = data as BlockDataMap["divider"];
       return (
         <section
@@ -248,7 +255,8 @@ function RenderedBlock<TType extends BlockType>({
           {dividerData.style === "line" ? <div className="divider-line" /> : null}
         </section>
       );
-    case "contact":
+    }
+    case "contact": {
       const contactData = data as BlockDataMap["contact"];
       return (
         <section className="site-section contact-grid">
@@ -279,18 +287,17 @@ function RenderedBlock<TType extends BlockType>({
                 <InlineEditableText blockId={blockId} field="phone" value={contactData.phone ?? ""} />
               </a>
             )}
-            {(contactData.socialLinks ?? []).map(
-              (item: { href: string; label: string; external?: boolean }) => (
+            {(contactData.socialLinks ?? []).map((item: { href: string; label: string; external?: boolean }) => (
               <a className="page-chip" key={item.href} href={item.href}>
                 {item.label}
               </a>
-              )
-            )}
+            ))}
           </div>
         </section>
       );
+    }
     case "worksGrid":
-    case "seriesGrid":
+    case "seriesGrid": {
       const collectionData = data as BlockDataMap["worksGrid"] | BlockDataMap["seriesGrid"];
       return (
         <section className="site-section section-stack">
@@ -298,23 +305,23 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={collectionData.title ?? ""} />
           </h2>
           <div className="collection-grid" style={{ gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }}>
-            {((collectionData.itemIds ?? []).length
-              ? (collectionData.itemIds ?? [])
-              : ["alpha", "beta", "gamma"]
-            ).map((itemId: string) => (
-              <article key={itemId} className="collection-card">
-                <img
-                  src={assetPath(itemId, "/art-04.svg")}
-                  alt={itemId}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-                <div className="media-label">{itemId}</div>
-              </article>
-            ))}
+            {((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
+              (itemId: string) => (
+                <article key={itemId} className="collection-card">
+                  <img
+                    src={assetPath(itemId, "/art-04.svg")}
+                    alt={itemId}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <div className="media-label">{itemId}</div>
+                </article>
+              )
+            )}
           </div>
         </section>
       );
-    case "linksList":
+    }
+    case "linksList": {
       const linksListData = data as BlockDataMap["linksList"];
       return (
         <section className="site-section section-stack width-medium">
@@ -322,17 +329,16 @@ function RenderedBlock<TType extends BlockType>({
             <InlineEditableText blockId={blockId} field="title" value={linksListData.title ?? ""} />
           </h2>
           <div className="page-list">
-            {(linksListData.items ?? []).map(
-              (item: { href: string; label: string; external?: boolean }) => (
+            {(linksListData.items ?? []).map((item: { href: string; label: string; external?: boolean }) => (
               <a key={item.href} className="page-chip" href={item.href}>
                 {item.label}
               </a>
-              )
-            )}
+            ))}
           </div>
         </section>
       );
-    case "cta":
+    }
+    case "cta": {
       const ctaData = data as BlockDataMap["cta"];
       return (
         <section className="site-section">
@@ -355,6 +361,7 @@ function RenderedBlock<TType extends BlockType>({
           </div>
         </section>
       );
+    }
     default:
       return (
         <section className="site-section">
