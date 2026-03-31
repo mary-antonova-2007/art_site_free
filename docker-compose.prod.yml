@@ -1,14 +1,32 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-artsite}
+      POSTGRES_USER: ${POSTGRES_USER:-artsite}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-artsite}
+    volumes:
+      - artsite_postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
   web:
     build:
       context: .
       dockerfile: infra/docker/web/Dockerfile
+    depends_on:
+      - postgres
     env_file:
       - .env
     environment:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      DATABASE_URL: ${DATABASE_URL:-postgresql://artsite:artsite@postgres:5432/artsite}
+      DATA_DIR: /app/data
+      LOCAL_UPLOADS_DIR: /app/data/uploads
     expose:
       - "3000"
     volumes:
@@ -23,3 +41,6 @@ services:
     volumes:
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
+
+volumes:
+  artsite_postgres_data:

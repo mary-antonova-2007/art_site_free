@@ -1,26 +1,28 @@
 import "server-only";
 
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+
 import { createDefaultBlock, validateBlock, type BlockType } from "@artsite/blocks";
+import { createDb, hasDatabaseUrl, mediaAssets, pageBlocks, pageRevisions, pages, siteSettings } from "@artsite/db";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
+  createSeedMediaLibrary,
+  createSeedPages,
+  sanitizeSlug,
+  toReadableMediaTitle,
   type MediaCategory,
   type MediaLibraryAsset,
-  sanitizeSlug,
   type SiteBlockRecord,
   type SitePageRecord
 } from "./content";
 import { canUseEditor, getEditorIdentity } from "./auth";
-import {
-  createStoredDemoMediaAsset,
-  createStoredDemoPage,
-  getStoredDemoPageBySlug,
-  listStoredDemoMediaLibrary,
-  publishStoredDemoPage,
-  saveStoredDemoPage
-} from "./demo-store";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
 
 const PUBLIC_BUCKET = process.env.SUPABASE_PUBLIC_BUCKET ?? "site-public";
+const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
+const LOCAL_UPLOADS_DIR = process.env.LOCAL_UPLOADS_DIR ?? path.join(DATA_DIR, "uploads");
 
 type RawPageRow = {
   id: string;
@@ -41,20 +43,35 @@ type RawBlockRow = {
 export async function getPageForRequest(slug: string, editorRequested: boolean) {
   const editorEnabled = await canUseEditor(editorRequested);
 
-  if (!hasSupabaseEnv()) {
-    const page = await getStoredDemoPageBySlug(slug);
-    return {
-      page,
-      editorEnabled
-    };
+  if (hasSupabaseEnv()) {
+    const page = await getSupabasePageBySlug(slug, editorEnabled);
+    return { page, editorEnabled };
   }
 
-  const page = await getSupabasePageBySlug(slug, editorEnabled);
+  if (!hasDatabaseUrl()) {
+    throw new Error("DATABASE_URL is not configured. Run the Docker dev stack or configure a database.");
+  }
 
-  return {
-    page,
-    editorEnabled
-  };
+  await ensureLocalDatabaseReady();
+  const normalizedSlug = slug === "/" ? "home" : slug;
+  const page = await getLocalPageBySlug(normalizedSlug, editorEnabled);
+  return { page, editorEnabled };
+}
+
+export async function listEditorPages() {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    return await getSupabasePageList(admin);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await getLocalPageList();
 }
 
 export async function savePageDraft(input: {
@@ -62,10 +79,588 @@ export async function savePageDraft(input: {
   title: string;
   blocks: SiteBlockRecord[];
 }) {
-  if (!hasSupabaseEnv()) {
-    return await saveStoredDemoPage(input);
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
   }
 
+  if (hasSupabaseEnv()) {
+    return await saveSupabasePageDraft(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await saveLocalPageDraft(input);
+}
+
+export async function publishPageChanges(input: {
+  pageId: string;
+  title: string;
+  blocks: SiteBlockRecord[];
+}) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await publishSupabasePageChanges(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await publishLocalPageChanges(input);
+}
+
+export async function createPageRecord(input: { title: string; slug: string }) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await createSupabasePageRecord(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await createLocalPageRecord(input);
+}
+
+export async function uploadEditorImage(input: {
+  pageId: string;
+  fileName: string;
+  fileType: string;
+  data: ArrayBuffer;
+  category?: MediaCategory;
+}) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await uploadSupabaseEditorImage(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await uploadLocalEditorImage(input);
+}
+
+export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await listSupabaseMediaLibrary();
+  }
+
+  await ensureLocalDatabaseReady();
+  return await listLocalMediaLibrary();
+}
+
+async function ensureLocalDatabaseReady() {
+  const db = createDb();
+  await ensureLocalSchemaCompatibility();
+  const existingPages = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(pages);
+
+  if ((existingPages[0]?.count ?? 0) > 0) {
+    return;
+  }
+
+  const seededMedia = createSeedMediaLibrary();
+
+  if (seededMedia.length) {
+    await db.insert(mediaAssets).values(
+      seededMedia.map((asset) => ({
+        storageBucket: "public",
+        storagePath: asset.previewUrl,
+        kind: "image" as const,
+        mimeType: guessMimeType(asset.previewUrl),
+        fileName: asset.title,
+        alt: asset.alt,
+        caption: asset.title,
+        isPublic: true
+      }))
+    );
+  }
+
+  const seedPages = createSeedPages();
+
+  for (const pageDef of seedPages) {
+    const [pageRow] = await db
+      .insert(pages)
+      .values({
+        slug: pageDef.slug,
+        title: pageDef.title,
+        pageKind: "content",
+        isHomepage: pageDef.slug === "home"
+      })
+      .returning();
+
+    const [revision] = await db
+      .insert(pageRevisions)
+      .values({
+        pageId: pageRow.id,
+        revisionNumber: 1,
+        status: "published",
+        title: pageDef.title,
+        publishedAt: new Date()
+      })
+      .returning();
+
+    await db.insert(pageBlocks).values(
+      normalizeBlocks(pageDef.blocks).map((block, index) => ({
+        revisionId: revision.id,
+        blockType: block.blockType,
+        position: index,
+        isHidden: block.isHidden,
+        data: block.data,
+        settings: {}
+      }))
+    );
+
+    await db
+      .update(pages)
+      .set({
+        publishedRevisionId: revision.id,
+        updatedAt: new Date()
+      })
+      .where(eq(pages.id, pageRow.id));
+  }
+
+  const homepage = await db.query.pages.findFirst({
+    where: eq(pages.slug, "home")
+  });
+
+  await db.insert(siteSettings).values({
+    siteName: "Art Site",
+    defaultLocale: "ru",
+    homepagePageId: homepage?.id ?? null,
+    metadata: {}
+  });
+}
+
+async function ensureLocalSchemaCompatibility() {
+  const db = createDb();
+
+  await db.execute(sql.raw(`
+    alter table if exists media_assets add column if not exists focal_x integer;
+    alter table if exists media_assets add column if not exists focal_y integer;
+    alter table if exists media_assets add column if not exists checksum text;
+    alter table if exists pages add column if not exists created_by uuid;
+    alter table if exists pages add column if not exists updated_by uuid;
+    alter table if exists page_revisions add column if not exists created_by uuid;
+    alter table if exists media_assets add column if not exists uploaded_by uuid;
+  `));
+}
+
+async function getLocalPageBySlug(slug: string, includeDraft: boolean) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: and(eq(pages.slug, slug), eq(pages.isArchived, false))
+  });
+
+  if (!page) {
+    return undefined;
+  }
+
+  return await hydrateLocalPage(page.id, includeDraft);
+}
+
+async function getLocalPageById(pageId: string, includeDraft: boolean) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: eq(pages.id, pageId)
+  });
+
+  if (!page) {
+    return undefined;
+  }
+
+  return await hydrateLocalPage(page.id, includeDraft);
+}
+
+async function hydrateLocalPage(pageId: string, includeDraft: boolean) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: eq(pages.id, pageId)
+  });
+
+  if (!page) {
+    return undefined;
+  }
+
+  const revisionId =
+    includeDraft && page.currentDraftRevisionId
+      ? page.currentDraftRevisionId
+      : page.publishedRevisionId ?? page.currentDraftRevisionId;
+
+  const blocks = revisionId
+    ? await db
+        .select({
+          id: pageBlocks.id,
+          block_type: pageBlocks.blockType,
+          position: pageBlocks.position,
+          is_hidden: pageBlocks.isHidden,
+          data: pageBlocks.data
+        })
+        .from(pageBlocks)
+        .where(eq(pageBlocks.revisionId, revisionId))
+        .orderBy(asc(pageBlocks.position))
+    : [];
+
+  return {
+    id: page.id,
+    slug: page.slug,
+    title: page.title,
+    source: "database",
+    availablePages: await getLocalPageList(),
+    blocks: blocks.map((block) =>
+      mapBlockRow({
+        id: block.id,
+        block_type: block.block_type as BlockType,
+        position: block.position,
+        is_hidden: block.is_hidden,
+        data: block.data
+      })
+    )
+  } satisfies SitePageRecord;
+}
+
+async function getLocalPageList() {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: pages.id,
+      slug: pages.slug,
+      title: pages.title
+    })
+    .from(pages)
+    .where(eq(pages.isArchived, false))
+    .orderBy(asc(pages.slug));
+
+  return rows;
+}
+
+async function saveLocalPageDraft(input: {
+  pageId: string;
+  title: string;
+  blocks: SiteBlockRecord[];
+}) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: eq(pages.id, input.pageId)
+  });
+
+  if (!page) {
+    throw new Error("Page not found");
+  }
+
+  const blocks = normalizeBlocks(input.blocks);
+  const revisionId =
+    page.currentDraftRevisionId ??
+    (await createLocalDraftRevisionFromCurrent({
+      pageId: page.id,
+      title: input.title || page.title,
+      sourceRevisionId: page.publishedRevisionId
+    }));
+
+  await db
+    .update(pageRevisions)
+    .set({
+      title: input.title || page.title,
+      updatedAt: new Date()
+    })
+    .where(eq(pageRevisions.id, revisionId));
+
+  await db.delete(pageBlocks).where(eq(pageBlocks.revisionId, revisionId));
+
+  if (blocks.length) {
+    await db.insert(pageBlocks).values(
+      blocks.map((block, index) => ({
+        revisionId,
+        blockType: block.blockType,
+        position: index,
+        isHidden: block.isHidden,
+        data: block.data,
+        settings: {}
+      }))
+    );
+  }
+
+  await db
+    .update(pages)
+    .set({
+      title: input.title || page.title,
+      currentDraftRevisionId: revisionId,
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, page.id));
+
+  return await getLocalPageById(page.id, true);
+}
+
+async function publishLocalPageChanges(input: {
+  pageId: string;
+  title: string;
+  blocks: SiteBlockRecord[];
+}) {
+  await saveLocalPageDraft(input);
+
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: eq(pages.id, input.pageId)
+  });
+
+  if (!page?.currentDraftRevisionId) {
+    throw new Error("No draft revision to publish");
+  }
+
+  if (page.publishedRevisionId) {
+    await db
+      .update(pageRevisions)
+      .set({
+        status: "archived",
+        updatedAt: new Date()
+      })
+      .where(eq(pageRevisions.id, page.publishedRevisionId));
+  }
+
+  await db
+    .update(pageRevisions)
+    .set({
+      status: "published",
+      publishedAt: new Date(),
+      updatedAt: new Date()
+    })
+    .where(eq(pageRevisions.id, page.currentDraftRevisionId));
+
+  await db
+    .update(pages)
+    .set({
+      publishedRevisionId: page.currentDraftRevisionId,
+      currentDraftRevisionId: null,
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, page.id));
+
+  return await getLocalPageById(page.id, false);
+}
+
+async function createLocalPageRecord(input: { title: string; slug: string }) {
+  const db = createDb();
+  const safeSlug = sanitizeSlug(input.slug || input.title);
+
+  const [page] = await db
+    .insert(pages)
+    .values({
+      slug: safeSlug,
+      title: input.title,
+      pageKind: "content"
+    })
+    .returning();
+
+  const [revision] = await db
+    .insert(pageRevisions)
+    .values({
+      pageId: page.id,
+      revisionNumber: 1,
+      status: "draft",
+      title: input.title
+    })
+    .returning();
+
+  const starterBlocks = [block("hero", 0), block("richText", 1), block("cta", 2)];
+
+  await db.insert(pageBlocks).values(
+    starterBlocks.map((item, index) => ({
+      revisionId: revision.id,
+      blockType: item.blockType,
+      position: index,
+      isHidden: item.isHidden,
+      data: item.data,
+      settings: {}
+    }))
+  );
+
+  await db
+    .update(pages)
+    .set({
+      currentDraftRevisionId: revision.id,
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, page.id));
+
+  return await getLocalPageById(page.id, true);
+}
+
+async function uploadLocalEditorImage(input: {
+  pageId: string;
+  fileName: string;
+  fileType: string;
+  data: ArrayBuffer;
+  category?: MediaCategory;
+}) {
+  const db = createDb();
+  const safeName = `${Date.now()}-${input.fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-")}`;
+  const pageDir = path.join(LOCAL_UPLOADS_DIR, input.pageId);
+  const filePath = path.join(pageDir, safeName);
+  const publicUrl = `/media-files/${input.pageId}/${safeName}`;
+  const readableTitle = toReadableMediaTitle(input.fileName);
+
+  await mkdir(pageDir, { recursive: true });
+  await writeFile(filePath, Buffer.from(input.data));
+
+  const [mediaAsset] = await db
+    .insert(mediaAssets)
+    .values({
+      storageBucket: "local",
+      storagePath: publicUrl,
+      kind: "image" as const,
+      mimeType: input.fileType,
+      fileName: input.fileName,
+      sizeBytes: Buffer.byteLength(Buffer.from(input.data)),
+      alt: "",
+      caption: readableTitle,
+      isPublic: true
+    })
+    .returning();
+
+  return {
+    mediaAssetId: publicUrl,
+    publicUrl,
+    recordId: mediaAsset.id,
+    asset: {
+      id: mediaAsset.id,
+      mediaAssetId: publicUrl,
+      previewUrl: publicUrl,
+      title: readableTitle,
+      alt: "",
+      category: input.category ?? "uploaded"
+    } satisfies MediaLibraryAsset
+  };
+}
+
+async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: mediaAssets.id,
+      storagePath: mediaAssets.storagePath,
+      fileName: mediaAssets.fileName,
+      alt: mediaAssets.alt,
+      caption: mediaAssets.caption
+    })
+    .from(mediaAssets)
+    .orderBy(desc(mediaAssets.createdAt));
+
+  return rows.map((asset) => ({
+    id: asset.id,
+    mediaAssetId: asset.storagePath,
+    previewUrl: asset.storagePath,
+    title: asset.caption ?? asset.fileName ?? "Image",
+    alt: asset.alt ?? "",
+    category: inferMediaCategory(asset.storagePath)
+  }));
+}
+
+export async function readLocalMediaFile(pathSegments: string[]) {
+  const filePath = path.join(LOCAL_UPLOADS_DIR, ...pathSegments);
+  return await readFile(filePath);
+}
+
+function inferMediaCategory(storagePath: string): MediaCategory {
+  const normalizedPath = storagePath.toLowerCase();
+
+  if (normalizedPath.includes("portrait")) return "portraits";
+  if (normalizedPath.includes("detail")) return "details";
+  if (normalizedPath.includes("space")) return "spaces";
+  if (normalizedPath.includes("hero") || normalizedPath.includes("cover")) return "featured";
+  if (normalizedPath.includes("/media-files/")) return "uploaded";
+  return "works";
+}
+
+function guessMimeType(filePath: string) {
+  if (filePath.endsWith(".svg")) return "image/svg+xml";
+  if (filePath.endsWith(".png")) return "image/png";
+  if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) return "image/jpeg";
+  if (filePath.endsWith(".webp")) return "image/webp";
+  return "application/octet-stream";
+}
+
+async function createLocalDraftRevisionFromCurrent(input: {
+  pageId: string;
+  title: string;
+  sourceRevisionId: string | null;
+}) {
+  const db = createDb();
+  const latestRevision = await db
+    .select({ revisionNumber: pageRevisions.revisionNumber })
+    .from(pageRevisions)
+    .where(eq(pageRevisions.pageId, input.pageId))
+    .orderBy(desc(pageRevisions.revisionNumber))
+    .limit(1);
+
+  const [revision] = await db
+    .insert(pageRevisions)
+    .values({
+      pageId: input.pageId,
+      revisionNumber: (latestRevision[0]?.revisionNumber ?? 0) + 1,
+      status: "draft",
+      title: input.title
+    })
+    .returning();
+
+  if (input.sourceRevisionId) {
+    const sourceBlocks = await db
+      .select({
+        blockType: pageBlocks.blockType,
+        position: pageBlocks.position,
+        isHidden: pageBlocks.isHidden,
+        data: pageBlocks.data,
+        settings: pageBlocks.settings
+      })
+      .from(pageBlocks)
+      .where(eq(pageBlocks.revisionId, input.sourceRevisionId))
+      .orderBy(asc(pageBlocks.position));
+
+    if (sourceBlocks.length) {
+      await db.insert(pageBlocks).values(
+        sourceBlocks.map((block) => ({
+          revisionId: revision.id,
+          blockType: block.blockType,
+          position: block.position,
+          isHidden: block.isHidden,
+          data: block.data,
+          settings: block.settings ?? {}
+        }))
+      );
+    }
+  }
+
+  await db
+    .update(pages)
+    .set({
+      currentDraftRevisionId: revision.id,
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, input.pageId));
+
+  return revision.id;
+}
+
+async function saveSupabasePageDraft(input: {
+  pageId: string;
+  title: string;
+  blocks: SiteBlockRecord[];
+}) {
   const editor = await getEditorIdentity();
 
   if (!editor) {
@@ -86,13 +681,13 @@ export async function savePageDraft(input: {
   const blocks = normalizeBlocks(input.blocks);
   const revisionId =
     page.current_draft_revision_id ??
-    (await createDraftRevisionFromCurrent(admin, {
+    (await createSupabaseDraftRevisionFromCurrent(admin, {
       pageId: page.id,
       title: input.title || page.title,
       sourceRevisionId: page.published_revision_id
     }));
 
-  const { error: revisionUpdateError } = await admin
+  await admin
     .from("page_revisions")
     .update({
       title: input.title || page.title,
@@ -100,32 +695,22 @@ export async function savePageDraft(input: {
     })
     .eq("id", revisionId);
 
-  if (revisionUpdateError) {
-    throw revisionUpdateError;
+  await admin.from("page_blocks").delete().eq("revision_id", revisionId);
+
+  if (blocks.length) {
+    await admin.from("page_blocks").insert(
+      blocks.map((block, index) => ({
+        revision_id: revisionId,
+        block_type: block.blockType,
+        position: index,
+        is_hidden: block.isHidden,
+        data: block.data,
+        settings: {}
+      }))
+    );
   }
 
-  const { error: deleteError } = await admin.from("page_blocks").delete().eq("revision_id", revisionId);
-
-  if (deleteError) {
-    throw deleteError;
-  }
-
-  const { error: insertError } = await admin.from("page_blocks").insert(
-    blocks.map((block, index) => ({
-      revision_id: revisionId,
-      block_type: block.blockType,
-      position: index,
-      is_hidden: block.isHidden,
-      data: block.data,
-      settings: {}
-    }))
-  );
-
-  if (insertError) {
-    throw insertError;
-  }
-
-  const { error: pageUpdateError } = await admin
+  await admin
     .from("pages")
     .update({
       title: input.title || page.title,
@@ -134,28 +719,15 @@ export async function savePageDraft(input: {
     })
     .eq("id", page.id);
 
-  if (pageUpdateError) {
-    throw pageUpdateError;
-  }
-
   return await getSupabasePageById(page.id, true);
 }
 
-export async function publishPageChanges(input: {
+async function publishSupabasePageChanges(input: {
   pageId: string;
   title: string;
   blocks: SiteBlockRecord[];
 }) {
-  if (!hasSupabaseEnv()) {
-    await saveStoredDemoPage(input);
-    return await publishStoredDemoPage(input.pageId);
-  }
-
-  const savedPage = await savePageDraft(input);
-
-  if (!savedPage) {
-    throw new Error("Draft save failed");
-  }
+  await saveSupabasePageDraft(input);
 
   const admin = createAdminSupabaseClient();
   const { data: page } = await admin
@@ -180,7 +752,7 @@ export async function publishPageChanges(input: {
       .eq("id", page.published_revision_id);
   }
 
-  const { error: publishError } = await admin
+  await admin
     .from("page_revisions")
     .update({
       status: "published",
@@ -189,11 +761,7 @@ export async function publishPageChanges(input: {
     })
     .eq("id", page.current_draft_revision_id);
 
-  if (publishError) {
-    throw publishError;
-  }
-
-  const { error: pageUpdateError } = await admin
+  await admin
     .from("pages")
     .update({
       published_revision_id: page.current_draft_revision_id,
@@ -202,18 +770,10 @@ export async function publishPageChanges(input: {
     })
     .eq("id", input.pageId);
 
-  if (pageUpdateError) {
-    throw pageUpdateError;
-  }
-
   return await getSupabasePageById(input.pageId, false);
 }
 
-export async function createPageRecord(input: { title: string; slug: string }) {
-  if (!hasSupabaseEnv()) {
-    return await createStoredDemoPage(input);
-  }
-
+async function createSupabasePageRecord(input: { title: string; slug: string }) {
   const editor = await getEditorIdentity();
 
   if (!editor) {
@@ -233,44 +793,24 @@ export async function createPageRecord(input: { title: string; slug: string }) {
       created_at: now,
       updated_at: now
     })
-    .select("id, slug, title")
+    .select("id")
     .single();
 
   if (pageError || !page) {
     throw pageError ?? new Error("Page create failed");
   }
 
-  const { data: maxRevisionRows } = await admin
-    .from("page_revisions")
-    .select("revision_number")
-    .eq("page_id", page.id)
-    .order("revision_number", { ascending: false })
-    .limit(1);
-
-  const revisionNumber = (maxRevisionRows?.[0]?.revision_number ?? 0) + 1;
-
-  const { data: revision, error: revisionError } = await admin
-    .from("page_revisions")
-    .insert({
-      page_id: page.id,
-      revision_number: revisionNumber,
-      status: "draft",
-      title: page.title,
-      created_at: now,
-      updated_at: now
-    })
-    .select("id")
-    .single();
-
-  if (revisionError || !revision) {
-    throw revisionError ?? new Error("Revision create failed");
-  }
+  const revisionId = await createSupabaseDraftRevisionFromCurrent(admin, {
+    pageId: page.id,
+    title: input.title,
+    sourceRevisionId: null
+  });
 
   const starterBlocks = [block("hero", 0), block("richText", 1), block("cta", 2)];
 
   await admin.from("page_blocks").insert(
     starterBlocks.map((item, index) => ({
-      revision_id: revision.id,
+      revision_id: revisionId,
       block_type: item.blockType,
       position: index,
       is_hidden: item.isHidden,
@@ -279,43 +819,16 @@ export async function createPageRecord(input: { title: string; slug: string }) {
     }))
   );
 
-  await admin
-    .from("pages")
-    .update({
-      current_draft_revision_id: revision.id,
-      updated_at: now
-    })
-    .eq("id", page.id);
-
   return await getSupabasePageById(page.id, true);
 }
 
-export async function uploadEditorImage(input: {
+async function uploadSupabaseEditorImage(input: {
   pageId: string;
   fileName: string;
   fileType: string;
   data: ArrayBuffer;
   category?: MediaCategory;
 }) {
-  if (!hasSupabaseEnv()) {
-    const mimeType = input.fileType || "image/png";
-    const base64 = Buffer.from(input.data).toString("base64");
-    const dataUrl = `data:${mimeType};base64,${base64}`;
-
-    const asset = await createStoredDemoMediaAsset({
-      fileName: input.fileName,
-      category: input.category,
-      previewUrl: dataUrl
-    });
-
-    return {
-      mediaAssetId: asset.mediaAssetId,
-      publicUrl: asset.previewUrl,
-      recordId: asset.id,
-      asset
-    };
-  }
-
   const editor = await getEditorIdentity();
 
   if (!editor) {
@@ -324,12 +837,12 @@ export async function uploadEditorImage(input: {
 
   const admin = createAdminSupabaseClient();
   const safeName = `${Date.now()}-${input.fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-")}`;
-  const path = `${input.pageId}/${safeName}`;
+  const filePath = `${input.pageId}/${safeName}`;
   const readableTitle = toReadableMediaTitle(input.fileName);
 
   const { error: uploadError } = await admin.storage
     .from(PUBLIC_BUCKET)
-    .upload(path, input.data, {
+    .upload(filePath, input.data, {
       contentType: input.fileType,
       upsert: false
     });
@@ -340,13 +853,13 @@ export async function uploadEditorImage(input: {
 
   const {
     data: { publicUrl }
-  } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(path);
+  } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(filePath);
 
   const { data: mediaAsset, error: assetError } = await admin
     .from("media_assets")
     .insert({
       storage_bucket: PUBLIC_BUCKET,
-      storage_path: path,
+      storage_path: filePath,
       kind: "image",
       mime_type: input.fileType,
       file_name: input.fileName,
@@ -355,8 +868,8 @@ export async function uploadEditorImage(input: {
     .select("id")
     .single();
 
-  if (assetError) {
-    throw assetError;
+  if (assetError || !mediaAsset) {
+    throw assetError ?? new Error("Asset create failed");
   }
 
   return {
@@ -374,11 +887,7 @@ export async function uploadEditorImage(input: {
   };
 }
 
-export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
-  if (!hasSupabaseEnv()) {
-    return await listStoredDemoMediaLibrary();
-  }
-
+async function listSupabaseMediaLibrary(): Promise<MediaLibraryAsset[]> {
   const editor = await getEditorIdentity();
 
   if (!editor) {
@@ -388,7 +897,7 @@ export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
   const admin = createAdminSupabaseClient();
   const { data, error } = await admin
     .from("media_assets")
-    .select("id, storage_bucket, storage_path, file_name, alt, caption, is_public")
+    .select("id, storage_bucket, storage_path, file_name, alt, caption")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -405,8 +914,8 @@ export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
       id: String(asset.id),
       mediaAssetId: publicUrl,
       previewUrl: publicUrl,
-      title: String(asset.file_name ?? asset.alt ?? asset.caption ?? "Untitled image"),
-      alt: String(asset.alt ?? asset.file_name ?? "Image"),
+      title: String(asset.caption ?? asset.file_name ?? "Image"),
+      alt: String(asset.alt ?? ""),
       category: inferMediaCategory(String(asset.storage_path))
     } satisfies MediaLibraryAsset;
   });
@@ -424,7 +933,7 @@ async function getSupabasePageBySlug(slug: string, includeDraft: boolean) {
     return undefined;
   }
 
-  return await hydratePage(admin, page, includeDraft);
+  return await hydrateSupabasePage(admin, page, includeDraft);
 }
 
 async function getSupabasePageById(pageId: string, includeDraft: boolean) {
@@ -439,35 +948,26 @@ async function getSupabasePageById(pageId: string, includeDraft: boolean) {
     return undefined;
   }
 
-  return await hydratePage(admin, page, includeDraft);
+  return await hydrateSupabasePage(admin, page, includeDraft);
 }
 
-async function hydratePage(admin: ReturnType<typeof createAdminSupabaseClient>, page: RawPageRow, includeDraft: boolean) {
+async function hydrateSupabasePage(
+  admin: ReturnType<typeof createAdminSupabaseClient>,
+  page: RawPageRow,
+  includeDraft: boolean
+) {
   const revisionId =
     includeDraft && page.current_draft_revision_id
       ? page.current_draft_revision_id
       : page.published_revision_id ?? page.current_draft_revision_id;
 
-  if (!revisionId) {
-    return {
-      id: page.id,
-      slug: page.slug,
-      title: page.title,
-      source: "supabase",
-      availablePages: await getSupabasePageList(admin),
-      blocks: []
-    } satisfies SitePageRecord;
-  }
-
-  const { data: blocks, error: blocksError } = await admin
-    .from("page_blocks")
-    .select("id, block_type, position, is_hidden, data")
-    .eq("revision_id", revisionId)
-    .order("position", { ascending: true });
-
-  if (blocksError) {
-    throw blocksError;
-  }
+  const { data: blocks } = revisionId
+    ? await admin
+        .from("page_blocks")
+        .select("id, block_type, position, is_hidden, data")
+        .eq("revision_id", revisionId)
+        .order("position", { ascending: true })
+    : { data: [] as RawBlockRow[] };
 
   return {
     id: page.id,
@@ -484,41 +984,7 @@ async function getSupabasePageList(admin: ReturnType<typeof createAdminSupabaseC
   return (data ?? []) as Array<{ id: string; slug: string; title: string }>;
 }
 
-function inferMediaCategory(storagePath: string): MediaCategory {
-  const path = storagePath.toLowerCase();
-
-  if (path.includes("portrait")) {
-    return "portraits";
-  }
-
-  if (path.includes("detail")) {
-    return "details";
-  }
-
-  if (path.includes("space")) {
-    return "spaces";
-  }
-
-  if (path.includes("hero") || path.includes("cover")) {
-    return "featured";
-  }
-
-  if (path.includes("upload")) {
-  return "uploaded";
-}
-
-function toReadableMediaTitle(fileName: string) {
-  return fileName
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-  return "works";
-}
-
-async function createDraftRevisionFromCurrent(
+async function createSupabaseDraftRevisionFromCurrent(
   admin: ReturnType<typeof createAdminSupabaseClient>,
   input: { pageId: string; title: string; sourceRevisionId: string | null }
 ) {
@@ -609,12 +1075,4 @@ function block<TType extends BlockType>(type: TType, position: number): SiteBloc
     isHidden: false,
     data: createDefaultBlock(type)
   };
-}
-
-function toReadableMediaTitle(fileName: string) {
-  return fileName
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }

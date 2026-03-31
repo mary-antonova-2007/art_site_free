@@ -12,7 +12,7 @@ export type SitePageRecord = {
   id: string;
   slug: string;
   title: string;
-  source: "demo" | "supabase";
+  source: "database" | "supabase";
   availablePages: Array<{ id: string; slug: string; title: string }>;
   blocks: SiteBlockRecord[];
 };
@@ -34,122 +34,7 @@ export type MediaLibraryAsset = {
   category: MediaCategory;
 };
 
-export type DemoSnapshot = {
-  pages: SitePageRecord[];
-  mediaLibrary: MediaLibraryAsset[];
-};
-
-type CreateDemoPageInput = {
-  title: string;
-  slug: string;
-};
-
-let demoPages = createSeedPages();
-let demoMediaLibrary = createDemoMediaLibrary();
-
-export function getDemoPageBySlug(slug: string) {
-  const page = demoPages.find((entry) => entry.slug === slug);
-  return page ? clonePage(page) : undefined;
-}
-
-export function listDemoPages() {
-  return demoPages.map(({ id, slug, title }) => ({ id, slug, title }));
-}
-
-export function saveDemoPage(input: {
-  pageId: string;
-  title: string;
-  blocks: SiteBlockRecord[];
-}) {
-  demoPages = demoPages.map((page) =>
-    page.id === input.pageId
-      ? {
-          ...page,
-          title: input.title,
-          blocks: input.blocks.map((block, index) => ({
-            ...block,
-            position: index
-          }))
-        }
-      : page
-  );
-
-  syncAvailablePages();
-
-  const savedPage = demoPages.find((page) => page.id === input.pageId);
-  return savedPage ? clonePage(savedPage) : undefined;
-}
-
-export function createDemoPage(input: CreateDemoPageInput) {
-  const nextPage: SitePageRecord = {
-    id: `page-${crypto.randomUUID()}`,
-    slug: sanitizeSlug(input.slug),
-    title: input.title,
-    source: "demo",
-    availablePages: [],
-    blocks: [block("hero", 0), block("richText", 1), block("cta", 2)]
-  };
-
-  demoPages = [...demoPages, nextPage];
-  syncAvailablePages();
-
-  return clonePage(nextPage);
-}
-
-export function publishDemoPage(pageId: string) {
-  const page = demoPages.find((entry) => entry.id === pageId);
-  return page ? clonePage(page) : undefined;
-}
-
-export function listDemoMediaLibrary() {
-  return JSON.parse(JSON.stringify(demoMediaLibrary)) as MediaLibraryAsset[];
-}
-
-export function createDemoMediaAsset(input: {
-  fileName: string;
-  category?: MediaCategory;
-  previewUrl?: string;
-}) {
-  const category = input.category ?? "uploaded";
-  const readableTitle = toReadableMediaTitle(input.fileName);
-  const nextAsset: MediaLibraryAsset = {
-    id: `media-${crypto.randomUUID()}`,
-    mediaAssetId: input.previewUrl ?? `/art-04.svg`,
-    previewUrl: input.previewUrl ?? "/art-04.svg",
-    title: readableTitle,
-    alt: "",
-    category
-  };
-
-  demoMediaLibrary = [nextAsset, ...demoMediaLibrary];
-
-  return JSON.parse(JSON.stringify(nextAsset)) as MediaLibraryAsset;
-}
-
-export function getDemoSnapshot(): DemoSnapshot {
-  return {
-    pages: JSON.parse(JSON.stringify(demoPages)) as SitePageRecord[],
-    mediaLibrary: JSON.parse(JSON.stringify(demoMediaLibrary)) as MediaLibraryAsset[]
-  };
-}
-
-export function hydrateDemoSnapshot(snapshot?: Partial<DemoSnapshot>) {
-  demoPages = snapshot?.pages
-    ? withAvailablePages(JSON.parse(JSON.stringify(snapshot.pages)) as SitePageRecord[])
-    : createSeedPages();
-  demoMediaLibrary = snapshot?.mediaLibrary
-    ? (JSON.parse(JSON.stringify(snapshot.mediaLibrary)) as MediaLibraryAsset[])
-    : createDemoMediaLibrary();
-  syncAvailablePages();
-}
-
-function toReadableMediaTitle(fileName: string) {
-  return fileName
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source">;
 
 export function sanitizeSlug(value: string) {
   return value
@@ -159,14 +44,73 @@ export function sanitizeSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function createSeedPages(): SitePageRecord[] {
-  const pages: SitePageRecord[] = [
+export function toReadableMediaTitle(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function createSeedMediaLibrary(): MediaLibraryAsset[] {
+  return [
+    {
+      id: "media-hero",
+      mediaAssetId: "/art-hero.svg",
+      previewUrl: "/art-hero.svg",
+      title: "Главный кадр",
+      alt: "Главное изображение",
+      category: "featured"
+    },
+    {
+      id: "media-gallery-1",
+      mediaAssetId: "/art-01.svg",
+      previewUrl: "/art-01.svg",
+      title: "Этюд инсталляции",
+      alt: "Этюд инсталляции",
+      category: "works"
+    },
+    {
+      id: "media-gallery-2",
+      mediaAssetId: "/art-02.svg",
+      previewUrl: "/art-02.svg",
+      title: "Световая композиция",
+      alt: "Световая композиция",
+      category: "works"
+    },
+    {
+      id: "media-sample",
+      mediaAssetId: "/art-03.svg",
+      previewUrl: "/art-03.svg",
+      title: "Фрагмент серии",
+      alt: "Фрагмент серии",
+      category: "details"
+    },
+    {
+      id: "media-portrait",
+      mediaAssetId: "/portrait.svg",
+      previewUrl: "/portrait.svg",
+      title: "Портрет",
+      alt: "Портрет",
+      category: "portraits"
+    },
+    {
+      id: "media-space",
+      mediaAssetId: "/art-04.svg",
+      previewUrl: "/art-04.svg",
+      title: "Пространство",
+      alt: "Вид пространства",
+      category: "spaces"
+    }
+  ];
+}
+
+export function createSeedPages(): SeedPageDefinition[] {
+  return [
     {
       id: "page-home",
       slug: "home",
       title: "Главная",
-      source: "demo",
-      availablePages: [],
       blocks: [
         {
           ...block("hero", 0),
@@ -179,7 +123,7 @@ function createSeedPages(): SitePageRecord[] {
             buttonText: "Открыть архив",
             buttonLink: "/about",
             image: {
-              mediaAssetId: "hero",
+              mediaAssetId: "/art-hero.svg",
               alt: "Главное изображение"
             }
           }
@@ -200,8 +144,8 @@ function createSeedPages(): SitePageRecord[] {
             ...createDefaultBlock("gallery"),
             title: "Избранные работы",
             items: [
-              { mediaAssetId: "gallery-1", caption: "Этюд инсталляции" },
-              { mediaAssetId: "gallery-2", caption: "Световая композиция" }
+              { mediaAssetId: "/art-01.svg", caption: "Этюд инсталляции", alt: "Этюд инсталляции" },
+              { mediaAssetId: "/art-02.svg", caption: "Световая композиция", alt: "Световая композиция" }
             ]
           }
         },
@@ -223,7 +167,7 @@ function createSeedPages(): SitePageRecord[] {
               "Шаблоны удерживают баланс, пропорции и типографику, пока редактор меняет историю, изображения и акценты.",
             caption: "Портрет, 2026",
             image: {
-              mediaAssetId: "portrait",
+              mediaAssetId: "/portrait.svg",
               alt: "Портрет"
             }
           }
@@ -232,8 +176,7 @@ function createSeedPages(): SitePageRecord[] {
           ...block("quote", 5),
           data: {
             ...createDefaultBlock("quote"),
-            quote:
-              "Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.",
+            quote: "Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.",
             author: "Заметка студии"
           }
         },
@@ -242,7 +185,7 @@ function createSeedPages(): SitePageRecord[] {
           data: {
             ...createDefaultBlock("worksGrid"),
             title: "Подборка работ",
-            itemIds: ["gallery-1", "gallery-2", "sample-image"]
+            itemIds: ["/art-01.svg", "/art-02.svg", "/art-03.svg"]
           }
         },
         {
@@ -272,8 +215,6 @@ function createSeedPages(): SitePageRecord[] {
       id: "page-about",
       slug: "about",
       title: "О проекте",
-      source: "demo",
-      availablePages: [],
       blocks: [
         {
           ...block("sectionHeader", 0),
@@ -303,7 +244,7 @@ function createSeedPages(): SitePageRecord[] {
               "Даже когда контент меняется часто, блоковая система сохраняет ритм, иерархию и характер сайта.",
             caption: "Студийный портрет, 2026",
             image: {
-              mediaAssetId: "portrait",
+              mediaAssetId: "/portrait.svg",
               alt: "Портрет"
             }
           }
@@ -325,8 +266,6 @@ function createSeedPages(): SitePageRecord[] {
       id: "page-contact",
       slug: "contact",
       title: "Контакты",
-      source: "demo",
-      availablePages: [],
       blocks: [
         {
           ...block("sectionHeader", 0),
@@ -351,77 +290,6 @@ function createSeedPages(): SitePageRecord[] {
       ]
     }
   ];
-
-  return withAvailablePages(pages);
-}
-
-function createDemoMediaLibrary(): MediaLibraryAsset[] {
-  return [
-    {
-      id: "media-hero",
-      mediaAssetId: "hero",
-      previewUrl: "/art-hero.svg",
-      title: "Главный кадр",
-      alt: "Главное изображение",
-      category: "featured"
-    },
-    {
-      id: "media-gallery-1",
-      mediaAssetId: "gallery-1",
-      previewUrl: "/art-01.svg",
-      title: "Этюд инсталляции",
-      alt: "Этюд инсталляции",
-      category: "works"
-    },
-    {
-      id: "media-gallery-2",
-      mediaAssetId: "gallery-2",
-      previewUrl: "/art-02.svg",
-      title: "Световая композиция",
-      alt: "Световая композиция",
-      category: "works"
-    },
-    {
-      id: "media-sample",
-      mediaAssetId: "sample-image",
-      previewUrl: "/art-03.svg",
-      title: "Фрагмент серии",
-      alt: "Фрагмент серии",
-      category: "details"
-    },
-    {
-      id: "media-portrait",
-      mediaAssetId: "portrait",
-      previewUrl: "/portrait.svg",
-      title: "Портрет",
-      alt: "Портрет",
-      category: "portraits"
-    },
-    {
-      id: "media-space",
-      mediaAssetId: "/art-04.svg",
-      previewUrl: "/art-04.svg",
-      title: "Пространство",
-      alt: "Вид пространства",
-      category: "spaces"
-    }
-  ];
-}
-
-function syncAvailablePages() {
-  demoPages = withAvailablePages(demoPages);
-}
-
-function withAvailablePages(pages: SitePageRecord[]) {
-  const availablePages = pages.map(({ id, slug, title }) => ({ id, slug, title }));
-  return pages.map((page) => ({
-    ...page,
-    availablePages
-  }));
-}
-
-function clonePage(page: SitePageRecord): SitePageRecord {
-  return JSON.parse(JSON.stringify(page)) as SitePageRecord;
 }
 
 function block<TType extends BlockType>(type: TType, position: number): SiteBlockRecord<TType> {

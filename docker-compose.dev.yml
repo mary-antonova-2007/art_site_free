@@ -1,8 +1,28 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: artsite
+      POSTGRES_USER: artsite
+      POSTGRES_PASSWORD: artsite
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U artsite -d artsite"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - artsite_postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+
   web:
     build:
       context: .
       dockerfile: infra/docker/web/Dockerfile.dev
+    depends_on:
+      postgres:
+        condition: service_healthy
     working_dir: /app
     env_file:
       - .env.local
@@ -15,6 +35,9 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "1000"
       NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: postgresql://artsite:artsite@postgres:5432/artsite
+      DATA_DIR: /app/data
+      LOCAL_UPLOADS_DIR: /app/data/uploads
     ports:
       - "3000:3000"
     stdin_open: true
@@ -31,6 +54,7 @@ services:
       pnpm --filter web dev --hostname 0.0.0.0 --port 3000"
 
 volumes:
+  artsite_postgres_data:
   artsite_node_modules:
   artsite_web_node_modules:
   artsite_next_cache:
