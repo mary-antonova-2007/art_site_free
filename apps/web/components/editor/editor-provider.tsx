@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 import { getBlockDefinition, type BlockType } from "@artsite/blocks";
 
@@ -64,6 +65,7 @@ export function EditorProvider({
   enabled: boolean;
 }) {
   const t = useTranslations();
+  const router = useRouter();
   const [blocks, setBlocks] = useState(page.blocks);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [pages, setPages] = useState(page.availablePages);
@@ -80,6 +82,11 @@ export function EditorProvider({
   const [mediaLibraryCategory, setMediaLibraryCategoryState] = useState<MediaCategory>("featured");
   const [panelOpen, setPanelOpen] = useState(false);
   const [createPageOpen, setCreatePageOpen] = useState(false);
+
+  useEffect(() => {
+    setBlocks(page.blocks);
+    setPages(page.availablePages);
+  }, [page.availablePages, page.blocks]);
 
   const value = useMemo<EditorContextValue>(
     () => ({
@@ -300,15 +307,24 @@ export function EditorProvider({
           })
         });
 
-        const payload = (await response.json()) as { savedAt?: string; error?: string };
+        const payload = (await response.json()) as {
+          savedAt?: string;
+          page?: SitePageRecord;
+          error?: string;
+        };
 
         if (!response.ok) {
           setStatusMessage(payload.error ?? t("editor.draftSaveFailed"));
           return;
         }
 
+        if (payload.page) {
+          setBlocks(payload.page.blocks);
+          setPages(payload.page.availablePages);
+        }
         setLastSavedAt(payload.savedAt ?? new Date().toISOString());
         setStatusMessage(t("editor.draftSaved"));
+        router.refresh();
       },
       async publish() {
         setStatusMessage(t("editor.publishing"));
@@ -324,16 +340,25 @@ export function EditorProvider({
           })
         });
 
-        const payload = (await response.json()) as { publishedAt?: string; error?: string };
+        const payload = (await response.json()) as {
+          publishedAt?: string;
+          page?: SitePageRecord;
+          error?: string;
+        };
 
         if (!response.ok) {
           setStatusMessage(payload.error ?? t("editor.publishFailed"));
           return;
         }
 
+        if (payload.page) {
+          setBlocks(payload.page.blocks);
+          setPages(payload.page.availablePages);
+        }
         setDraftState("published");
         setStatusMessage(t("editor.publishedDone"));
         setLastSavedAt(payload.publishedAt ?? new Date().toISOString());
+        router.refresh();
       },
       async replaceBlockMedia(blockId, file) {
         setStatusMessage(t("editor.uploadingImage"));
@@ -517,6 +542,7 @@ export function EditorProvider({
       page,
       pages,
       panelOpen,
+      router,
       statusMessage,
       t
     ]

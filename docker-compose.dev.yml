@@ -21,6 +21,7 @@ services:
     tty: true
     volumes:
       - .:/app
+      - ./data:/app/data
       - artsite_node_modules:/app/node_modules
       - artsite_web_node_modules:/app/apps/web/node_modules
       - artsite_next_cache:/app/apps/web/.next

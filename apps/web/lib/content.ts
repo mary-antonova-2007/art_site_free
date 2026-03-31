@@ -34,6 +34,11 @@ export type MediaLibraryAsset = {
   category: MediaCategory;
 };
 
+export type DemoSnapshot = {
+  pages: SitePageRecord[];
+  mediaLibrary: MediaLibraryAsset[];
+};
+
 type CreateDemoPageInput = {
   title: string;
   slug: string;
@@ -119,6 +124,23 @@ export function createDemoMediaAsset(input: {
   demoMediaLibrary = [nextAsset, ...demoMediaLibrary];
 
   return JSON.parse(JSON.stringify(nextAsset)) as MediaLibraryAsset;
+}
+
+export function getDemoSnapshot(): DemoSnapshot {
+  return {
+    pages: JSON.parse(JSON.stringify(demoPages)) as SitePageRecord[],
+    mediaLibrary: JSON.parse(JSON.stringify(demoMediaLibrary)) as MediaLibraryAsset[]
+  };
+}
+
+export function hydrateDemoSnapshot(snapshot?: Partial<DemoSnapshot>) {
+  demoPages = snapshot?.pages
+    ? withAvailablePages(JSON.parse(JSON.stringify(snapshot.pages)) as SitePageRecord[])
+    : createSeedPages();
+  demoMediaLibrary = snapshot?.mediaLibrary
+    ? (JSON.parse(JSON.stringify(snapshot.mediaLibrary)) as MediaLibraryAsset[])
+    : createDemoMediaLibrary();
+  syncAvailablePages();
 }
 
 function toReadableMediaTitle(fileName: string) {

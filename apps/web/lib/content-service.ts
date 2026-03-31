@@ -3,20 +3,21 @@ import "server-only";
 import { createDefaultBlock, validateBlock, type BlockType } from "@artsite/blocks";
 
 import {
-  createDemoMediaAsset,
-  createDemoPage,
-  getDemoPageBySlug,
-  listDemoMediaLibrary,
-  listDemoPages,
   type MediaCategory,
   type MediaLibraryAsset,
-  publishDemoPage,
   sanitizeSlug,
-  saveDemoPage,
   type SiteBlockRecord,
   type SitePageRecord
 } from "./content";
 import { canUseEditor, getEditorIdentity } from "./auth";
+import {
+  createStoredDemoMediaAsset,
+  createStoredDemoPage,
+  getStoredDemoPageBySlug,
+  listStoredDemoMediaLibrary,
+  publishStoredDemoPage,
+  saveStoredDemoPage
+} from "./demo-store";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
 
 const PUBLIC_BUCKET = process.env.SUPABASE_PUBLIC_BUCKET ?? "site-public";
@@ -41,7 +42,7 @@ export async function getPageForRequest(slug: string, editorRequested: boolean) 
   const editorEnabled = await canUseEditor(editorRequested);
 
   if (!hasSupabaseEnv()) {
-    const page = getDemoPageBySlug(slug);
+    const page = await getStoredDemoPageBySlug(slug);
     return {
       page,
       editorEnabled
@@ -62,7 +63,7 @@ export async function savePageDraft(input: {
   blocks: SiteBlockRecord[];
 }) {
   if (!hasSupabaseEnv()) {
-    return saveDemoPage(input);
+    return await saveStoredDemoPage(input);
   }
 
   const editor = await getEditorIdentity();
@@ -146,8 +147,8 @@ export async function publishPageChanges(input: {
   blocks: SiteBlockRecord[];
 }) {
   if (!hasSupabaseEnv()) {
-    saveDemoPage(input);
-    return publishDemoPage(input.pageId);
+    await saveStoredDemoPage(input);
+    return await publishStoredDemoPage(input.pageId);
   }
 
   const savedPage = await savePageDraft(input);
@@ -210,7 +211,7 @@ export async function publishPageChanges(input: {
 
 export async function createPageRecord(input: { title: string; slug: string }) {
   if (!hasSupabaseEnv()) {
-    return createDemoPage(input);
+    return await createStoredDemoPage(input);
   }
 
   const editor = await getEditorIdentity();
@@ -301,7 +302,7 @@ export async function uploadEditorImage(input: {
     const base64 = Buffer.from(input.data).toString("base64");
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    const asset = createDemoMediaAsset({
+    const asset = await createStoredDemoMediaAsset({
       fileName: input.fileName,
       category: input.category,
       previewUrl: dataUrl
@@ -375,7 +376,7 @@ export async function uploadEditorImage(input: {
 
 export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
   if (!hasSupabaseEnv()) {
-    return listDemoMediaLibrary();
+    return await listStoredDemoMediaLibrary();
   }
 
   const editor = await getEditorIdentity();
