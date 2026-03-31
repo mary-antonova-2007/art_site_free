@@ -106,18 +106,27 @@ export function createDemoMediaAsset(input: {
   previewUrl?: string;
 }) {
   const category = input.category ?? "uploaded";
+  const readableTitle = toReadableMediaTitle(input.fileName);
   const nextAsset: MediaLibraryAsset = {
     id: `media-${crypto.randomUUID()}`,
     mediaAssetId: input.previewUrl ?? `/art-04.svg`,
     previewUrl: input.previewUrl ?? "/art-04.svg",
-    title: input.fileName,
-    alt: input.fileName,
+    title: readableTitle,
+    alt: "",
     category
   };
 
   demoMediaLibrary = [nextAsset, ...demoMediaLibrary];
 
   return JSON.parse(JSON.stringify(nextAsset)) as MediaLibraryAsset;
+}
+
+function toReadableMediaTitle(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function sanitizeSlug(value: string) {

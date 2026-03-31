@@ -324,6 +324,7 @@ export async function uploadEditorImage(input: {
   const admin = createAdminSupabaseClient();
   const safeName = `${Date.now()}-${input.fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-")}`;
   const path = `${input.pageId}/${safeName}`;
+  const readableTitle = toReadableMediaTitle(input.fileName);
 
   const { error: uploadError } = await admin.storage
     .from(PUBLIC_BUCKET)
@@ -365,8 +366,8 @@ export async function uploadEditorImage(input: {
       id: mediaAsset.id,
       mediaAssetId: publicUrl,
       previewUrl: publicUrl,
-      title: input.fileName,
-      alt: input.fileName,
+      title: readableTitle,
+      alt: "",
       category: input.category ?? "uploaded"
     } satisfies MediaLibraryAsset
   };
@@ -502,8 +503,16 @@ function inferMediaCategory(storagePath: string): MediaCategory {
   }
 
   if (path.includes("upload")) {
-    return "uploaded";
-  }
+  return "uploaded";
+}
+
+function toReadableMediaTitle(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
   return "works";
 }
@@ -599,4 +608,12 @@ function block<TType extends BlockType>(type: TType, position: number): SiteBloc
     isHidden: false,
     data: createDefaultBlock(type)
   };
+}
+
+function toReadableMediaTitle(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

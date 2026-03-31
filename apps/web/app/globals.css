@@ -633,6 +633,20 @@ img {
   gap: 4px;
 }
 
+.editor-media-item__meta {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.editor-media-item__meta input {
+  width: 100%;
+  border: 1px solid rgba(18, 18, 18, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .editor-media-item__body span {
   font-size: 12px;
   color: var(--muted);
@@ -825,6 +839,20 @@ img {
 .editor-media-item__body {
   display: grid;
   gap: 4px;
+}
+
+.editor-media-item__meta {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.editor-media-item__meta input {
+  width: 100%;
+  border: 1px solid rgba(18, 18, 18, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .editor-media-item__body span {

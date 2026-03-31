@@ -30,6 +30,11 @@ type EditorContextValue = {
   replaceBlockMedia: (blockId: string, file: File) => Promise<void>;
   moveBlockMediaItem: (blockId: string, index: number, direction: "up" | "down") => void;
   removeBlockMediaItem: (blockId: string, index: number) => void;
+  updateBlockMediaItemMeta: (
+    blockId: string,
+    index: number,
+    patch: { caption?: string; alt?: string }
+  ) => void;
   mediaLibraryMode: "replace" | "append";
   selectMediaAsset: (blockId: string, asset: MediaLibraryAsset) => void;
   mediaLibraryAssets: MediaLibraryAsset[];
@@ -459,6 +464,36 @@ export function EditorProvider({
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
+      updateBlockMediaItemMeta(blockId, index, patch) {
+        setBlocks((current) =>
+          current.map((block) => {
+            if (block.id !== blockId) {
+              return block;
+            }
+
+            if ("items" in block.data && Array.isArray(block.data.items)) {
+              return {
+                ...block,
+                data: {
+                  ...block.data,
+                  items: block.data.items.map((item: Record<string, unknown>, itemIndex: number) =>
+                    itemIndex === index
+                      ? {
+                          ...item,
+                          ...patch
+                        }
+                      : item
+                  )
+                }
+              };
+            }
+
+            return block;
+          })
+        );
+        setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
+      },
       selectMediaAsset(blockId, asset) {
         setBlocks((current) =>
           applyMediaAssetToBlocks(current, blockId, asset, mediaLibraryMode)
@@ -509,7 +544,7 @@ function applyMediaAssetToBlocks(
           image: {
             ...(block.data.image ?? {}),
             mediaAssetId: asset.mediaAssetId,
-            alt: asset.alt || asset.title
+            alt: block.data.image?.alt ?? ""
           }
         }
       };
@@ -526,8 +561,8 @@ function applyMediaAssetToBlocks(
                 ...block.data.items,
                 {
                   mediaAssetId: asset.mediaAssetId,
-                  alt: asset.alt || asset.title,
-                  caption: asset.title
+                  alt: "",
+                  caption: ""
                 }
               ]
             }
@@ -554,8 +589,8 @@ function applyMediaAssetToBlocks(
               ? {
                   ...item,
                   mediaAssetId: asset.mediaAssetId,
-                  alt: asset.alt || asset.title,
-                  caption: typeof item.caption === "string" && item.caption ? item.caption : asset.title
+                  alt: typeof item.alt === "string" ? item.alt : "",
+                  caption: typeof item.caption === "string" ? item.caption : ""
                 }
               : item
           )

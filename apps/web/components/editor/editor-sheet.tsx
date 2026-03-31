@@ -22,7 +22,8 @@ export function EditorSheet() {
     closePanel,
     openMediaLibrary,
     moveBlockMediaItem,
-    removeBlockMediaItem
+    removeBlockMediaItem,
+    updateBlockMediaItemMeta
   } = useEditor();
   const activeBlock = blocks.find((block) => block.id === activeBlockId);
 
@@ -105,12 +106,46 @@ export function EditorSheet() {
             </button>
           </div>
           <div className="editor-media-list__items">
-            {getMediaCollectionItems(activeBlock).map((item, index) => (
-              <div className="editor-media-item" key={`${item.id}-${index}`}>
-                <img src={item.previewUrl} alt={item.label} />
+            {getMediaCollectionItems(activeBlock).map((item, index) => {
+              const mediaItem = item as {
+                id: string;
+                label: string;
+                previewUrl: string;
+                caption?: string;
+                alt?: string;
+              };
+
+              return (
+              <div className="editor-media-item" key={`${mediaItem.id}-${index}`}>
+                <img src={mediaItem.previewUrl} alt={mediaItem.label} />
                 <div className="editor-media-item__body">
-                  <strong>{item.label}</strong>
-                  <span>{item.id}</span>
+                  <strong>{mediaItem.label}</strong>
+                  {typeof mediaItem.caption === "string" || typeof mediaItem.alt === "string" ? (
+                    <div className="editor-media-item__meta">
+                      {typeof mediaItem.caption === "string" ? (
+                        <input
+                          value={mediaItem.caption}
+                          placeholder="Подпись"
+                          onChange={(event) =>
+                            updateBlockMediaItemMeta(activeBlock.id, index, {
+                              caption: event.currentTarget.value
+                            })
+                          }
+                        />
+                      ) : null}
+                      {typeof mediaItem.alt === "string" ? (
+                        <input
+                          value={mediaItem.alt}
+                          placeholder="Alt-текст"
+                          onChange={(event) =>
+                            updateBlockMediaItemMeta(activeBlock.id, index, {
+                              alt: event.currentTarget.value
+                            })
+                          }
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="editor-media-item__actions">
                   <button type="button" className="action-button" onClick={() => moveBlockMediaItem(activeBlock.id, index, "up")}>
@@ -124,7 +159,7 @@ export function EditorSheet() {
                   </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       ) : null}
@@ -219,15 +254,29 @@ function hasMediaCollection(block: SiteBlockRecord) {
 
 function getMediaCollectionItems(block: SiteBlockRecord) {
   if ("items" in block.data && Array.isArray(block.data.items)) {
-    return block.data.items.map((item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number) => ({
+    return block.data.items.map((item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number): {
+      id: string;
+      label: string;
+      caption: string;
+      alt: string;
+      previewUrl: string;
+    } => ({
       id: item.mediaAssetId ?? `item-${index}`,
-      label: item.caption ?? item.alt ?? `Изображение ${index + 1}`,
-      previewUrl: item.mediaAssetId?.startsWith("/") ? item.mediaAssetId : fallbackPreview(item.mediaAssetId)
+      label: item.caption || item.alt || `Изображение ${index + 1}`,
+      caption: item.caption ?? "",
+      alt: item.alt ?? "",
+      previewUrl: item.mediaAssetId?.startsWith("/") || item.mediaAssetId?.startsWith("data:")
+        ? item.mediaAssetId
+        : fallbackPreview(item.mediaAssetId)
     }));
   }
 
   if ("itemIds" in block.data && Array.isArray(block.data.itemIds)) {
-    return block.data.itemIds.map((itemId: string, index: number) => ({
+    return block.data.itemIds.map((itemId: string, index: number): {
+      id: string;
+      label: string;
+      previewUrl: string;
+    } => ({
       id: itemId,
       label: itemId,
       previewUrl: itemId.startsWith("/") ? itemId : fallbackPreview(itemId)

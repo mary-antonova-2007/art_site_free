@@ -62,6 +62,20 @@ function assetPath(assetId: string, fallback: string) {
   return fallback;
 }
 
+function hasEditorialCaption(value?: string | null) {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return !/\.(png|jpe?g|webp|gif|svg|avif)$/i.test(normalized);
+}
+
 function RenderedBlock<TType extends BlockType>({
   blockId,
   type,
@@ -109,7 +123,6 @@ function RenderedBlock<TType extends BlockType>({
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
               onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
-            <div className="media-label">{heroData.image?.alt ?? t("media.heroImage")}</div>
           </div>
         </section>
       );
@@ -150,7 +163,6 @@ function RenderedBlock<TType extends BlockType>({
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
               onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
             />
-            <div className="media-label">{imageData.alt ?? imageData.image?.alt ?? t("media.image")}</div>
           </div>
           <p className="image-caption">
             <InlineEditableText blockId={blockId} field="caption" value={imageData.caption ?? ""} />
@@ -213,7 +225,7 @@ function RenderedBlock<TType extends BlockType>({
                   alt={item.caption ?? item.mediaAssetId ?? t("media.galleryItem")}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
-                <div className="media-label">{item.caption ?? item.mediaAssetId}</div>
+                {hasEditorialCaption(item.caption) ? <div className="media-label">{item.caption}</div> : null}
               </article>
             ))}
           </div>
@@ -338,7 +350,6 @@ function RenderedBlock<TType extends BlockType>({
                     alt={itemId}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
-                  <div className="media-label">{itemId}</div>
                 </article>
               )
             )}
@@ -421,7 +432,6 @@ function ImagePanel({
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onClick={onClick}
         />
-        <div className="media-label">{alt}</div>
       </div>
       <p className="caption">{caption}</p>
     </div>
