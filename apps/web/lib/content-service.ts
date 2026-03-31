@@ -34,15 +34,16 @@ type RawBlockRow = {
 };
 
 export async function getPageForRequest(slug: string, editorRequested: boolean) {
+  const editorEnabled = await canUseEditor(editorRequested);
+
   if (!hasSupabaseEnv()) {
     const page = getDemoPageBySlug(slug);
     return {
       page,
-      editorEnabled: editorRequested
+      editorEnabled
     };
   }
 
-  const editorEnabled = await canUseEditor(editorRequested);
   const page = await getSupabasePageBySlug(slug, editorEnabled);
 
   return {

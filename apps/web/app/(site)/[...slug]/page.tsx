@@ -9,5 +9,11 @@ export default async function SitePage({ params, searchParams }: SitePageProps) 
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
   const slug = resolvedParams.slug?.join("/") ?? "home";
-  return <PageScreen slug={slug} edit={resolvedSearch.edit ?? resolvedSearch.editor} />;
+  return (
+    <PageScreen
+      slug={slug}
+      edit={resolvedSearch.edit ?? resolvedSearch.editor}
+      currentPath={`/${slug}`}
+    />
+  );
 }

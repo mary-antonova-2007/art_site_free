@@ -1,37 +1,57 @@
-import { requestMagicLink } from "./actions";
+import { isAdminPasswordConfigured } from "@/lib/auth";
 
 export default async function SignInPage({
   searchParams
 }: {
-  searchParams: Promise<{ sent?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const resolvedSearch = await searchParams;
+  const next = resolvedSearch.next ?? "/?editor=1";
+  const passwordConfigured = isAdminPasswordConfigured();
 
   return (
     <div className="site-frame">
       <section className="site-section width-narrow">
         <div className="section-stack">
-          <span className="eyebrow">Magic link auth</span>
-          <h1 className="section-title">Editor sign in happens on the same site.</h1>
-          <p className="hero-subtitle">Enter the editor email and request a magic link.</p>
-          <form action={requestMagicLink} className="section-stack" style={{ maxWidth: "28rem" }}>
+          <span className="eyebrow">Admin access</span>
+          <h1 className="section-title">Editor mode opens only after admin sign in.</h1>
+          <p className="hero-subtitle">
+            Use the password from <code>.env</code> to unlock inline editing on the live page.
+          </p>
+
+          <form
+            action="/auth/login"
+            method="post"
+            className="section-stack"
+            style={{ maxWidth: "28rem" }}
+          >
+            <input type="hidden" name="next" value={next} />
             <label className="editor-field">
-              <span>email</span>
-              <input type="email" name="email" placeholder="owner@example.com" required />
+              <span>admin password</span>
+              <input type="password" name="password" placeholder="Enter admin password" required />
             </label>
-            <button type="submit" className="pill-link">
-              Send magic link
+            <button type="submit" className="pill-link" disabled={!passwordConfigured}>
+              Enter editor
             </button>
           </form>
-          <p className="mini-note">
-            If Supabase env is not configured, this screen falls back to demo mode and redirects
-            into `?editor=1`.
-          </p>
-          {resolvedSearch.sent ? (
-            <p className="mini-note">Magic link sent. Check your inbox.</p>
+
+          {!passwordConfigured ? (
+            <p className="mini-note">
+              Add <code>ADMIN_PASSWORD</code> to <code>.env</code>, restart Docker, then sign in
+              again.
+            </p>
           ) : null}
-          {resolvedSearch.error ? (
-            <p className="mini-note">Sign-in error: {resolvedSearch.error}</p>
+
+          {resolvedSearch.error === "password" ? (
+            <p className="mini-note">Enter the admin password to continue.</p>
+          ) : null}
+          {resolvedSearch.error === "invalid-password" ? (
+            <p className="mini-note">Password is incorrect.</p>
+          ) : null}
+          {resolvedSearch.error === "missing-password" ? (
+            <p className="mini-note">
+              <code>ADMIN_PASSWORD</code> is not configured in the environment yet.
+            </p>
           ) : null}
         </div>
       </section>

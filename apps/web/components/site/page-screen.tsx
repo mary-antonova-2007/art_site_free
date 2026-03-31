@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { EditorBar } from "@/components/editor/editor-bar";
 import { EditorProvider } from "@/components/editor/editor-provider";
@@ -10,16 +10,23 @@ import { isEditorModeEnabled } from "@/lib/editor-mode";
 
 export async function PageScreen({
   slug,
-  edit
+  edit,
+  currentPath
 }: {
   slug: string;
   edit?: string;
+  currentPath: string;
 }) {
   const requestedEdit = isEditorModeEnabled(edit);
   const { page, editorEnabled } = await getPageForRequest(slug, requestedEdit);
 
   if (!page) {
     notFound();
+  }
+
+  if (requestedEdit && !editorEnabled) {
+    const next = `${currentPath}?editor=1`;
+    redirect(`/auth/sign-in?next=${encodeURIComponent(next)}`);
   }
 
   return (
@@ -33,4 +40,3 @@ export async function PageScreen({
     </EditorProvider>
   );
 }
-

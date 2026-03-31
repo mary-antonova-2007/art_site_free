@@ -42,6 +42,25 @@ Or use:
 
 This dev container uses polling-based file watching so edits from Windows/WSL bind mounts trigger hot reload reliably.
 
+## Admin editor access
+
+Inline editing is locked behind an admin password from `.env`.
+
+Set these before using editor mode:
+
+```bash
+ADMIN_PASSWORD=replace-with-a-strong-password
+ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
+```
+
+Then restart Docker and open:
+
+```bash
+http://localhost:3000/?editor=1
+```
+
+You will be redirected to `/auth/sign-in`, enter the admin password, and then the editor overlay will open on the same live page.
+
 ## Production deployment
 
 - Build the Next app into a standalone server container

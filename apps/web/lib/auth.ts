@@ -1,5 +1,8 @@
 import "server-only";
 
+import { cookies } from "next/headers";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
 import { createServerSupabaseClient } from "./supabase/server";
 
@@ -9,13 +12,101 @@ export type EditorIdentity = {
   role: string;
 };
 
+const ADMIN_COOKIE_NAME = "artsite_admin_session";
+
+function hasAdminPasswordEnv() {
+  const password = process.env.ADMIN_PASSWORD;
+  return Boolean(password && password !== "change-me-admin-password");
+}
+
+function getSessionSecret() {
+  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "artsite-dev-secret";
+}
+
+function signAdminPayload(payload: string) {
+  return createHmac("sha256", getSessionSecret()).update(payload).digest("hex");
+}
+
+function buildAdminCookieValue() {
+  const payload = "admin";
+  return `${payload}.${signAdminPayload(payload)}`;
+}
+
+function verifyAdminCookieValue(value: string | undefined) {
+  if (!value) {
+    return false;
+  }
+
+  const [payload, signature] = value.split(".");
+
+  if (!payload || !signature) {
+    return false;
+  }
+
+  const expected = signAdminPayload(payload);
+
+  try {
+    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
+
+export async function createAdminSession() {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_COOKIE_NAME, buildAdminCookieValue(), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 12
+  });
+}
+
+export async function clearAdminSession() {
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_COOKIE_NAME);
+}
+
+export async function isAdminSessionAuthenticated() {
+  if (!hasAdminPasswordEnv()) {
+    return false;
+  }
+
+  const cookieStore = await cookies();
+  const value = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  return verifyAdminCookieValue(value);
+}
+
+export function validateAdminPassword(password: string) {
+  const envPassword = process.env.ADMIN_PASSWORD;
+
+  if (!envPassword || !hasAdminPasswordEnv()) {
+    return false;
+  }
+
+  try {
+    return timingSafeEqual(Buffer.from(password), Buffer.from(envPassword));
+  } catch {
+    return false;
+  }
+}
+
 export async function getEditorIdentity() {
-  if (!hasSupabaseEnv()) {
+  if (await isAdminSessionAuthenticated()) {
     return {
-      authUserId: "demo-editor",
-      email: "demo@example.com",
+      authUserId: "admin-env",
+      email: process.env.SITE_EDITOR_EMAIL ?? "admin@example.com",
       role: "owner"
     } satisfies EditorIdentity;
+  }
+
+  if (hasAdminPasswordEnv()) {
+    return null;
+  }
+
+  if (!hasSupabaseEnv()) {
+    return null;
   }
 
   const supabase = await createServerSupabaseClient();
@@ -63,3 +154,6 @@ export async function canUseEditor(editorRequested: boolean) {
   return Boolean(editor);
 }
 
+export function isAdminPasswordConfigured() {
+  return hasAdminPasswordEnv();
+}

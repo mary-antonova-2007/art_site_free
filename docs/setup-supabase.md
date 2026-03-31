@@ -12,6 +12,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_PUBLIC_BUCKET=site-public
 SUPABASE_DRAFTS_BUCKET=site-drafts
 SITE_EDITOR_EMAIL=owner@example.com
+ADMIN_PASSWORD=replace-with-a-strong-password
+ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
 ```
 
 ## 2. Run Schema
@@ -44,9 +46,10 @@ Recommended:
 
 ## 4. Create Owner User
 
-1. Sign in once through `/auth/sign-in`
-2. Find the new `auth.users.id` in Supabase
-3. Insert matching owner row:
+1. Open `/auth/sign-in`
+2. Sign in with the password from `.env`
+3. If you also want Supabase-backed ownership, find the new `auth.users.id` in Supabase
+4. Insert matching owner row:
 
 ```sql
 insert into public.app_users (auth_user_id, email, role, is_active)
@@ -59,5 +62,5 @@ Create first page row and draft revision, or just open the app in demo mode firs
 
 ## 6. Expected Runtime
 
-- Without env: app uses demo fallback content.
-- With env + valid owner user: editor routes use real Supabase draft/publish flow.
+- Without Supabase env: app uses demo fallback content, but editor still requires admin password login.
+- With Supabase env + valid owner user: editor routes use real Supabase draft/publish flow after the same admin sign-in gate.

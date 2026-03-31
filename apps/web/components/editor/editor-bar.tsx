@@ -60,6 +60,9 @@ export function EditorBar() {
         >
           Publish
         </button>
+        <Link className="editor-button" href="/auth/sign-out">
+          Sign out
+        </Link>
         <Link className="editor-button" href={`/${page.slug}`}>
           Leave editor
         </Link>

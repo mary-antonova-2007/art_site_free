@@ -6,5 +6,5 @@ type HomePageProps = {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const resolvedSearch = await searchParams;
-  return <PageScreen slug="home" edit={resolvedSearch.edit ?? resolvedSearch.editor} />;
+  return <PageScreen slug="home" edit={resolvedSearch.edit ?? resolvedSearch.editor} currentPath="/" />;
 }

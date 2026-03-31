@@ -6,6 +6,11 @@ type HomeAliasPageProps = {
 
 export default async function HomeAliasPage({ searchParams }: HomeAliasPageProps) {
   const resolvedSearch = await searchParams;
-  return <PageScreen slug="home" edit={resolvedSearch.edit ?? resolvedSearch.editor} />;
+  return (
+    <PageScreen
+      slug="home"
+      edit={resolvedSearch.edit ?? resolvedSearch.editor}
+      currentPath="/home"
+    />
+  );
 }
-
