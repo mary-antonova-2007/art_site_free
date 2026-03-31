@@ -40,6 +40,8 @@ Or use:
 ./scripts/dev.sh up
 ```
 
+This dev container uses polling-based file watching so edits from Windows/WSL bind mounts trigger hot reload reliably.
+
 ## Production deployment
 
 - Build the Next app into a standalone server container
