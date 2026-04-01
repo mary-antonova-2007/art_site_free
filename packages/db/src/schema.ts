@@ -160,6 +160,7 @@ export const mediaAssets = pgTable(
     sizeBytes: integer("size_bytes"),
     alt: varchar("alt", { length: 500 }),
     caption: text("caption"),
+    category: varchar("category", { length: 120 }),
     focalX: integer("focal_x"),
     focalY: integer("focal_y"),
     checksum: varchar("checksum", { length: 128 }),

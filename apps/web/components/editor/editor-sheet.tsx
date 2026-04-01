@@ -64,6 +64,11 @@ export function EditorSheet() {
       : ("replace" as const);
   const mediaButtonLabel =
     mediaAction === "append" ? t("media.addImages") : t("media.manageImages");
+  const pageLinkOptions = pages.map((page) => ({
+    value: page.slug === "home" ? "/" : `/${page.slug}`,
+    label: page.title
+  }));
+  const showInNavigation = Boolean((activeBlock.data as Record<string, unknown>).showInNavigation);
 
   return (
     <aside className="editor-panel">
@@ -74,6 +79,17 @@ export function EditorSheet() {
         </button>
       </div>
       <p className="mini-note">{t("editorPanel.dataOnly")}</p>
+      <label className="editor-field editor-field-checkbox" data-testid={testIds.blockField}>
+        <span>{getFieldLabel(localeMessages, "showInNavigation", "Показывать в навигации")}</span>
+        <input
+          id="showInNavigation"
+          type="checkbox"
+          checked={showInNavigation}
+          onChange={(event) =>
+            updateBlockField(activeBlock.id, "showInNavigation", event.currentTarget.checked)
+          }
+        />
+      </label>
       {hasMediaSupport(activeBlock.blockType) ? (
         <button
           className="editor-button editor-button-primary editor-panel-media-button"
@@ -209,6 +225,34 @@ export function EditorSheet() {
           );
         }
 
+        if (field.name === "buttonLink") {
+          const currentValue = typeof value === "string" ? value : "";
+          const knownValues = new Set(pageLinkOptions.map((option) => option.value));
+          const options = knownValues.has(currentValue) || !currentValue
+            ? pageLinkOptions
+            : [{ value: currentValue, label: currentValue }, ...pageLinkOptions];
+
+          return (
+            <label className="editor-field" key={field.name} data-testid={testIds.blockField}>
+              <span>{getFieldLabel(localeMessages, field.name, field.label)}</span>
+              <select
+                id={field.name}
+                value={currentValue}
+                onChange={(event) =>
+                  updateBlockField(activeBlock.id, field.name, event.currentTarget.value)
+                }
+              >
+                <option value="">Выберите ссылку</option>
+                {options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          );
+        }
+
         if (field.kind === "textarea" || field.kind === "richtext") {
           return (
             <label className="editor-field" key={field.name} data-testid={testIds.blockField}>
@@ -242,7 +286,7 @@ export function EditorSheet() {
 }
 
 function hasMediaSupport(blockType: string) {
-  return ["hero", "image", "imageText", "gallery", "worksGrid", "seriesGrid"].includes(blockType);
+  return ["hero", "image", "imageText", "about", "gallery", "worksGrid", "seriesGrid"].includes(blockType);
 }
 
 function hasMediaCollection(block: SiteBlockRecord) {

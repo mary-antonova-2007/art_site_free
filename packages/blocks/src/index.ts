@@ -56,5 +56,11 @@ export function createDefaultBlock<TType extends BlockType>(type: TType): BlockD
 }
 
 export function validateBlock<TType extends BlockType>(type: TType, payload: unknown) {
-  return getBlockDefinition(type).schema.parse(payload);
+  const schema = getBlockDefinition(type).schema;
+
+  if (schema instanceof z.ZodObject) {
+    return schema.passthrough().parse(payload);
+  }
+
+  return schema.parse(payload);
 }

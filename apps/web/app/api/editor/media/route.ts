@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { listEditorMediaLibrary, uploadEditorImage } from "@/lib/content-service";
+import { listEditorMediaCategories, listEditorMediaLibrary, uploadEditorImage } from "@/lib/content-service";
 
 export async function GET() {
   try {
-    const assets = await listEditorMediaLibrary();
-    return NextResponse.json({ assets });
+    const [assets, categories] = await Promise.all([
+      listEditorMediaLibrary(),
+      listEditorMediaCategories()
+    ]);
+    return NextResponse.json({ assets, categories });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load media library";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -28,13 +31,7 @@ export async function POST(request: Request) {
       fileName: file.name,
       fileType: file.type,
       data: await file.arrayBuffer(),
-      category: category as
-        | "featured"
-        | "portraits"
-        | "works"
-        | "details"
-        | "spaces"
-        | "uploaded"
+      category
     });
 
     return NextResponse.json(uploaded);

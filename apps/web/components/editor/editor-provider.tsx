@@ -1,11 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 
 import { getBlockDefinition, type BlockType } from "@artsite/blocks";
 
+import { getBlockAnchorId } from "@/lib/block-navigation";
 import { useTranslations } from "@/lib/i18n/client";
 import type { MediaCategory, MediaLibraryAsset, SiteBlockRecord, SitePageRecord } from "@/lib/content";
 
@@ -13,15 +15,21 @@ type EditorContextValue = {
   enabled: boolean;
   page: SitePageRecord;
   blocks: SiteBlockRecord[];
+  compactNavigation: boolean;
+  setCompactNavigation: Dispatch<SetStateAction<boolean>>;
   activeBlockId: string | null;
   setActiveBlockId: (id: string | null) => void;
   updateBlockField: (blockId: string, field: string, value: unknown) => void;
-  insertBlockAfter: (index: number, type: BlockType) => void;
+  insertBlockAt: (index: number, type: BlockType) => void;
   moveBlock: (blockId: string, direction: "up" | "down") => void;
+  moveBlockToIndex: (blockId: string, index: number) => void;
   duplicateBlock: (blockId: string) => void;
   removeBlock: (blockId: string) => void;
   toggleHidden: (blockId: string) => void;
-  createPage: (input: { title: string; slug: string }) => void;
+  createPage: (input: { title: string; slug: string }) => Promise<boolean>;
+  renamePage: (input: { pageId: string; title: string }) => Promise<boolean>;
+  deletePage: (pageId: string) => Promise<boolean>;
+  reorderPages: (pageIds: string[]) => Promise<boolean>;
   pages: Array<{ id: string; slug: string; title: string }>;
   draftState: "published" | "dirty";
   statusMessage: string | null;
@@ -39,6 +47,7 @@ type EditorContextValue = {
   mediaLibraryMode: "replace" | "append";
   selectMediaAsset: (blockId: string, asset: MediaLibraryAsset) => void;
   mediaLibraryAssets: MediaLibraryAsset[];
+  mediaLibraryCategories: MediaCategory[];
   mediaLibraryOpenForBlockId: string | null;
   mediaLibraryCategory: MediaCategory;
   openMediaLibrary: (blockId: string, mode?: "replace" | "append") => Promise<void>;
@@ -48,6 +57,10 @@ type EditorContextValue = {
   openPanel: () => void;
   closePanel: () => void;
   togglePanel: () => void;
+  blockLibraryOpen: boolean;
+  openBlockLibrary: () => void;
+  closeBlockLibrary: () => void;
+  toggleBlockLibrary: () => void;
   createPageOpen: boolean;
   openCreatePage: () => void;
   closeCreatePage: () => void;
@@ -67,6 +80,7 @@ export function EditorProvider({
   const t = useTranslations();
   const router = useRouter();
   const [blocks, setBlocks] = useState(page.blocks);
+  const [compactNavigation, setCompactNavigation] = useState(false);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [pages, setPages] = useState(page.availablePages);
   const [draftState, setDraftState] = useState<"published" | "dirty">(
@@ -77,22 +91,45 @@ export function EditorProvider({
   );
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [mediaLibraryAssets, setMediaLibraryAssets] = useState<MediaLibraryAsset[]>([]);
+  const [mediaLibraryCategories, setMediaLibraryCategories] = useState<MediaCategory[]>([]);
   const [mediaLibraryOpenForBlockId, setMediaLibraryOpenForBlockId] = useState<string | null>(null);
   const [mediaLibraryMode, setMediaLibraryMode] = useState<"replace" | "append">("replace");
   const [mediaLibraryCategory, setMediaLibraryCategoryState] = useState<MediaCategory>("featured");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [blockLibraryOpen, setBlockLibraryOpen] = useState(false);
   const [createPageOpen, setCreatePageOpen] = useState(false);
+  const mediaLibraryRequestRef = useRef<Promise<void> | null>(null);
+  const pendingScrollBlockIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     setBlocks(page.blocks);
     setPages(page.availablePages);
-  }, [page.availablePages, page.blocks]);
+    setActiveBlockId(null);
+  }, [page.id]);
+
+  useEffect(() => {
+    if (!pendingScrollBlockIdRef.current || typeof window === "undefined") {
+      return;
+    }
+
+    const targetBlockId = pendingScrollBlockIdRef.current;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .getElementById(getBlockAnchorId(targetBlockId))
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      pendingScrollBlockIdRef.current = null;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [blocks]);
 
   const value = useMemo<EditorContextValue>(
     () => ({
       enabled,
       page,
       blocks,
+      compactNavigation,
+      setCompactNavigation,
       activeBlockId,
       setActiveBlockId,
       pages,
@@ -100,29 +137,52 @@ export function EditorProvider({
       statusMessage,
       lastSavedAt,
       mediaLibraryAssets,
+      mediaLibraryCategories,
       mediaLibraryOpenForBlockId,
       mediaLibraryMode,
       mediaLibraryCategory,
       panelOpen,
+      blockLibraryOpen,
       createPageOpen,
       async openMediaLibrary(blockId, mode = "replace") {
         setMediaLibraryOpenForBlockId(blockId);
         setMediaLibraryMode(mode);
-        setStatusMessage(t("media.libraryLoading"));
 
-        const response = await fetch("/api/editor/media");
-        const payload = (await response.json()) as {
-          assets?: MediaLibraryAsset[];
-          error?: string;
-        };
-
-        if (!response.ok) {
-          setStatusMessage(payload.error ?? t("media.libraryLoadFailed"));
+        if (mediaLibraryAssets.length > 0) {
+          setStatusMessage(t("media.libraryReady"));
           return;
         }
 
-        setMediaLibraryAssets(payload.assets ?? []);
-        setStatusMessage(t("media.libraryReady"));
+        if (mediaLibraryRequestRef.current) {
+          await mediaLibraryRequestRef.current;
+          return;
+        }
+
+        setStatusMessage(t("media.libraryLoading"));
+
+        mediaLibraryRequestRef.current = (async () => {
+          const response = await fetch("/api/editor/media");
+          const payload = (await response.json()) as {
+            assets?: MediaLibraryAsset[];
+            categories?: MediaCategory[];
+            error?: string;
+          };
+
+          if (!response.ok) {
+            setStatusMessage(payload.error ?? t("media.libraryLoadFailed"));
+            return;
+          }
+
+          setMediaLibraryAssets(payload.assets ?? []);
+          setMediaLibraryCategories(payload.categories ?? []);
+          setStatusMessage(t("media.libraryReady"));
+        })();
+
+        try {
+          await mediaLibraryRequestRef.current;
+        } finally {
+          mediaLibraryRequestRef.current = null;
+        }
       },
       closeMediaLibrary() {
         setMediaLibraryOpenForBlockId(null);
@@ -138,6 +198,15 @@ export function EditorProvider({
       },
       togglePanel() {
         setPanelOpen((current) => !current);
+      },
+      openBlockLibrary() {
+        setBlockLibraryOpen(true);
+      },
+      closeBlockLibrary() {
+        setBlockLibraryOpen(false);
+      },
+      toggleBlockLibrary() {
+        setBlockLibraryOpen((current) => !current);
       },
       openCreatePage() {
         setCreatePageOpen(true);
@@ -169,23 +238,26 @@ export function EditorProvider({
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
-      insertBlockAfter(index, type) {
+      insertBlockAt(index, type) {
         const definition = getBlockDefinition(type);
         const nextBlock: SiteBlockRecord = {
           id: `${type}-${crypto.randomUUID()}`,
           blockType: type,
           isHidden: false,
-          position: index + 1,
+          position: index,
           data: definition.createDefault()
         };
 
         setBlocks((current) => {
           const cloned = [...current];
-          cloned.splice(index + 1, 0, nextBlock);
+          const safeIndex = Math.max(0, Math.min(index, cloned.length));
+          cloned.splice(safeIndex, 0, nextBlock);
           return cloned.map((item, itemIndex) => ({ ...item, position: itemIndex }));
         });
+        pendingScrollBlockIdRef.current = nextBlock.id;
         setActiveBlockId(nextBlock.id);
         setPanelOpen(true);
+        setBlockLibraryOpen(false);
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
@@ -208,6 +280,32 @@ export function EditorProvider({
           cloned.splice(targetIndex, 0, item);
           return cloned.map((block, itemIndex) => ({ ...block, position: itemIndex }));
         });
+        pendingScrollBlockIdRef.current = blockId;
+        setActiveBlockId(blockId);
+        setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
+      },
+      moveBlockToIndex(blockId, index) {
+        setBlocks((current) => {
+          const currentIndex = current.findIndex((block) => block.id === blockId);
+
+          if (currentIndex === -1) {
+            return current;
+          }
+
+          const safeIndex = Math.max(0, Math.min(index, current.length - 1));
+
+          if (safeIndex === currentIndex) {
+            return current;
+          }
+
+          const cloned = [...current];
+          const [item] = cloned.splice(currentIndex, 1);
+          cloned.splice(safeIndex, 0, item);
+          return cloned.map((block, itemIndex) => ({ ...block, position: itemIndex }));
+        });
+        pendingScrollBlockIdRef.current = blockId;
+        setActiveBlockId(blockId);
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
@@ -230,6 +328,7 @@ export function EditorProvider({
         });
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
+        pendingScrollBlockIdRef.current = duplicateId;
         setActiveBlockId(duplicateId);
         setPanelOpen(true);
       },
@@ -252,46 +351,136 @@ export function EditorProvider({
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
-      createPage(input) {
-        void (async () => {
-          setStatusMessage(t("editor.creatingPage"));
+      async createPage(input) {
+        setStatusMessage(t("editor.creatingPage"));
 
-          const response = await fetch("/api/editor/pages", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(input)
-          });
+        const response = await fetch("/api/editor/pages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(input)
+        });
 
-          const payload = (await response.json()) as {
-            page?: { id: string; title: string; slug: string };
-            error?: string;
-          };
+        const payload = (await response.json()) as {
+          page?: { id: string; title: string; slug: string };
+          error?: string;
+        };
 
-          if (!response.ok || !payload.page) {
-            setStatusMessage(payload.error ?? t("editor.pageCreateFailed"));
-            return;
+        if (!response.ok || !payload.page) {
+          setStatusMessage(payload.error ?? t("editor.pageCreateFailed"));
+          return false;
+        }
+
+        const createdPage = payload.page;
+
+        setPages((current) => [
+          ...current,
+          {
+            id: createdPage.id,
+            title: createdPage.title,
+            slug: createdPage.slug
           }
+        ]);
+        setDraftState("dirty");
+        setCreatePageOpen(false);
+        setStatusMessage(t("editor.pageCreated", { title: createdPage.title }));
 
-          const createdPage = payload.page;
+        if (typeof window !== "undefined") {
+          window.location.assign(`/${createdPage.slug}?editor=1`);
+        }
 
-          setPages((current) => [
-            ...current,
-            {
-              id: createdPage.id,
-              title: createdPage.title,
-              slug: createdPage.slug
-            }
-          ]);
-          setDraftState("dirty");
-          setCreatePageOpen(false);
-          setStatusMessage(t("editor.pageCreated", { title: createdPage.title }));
+        return true;
+      },
+      async renamePage(input) {
+        setStatusMessage(t("editor.renamingPage"));
 
-          if (typeof window !== "undefined") {
-            window.location.assign(`/${createdPage.slug}?editor=1`);
+        const response = await fetch(`/api/editor/pages/${input.pageId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title: input.title
+          })
+        });
+
+        const payload = (await response.json()) as {
+          pages?: Array<{ id: string; slug: string; title: string }>;
+          error?: string;
+        };
+
+        if (!response.ok || !payload.pages) {
+          setStatusMessage(payload.error ?? t("editor.pageRenameFailed"));
+          return false;
+        }
+
+        setPages(payload.pages);
+        setStatusMessage(t("editor.pageRenamed"));
+        router.refresh();
+        return true;
+      },
+      async deletePage(pageId) {
+        setStatusMessage(t("editor.deletingPage"));
+
+        const response = await fetch(`/api/editor/pages/${pageId}`, {
+          method: "DELETE"
+        });
+
+        const payload = (await response.json()) as {
+          pages?: Array<{ id: string; slug: string; title: string }>;
+          error?: string;
+        };
+
+        if (!response.ok || !payload.pages) {
+          setStatusMessage(payload.error ?? t("editor.pageDeleteFailed"));
+          return false;
+        }
+
+        setPages(payload.pages);
+        setStatusMessage(t("editor.pageDeleted"));
+
+        if (pageId === page.id) {
+          const fallback = payload.pages[0];
+
+          if (fallback) {
+            router.push(`/${fallback.slug}?editor=1`);
+            return true;
           }
-        })();
+        }
+
+        router.refresh();
+        return true;
+      },
+      async reorderPages(pageIds) {
+        setPages((current) => {
+          const byId = new Map(current.map((pageItem) => [pageItem.id, pageItem]));
+          return pageIds.map((id) => byId.get(id)).filter(Boolean) as Array<{ id: string; slug: string; title: string }>;
+        });
+
+        const response = await fetch("/api/editor/pages/order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ pageIds })
+        });
+
+        const payload = (await response.json()) as {
+          pages?: Array<{ id: string; slug: string; title: string }>;
+          error?: string;
+        };
+
+        if (!response.ok || !payload.pages) {
+          setStatusMessage(payload.error ?? t("editor.pageReorderFailed"));
+          router.refresh();
+          return false;
+        }
+
+        setPages(payload.pages);
+        setStatusMessage(t("editor.pageReordered"));
+        router.refresh();
+        return true;
       },
       async saveDraft() {
         setStatusMessage(t("editor.savingDraft"));
@@ -397,6 +586,9 @@ export function EditorProvider({
           } satisfies MediaLibraryAsset);
 
         setMediaLibraryAssets((current) => [uploadedAsset, ...current]);
+        setMediaLibraryCategories((current) =>
+          current.includes(uploadedAsset.category) ? current : [...current, uploadedAsset.category]
+        );
         setBlocks((current) =>
           applyMediaAssetToBlocks(current, blockId, uploadedAsset, "replace")
         );
@@ -530,12 +722,15 @@ export function EditorProvider({
     }),
     [
       activeBlockId,
+      blockLibraryOpen,
       blocks,
+      compactNavigation,
       createPageOpen,
       draftState,
       enabled,
       lastSavedAt,
       mediaLibraryAssets,
+      mediaLibraryCategories,
       mediaLibraryCategory,
       mediaLibraryMode,
       mediaLibraryOpenForBlockId,
@@ -557,20 +752,28 @@ function applyMediaAssetToBlocks(
   asset: MediaLibraryAsset,
   mode: "replace" | "append"
 ) {
+  const resolvedMediaUrl = asset.previewUrl || asset.mediaAssetId;
+  const singleImageBlockTypes = new Set(["hero", "image", "imageText", "about"]);
+
   return blocks.map((block) => {
     if (block.id !== blockId) {
       return block;
     }
 
-    if ("image" in block.data) {
+    if (singleImageBlockTypes.has(block.blockType)) {
+      const currentImage =
+        "image" in block.data && typeof block.data.image === "object" && block.data.image
+          ? block.data.image
+          : {};
+
       return {
         ...block,
         data: {
           ...block.data,
           image: {
-            ...(block.data.image ?? {}),
-            mediaAssetId: asset.mediaAssetId,
-            alt: block.data.image?.alt ?? ""
+            ...currentImage,
+            mediaAssetId: resolvedMediaUrl,
+            alt: asset.alt || ("alt" in currentImage && typeof currentImage.alt === "string" ? currentImage.alt : "")
           }
         }
       };
@@ -586,8 +789,8 @@ function applyMediaAssetToBlocks(
               items: [
                 ...block.data.items,
                 {
-                  mediaAssetId: asset.mediaAssetId,
-                  alt: "",
+                  mediaAssetId: resolvedMediaUrl,
+                  alt: asset.alt ?? "",
                   caption: ""
                 }
               ]
@@ -614,8 +817,8 @@ function applyMediaAssetToBlocks(
             index === 0
               ? {
                   ...item,
-                  mediaAssetId: asset.mediaAssetId,
-                  alt: typeof item.alt === "string" ? item.alt : "",
+                  mediaAssetId: resolvedMediaUrl,
+                  alt: asset.alt || (typeof item.alt === "string" ? item.alt : ""),
                   caption: typeof item.caption === "string" ? item.caption : ""
                 }
               : item
@@ -633,8 +836,8 @@ function applyMediaAssetToBlocks(
           ...block.data,
           itemIds:
             mode === "append"
-              ? [...currentIds, asset.mediaAssetId]
-              : [asset.mediaAssetId, ...currentIds.slice(1)]
+              ? [...currentIds, resolvedMediaUrl]
+              : [resolvedMediaUrl, ...currentIds.slice(1)]
         }
       };
     }

@@ -8,6 +8,7 @@ import { createDb, hasDatabaseUrl, mediaAssets, pageBlocks, pageRevisions, pages
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
+  DEFAULT_MEDIA_CATEGORIES,
   createSeedMediaLibrary,
   createSeedPages,
   sanitizeSlug,
@@ -18,6 +19,7 @@ import {
   type SitePageRecord
 } from "./content";
 import { canUseEditor, getEditorIdentity } from "./auth";
+import { normalizeMediaCategoryName } from "./media-categories";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
 
 const PUBLIC_BUCKET = process.env.SUPABASE_PUBLIC_BUCKET ?? "site-public";
@@ -127,6 +129,51 @@ export async function createPageRecord(input: { title: string; slug: string }) {
   return await createLocalPageRecord(input);
 }
 
+export async function renamePageRecord(input: { pageId: string; title: string }) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await renameSupabasePageRecord(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await renameLocalPageRecord(input);
+}
+
+export async function deletePageRecord(input: { pageId: string }) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await deleteSupabasePageRecord(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await deleteLocalPageRecord(input);
+}
+
+export async function reorderPageRecords(input: { pageIds: string[] }) {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    return await reorderSupabasePageRecords(input);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await reorderLocalPageRecords(input);
+}
+
 export async function uploadEditorImage(input: {
   pageId: string;
   fileName: string;
@@ -163,6 +210,78 @@ export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
   return await listLocalMediaLibrary();
 }
 
+export async function listEditorMediaCategories(): Promise<MediaCategory[]> {
+  const editor = await getEditorIdentity();
+
+  if (!editor) {
+    throw new Error("Unauthorized");
+  }
+
+  if (hasSupabaseEnv()) {
+    const assets = await listSupabaseMediaLibrary();
+    return uniqueMediaCategories([...DEFAULT_MEDIA_CATEGORIES, ...assets.map((asset) => asset.category)]);
+  }
+
+  await ensureLocalDatabaseReady();
+  return await listLocalMediaCategories();
+}
+
+export async function createEditorMediaCategory(name: string) {
+  const normalizedName = normalizeMediaCategoryName(name);
+
+  if (!normalizedName) {
+    throw new Error("Category name is required.");
+  }
+
+  if (hasSupabaseEnv()) {
+    throw new Error("Custom media categories are not available in hosted mode yet.");
+  }
+
+  await ensureLocalDatabaseReady();
+  await updateLocalMediaCategories((current) => [...current, normalizedName]);
+  return await listLocalMediaCategories();
+}
+
+export async function renameEditorMediaCategory(previousName: string, nextName: string) {
+  const from = normalizeMediaCategoryName(previousName);
+  const to = normalizeMediaCategoryName(nextName);
+
+  if (!from || !to) {
+    throw new Error("Category names are required.");
+  }
+
+  if (hasSupabaseEnv()) {
+    throw new Error("Custom media categories are not available in hosted mode yet.");
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db.update(mediaAssets).set({ category: to, updatedAt: new Date() }).where(eq(mediaAssets.category, from));
+  await updateLocalMediaCategories((current) => current.map((item) => (item === from ? to : item)));
+  return await listLocalMediaCategories();
+}
+
+export async function deleteEditorMediaCategory(name: string) {
+  const normalizedName = normalizeMediaCategoryName(name);
+
+  if (!normalizedName) {
+    throw new Error("Category name is required.");
+  }
+
+  if (hasSupabaseEnv()) {
+    throw new Error("Custom media categories are not available in hosted mode yet.");
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db
+    .update(mediaAssets)
+    .set({ category: "uploaded", updatedAt: new Date() })
+    .where(eq(mediaAssets.category, normalizedName));
+  await updateLocalMediaCategories((current) => current.filter((item) => item !== normalizedName));
+  return await listLocalMediaCategories();
+}
+
 async function ensureLocalDatabaseReady() {
   const db = createDb();
   await ensureLocalSchemaCompatibility();
@@ -186,6 +305,7 @@ async function ensureLocalDatabaseReady() {
         fileName: asset.title,
         alt: asset.alt,
         caption: asset.title,
+        category: asset.category,
         isPublic: true
       }))
     );
@@ -254,6 +374,7 @@ async function ensureLocalSchemaCompatibility() {
     alter table if exists media_assets add column if not exists focal_x integer;
     alter table if exists media_assets add column if not exists focal_y integer;
     alter table if exists media_assets add column if not exists checksum text;
+    alter table if exists media_assets add column if not exists category text;
     alter table if exists pages add column if not exists created_by uuid;
     alter table if exists pages add column if not exists updated_by uuid;
     alter table if exists page_revisions add column if not exists created_by uuid;
@@ -346,7 +467,8 @@ async function getLocalPageList() {
     .where(eq(pages.isArchived, false))
     .orderBy(asc(pages.slug));
 
-  return rows;
+  const settings = await db.query.siteSettings.findFirst();
+  return sortPagesByStoredOrder(rows, settings?.metadata);
 }
 
 async function saveLocalPageDraft(input: {
@@ -456,7 +578,7 @@ async function publishLocalPageChanges(input: {
 
 async function createLocalPageRecord(input: { title: string; slug: string }) {
   const db = createDb();
-  const safeSlug = sanitizeSlug(input.slug || input.title);
+  const safeSlug = await createUniqueLocalPageSlug(input.slug || input.title);
 
   const [page] = await db
     .insert(pages)
@@ -498,7 +620,77 @@ async function createLocalPageRecord(input: { title: string; slug: string }) {
     })
     .where(eq(pages.id, page.id));
 
+  await appendPageToLocalOrder(page.id);
+
   return await getLocalPageById(page.id, true);
+}
+
+async function renameLocalPageRecord(input: { pageId: string; title: string }) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: and(eq(pages.id, input.pageId), eq(pages.isArchived, false))
+  });
+
+  if (!page) {
+    throw new Error("Page not found");
+  }
+
+  const nextTitle = input.title.trim();
+
+  if (!nextTitle) {
+    throw new Error("Title is required");
+  }
+
+  await db
+    .update(pages)
+    .set({
+      title: nextTitle,
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, page.id));
+
+  await db
+    .update(pageRevisions)
+    .set({
+      title: nextTitle,
+      updatedAt: new Date()
+    })
+    .where(eq(pageRevisions.pageId, page.id));
+
+  return await getLocalPageList();
+}
+
+async function deleteLocalPageRecord(input: { pageId: string }) {
+  const db = createDb();
+  const page = await db.query.pages.findFirst({
+    where: and(eq(pages.id, input.pageId), eq(pages.isArchived, false))
+  });
+
+  if (!page) {
+    throw new Error("Page not found");
+  }
+
+  if (page.isHomepage) {
+    throw new Error("Homepage cannot be deleted");
+  }
+
+  await db
+    .update(pages)
+    .set({
+      isArchived: true,
+      archivedAt: new Date(),
+      updatedAt: new Date()
+    })
+    .where(eq(pages.id, page.id));
+
+  await removePageFromLocalOrder(page.id);
+
+  return await getLocalPageList();
+}
+
+async function reorderLocalPageRecords(input: { pageIds: string[] }) {
+  await updateLocalPageOrder(input.pageIds);
+  return await getLocalPageList();
 }
 
 async function uploadLocalEditorImage(input: {
@@ -529,6 +721,7 @@ async function uploadLocalEditorImage(input: {
       sizeBytes: Buffer.byteLength(Buffer.from(input.data)),
       alt: "",
       caption: readableTitle,
+      category: input.category ?? "uploaded",
       isPublic: true
     })
     .returning();
@@ -556,7 +749,8 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
       storagePath: mediaAssets.storagePath,
       fileName: mediaAssets.fileName,
       alt: mediaAssets.alt,
-      caption: mediaAssets.caption
+      caption: mediaAssets.caption,
+      category: mediaAssets.category
     })
     .from(mediaAssets)
     .orderBy(desc(mediaAssets.createdAt));
@@ -567,7 +761,7 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
     previewUrl: asset.storagePath,
     title: asset.caption ?? asset.fileName ?? "Image",
     alt: asset.alt ?? "",
-    category: inferMediaCategory(asset.storagePath)
+    category: asset.category ?? inferMediaCategory(asset.storagePath)
   }));
 }
 
@@ -585,6 +779,48 @@ function inferMediaCategory(storagePath: string): MediaCategory {
   if (normalizedPath.includes("hero") || normalizedPath.includes("cover")) return "featured";
   if (normalizedPath.includes("/media-files/")) return "uploaded";
   return "works";
+}
+
+async function listLocalMediaCategories() {
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+  const rows = await db.select({ category: mediaAssets.category }).from(mediaAssets);
+  const metadataCategories = Array.isArray(settings?.metadata?.mediaCategories)
+    ? settings.metadata.mediaCategories.filter((item): item is string => typeof item === "string")
+    : [];
+  const assetCategories = rows
+    .map((row) => normalizeMediaCategoryName(row.category ?? ""))
+    .filter(Boolean);
+
+  return uniqueMediaCategories([...DEFAULT_MEDIA_CATEGORIES, ...metadataCategories, ...assetCategories]);
+}
+
+async function updateLocalMediaCategories(updater: (current: string[]) => string[]) {
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+
+  if (!settings) {
+    return;
+  }
+
+  const current = Array.isArray(settings.metadata?.mediaCategories)
+    ? settings.metadata.mediaCategories.filter((item): item is string => typeof item === "string")
+    : [];
+
+  await db
+    .update(siteSettings)
+    .set({
+      metadata: {
+        ...(settings.metadata ?? {}),
+        mediaCategories: uniqueMediaCategories(updater(current))
+      },
+      updatedAt: new Date()
+    })
+    .where(eq(siteSettings.id, settings.id));
+}
+
+function uniqueMediaCategories(input: string[]) {
+  return [...new Set(input.map(normalizeMediaCategoryName).filter(Boolean))];
 }
 
 function guessMimeType(filePath: string) {
@@ -781,7 +1017,7 @@ async function createSupabasePageRecord(input: { title: string; slug: string }) 
   }
 
   const admin = createAdminSupabaseClient();
-  const safeSlug = sanitizeSlug(input.slug || input.title);
+  const safeSlug = await createUniqueSupabasePageSlug(admin, input.slug || input.title);
   const now = new Date().toISOString();
 
   const { data: page, error: pageError } = await admin
@@ -980,8 +1216,226 @@ async function hydrateSupabasePage(
 }
 
 async function getSupabasePageList(admin: ReturnType<typeof createAdminSupabaseClient>) {
-  const { data } = await admin.from("pages").select("id, slug, title").order("slug");
-  return (data ?? []) as Array<{ id: string; slug: string; title: string }>;
+  const { data } = await admin
+    .from("pages")
+    .select("id, slug, title")
+    .eq("is_archived", false)
+    .order("slug");
+  const { data: settings } = await admin.from("site_settings").select("metadata").limit(1).maybeSingle();
+  return sortPagesByStoredOrder(
+    ((data ?? []) as Array<{ id: string; slug: string; title: string }>),
+    settings?.metadata ?? null
+  );
+}
+
+async function renameSupabasePageRecord(input: { pageId: string; title: string }) {
+  const admin = createAdminSupabaseClient();
+  const nextTitle = input.title.trim();
+
+  if (!nextTitle) {
+    throw new Error("Title is required");
+  }
+
+  await admin
+    .from("pages")
+    .update({
+      title: nextTitle,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", input.pageId)
+    .eq("is_archived", false);
+
+  await admin
+    .from("page_revisions")
+    .update({
+      title: nextTitle,
+      updated_at: new Date().toISOString()
+    })
+    .eq("page_id", input.pageId);
+
+  return await getSupabasePageList(admin);
+}
+
+async function deleteSupabasePageRecord(input: { pageId: string }) {
+  const admin = createAdminSupabaseClient();
+  const { data: page } = await admin
+    .from("pages")
+    .select("id, is_homepage")
+    .eq("id", input.pageId)
+    .eq("is_archived", false)
+    .single();
+
+  if (!page) {
+    throw new Error("Page not found");
+  }
+
+  if (page.is_homepage) {
+    throw new Error("Homepage cannot be deleted");
+  }
+
+  await admin
+    .from("pages")
+    .update({
+      is_archived: true,
+      archived_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", input.pageId);
+
+  await removePageFromSupabaseOrder(input.pageId);
+
+  return await getSupabasePageList(admin);
+}
+
+async function reorderSupabasePageRecords(input: { pageIds: string[] }) {
+  await updateSupabasePageOrder(input.pageIds);
+  return await getSupabasePageList(createAdminSupabaseClient());
+}
+
+async function createUniqueLocalPageSlug(value: string) {
+  const db = createDb();
+  const baseSlug = sanitizeSlug(value) || "page";
+  let candidate = baseSlug;
+  let suffix = 2;
+
+  for (;;) {
+    const existingPage = await db.query.pages.findFirst({
+      where: eq(pages.slug, candidate)
+    });
+
+    if (!existingPage) {
+      return candidate;
+    }
+
+    candidate = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+async function createUniqueSupabasePageSlug(
+  admin: ReturnType<typeof createAdminSupabaseClient>,
+  value: string
+) {
+  const baseSlug = sanitizeSlug(value) || "page";
+  let candidate = baseSlug;
+  let suffix = 2;
+
+  for (;;) {
+    const { data: existingPage } = await admin
+      .from("pages")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+
+    if (!existingPage) {
+      return candidate;
+    }
+
+    candidate = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+function sortPagesByStoredOrder<TPage extends { id: string; slug: string }>(
+  pagesList: TPage[],
+  metadata: Record<string, unknown> | null | undefined
+) {
+  const storedOrder = Array.isArray(metadata?.pageOrder)
+    ? metadata.pageOrder.filter((item): item is string => typeof item === "string")
+    : [];
+  const orderMap = new Map(storedOrder.map((id, index) => [id, index]));
+
+  return [...pagesList].sort((left, right) => {
+    const leftIndex = orderMap.get(left.id);
+    const rightIndex = orderMap.get(right.id);
+
+    if (leftIndex != null && rightIndex != null) {
+      return leftIndex - rightIndex;
+    }
+
+    if (leftIndex != null) {
+      return -1;
+    }
+
+    if (rightIndex != null) {
+      return 1;
+    }
+
+    return left.slug.localeCompare(right.slug);
+  });
+}
+
+async function updateLocalPageOrder(pageIds: string[]) {
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+
+  if (!settings) {
+    return;
+  }
+
+  const pagesList = await db
+    .select({ id: pages.id })
+    .from(pages)
+    .where(eq(pages.isArchived, false));
+  const existingIds = new Set(pagesList.map((page) => page.id));
+  const normalizedOrder = [
+    ...pageIds.filter((id) => existingIds.has(id)),
+    ...pagesList.map((page) => page.id).filter((id) => !pageIds.includes(id))
+  ];
+
+  await db
+    .update(siteSettings)
+    .set({
+      metadata: {
+        ...(settings.metadata ?? {}),
+        pageOrder: normalizedOrder
+      },
+      updatedAt: new Date()
+    })
+    .where(eq(siteSettings.id, settings.id));
+}
+
+async function appendPageToLocalOrder(pageId: string) {
+  const pagesList = await getLocalPageList();
+  await updateLocalPageOrder([...pagesList.map((page) => page.id), pageId]);
+}
+
+async function removePageFromLocalOrder(pageId: string) {
+  const pagesList = await getLocalPageList();
+  await updateLocalPageOrder(pagesList.map((page) => page.id).filter((id) => id !== pageId));
+}
+
+async function updateSupabasePageOrder(pageIds: string[]) {
+  const admin = createAdminSupabaseClient();
+  const { data: settings } = await admin.from("site_settings").select("id, metadata").limit(1).single();
+  const { data: pagesList } = await admin.from("pages").select("id").eq("is_archived", false);
+
+  if (!settings) {
+    return;
+  }
+
+  const existingIds = new Set((pagesList ?? []).map((page) => page.id));
+  const normalizedOrder = [
+    ...pageIds.filter((id) => existingIds.has(id)),
+    ...(pagesList ?? []).map((page) => page.id).filter((id) => !pageIds.includes(id))
+  ];
+
+  await admin
+    .from("site_settings")
+    .update({
+      metadata: {
+        ...(settings.metadata ?? {}),
+        pageOrder: normalizedOrder
+      },
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", settings.id);
+}
+
+async function removePageFromSupabaseOrder(pageId: string) {
+  const admin = createAdminSupabaseClient();
+  const pagesList = await getSupabasePageList(admin);
+  await updateSupabasePageOrder(pagesList.map((page) => page.id).filter((id) => id !== pageId));
 }
 
 async function createSupabaseDraftRevisionFromCurrent(

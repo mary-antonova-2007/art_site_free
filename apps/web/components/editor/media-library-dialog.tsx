@@ -5,22 +5,15 @@ import { ImagePlus, Upload, X } from "lucide-react";
 
 import type { MediaCategory } from "@/lib/content";
 import { useTranslations } from "@/lib/i18n/client";
+import { getMediaCategoryLabel } from "@/lib/media-categories";
 import { useEditor } from "./editor-provider";
-
-const mediaCategories: MediaCategory[] = [
-  "featured",
-  "works",
-  "portraits",
-  "details",
-  "spaces",
-  "uploaded"
-];
 
 export function MediaLibraryDialog() {
   const t = useTranslations();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const {
     mediaLibraryAssets,
+    mediaLibraryCategories,
     mediaLibraryOpenForBlockId,
     mediaLibraryCategory,
     setMediaLibraryCategory,
@@ -54,7 +47,7 @@ export function MediaLibraryDialog() {
         </div>
 
         <div className="page-list">
-          {mediaCategories.map((category) => (
+          {mediaLibraryCategories.map((category) => (
             <button
               key={category}
               className="page-chip media-category-chip"
@@ -62,7 +55,7 @@ export function MediaLibraryDialog() {
               data-active={category === mediaLibraryCategory}
               onClick={() => setMediaLibraryCategory(category)}
             >
-              {t(`media.categories.${category}`)}
+              {getMediaCategoryLabel(category, (key) => t(key as never))}
             </button>
           ))}
         </div>

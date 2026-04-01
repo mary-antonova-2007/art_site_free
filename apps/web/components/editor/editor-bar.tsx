@@ -1,113 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 
+import { EditorPageMenu } from "./editor-page-menu";
 import { useEditor } from "./editor-provider";
 
 export function EditorBar() {
   const t = useTranslations();
-  const router = useRouter();
-  const {
-    draftState,
-    page,
-    pages,
-    createPage,
-    saveDraft,
-    publish,
-    statusMessage,
-    lastSavedAt,
-    panelOpen,
-    togglePanel
-  } = useEditor();
+  const { publish, draftState, page } = useEditor();
 
   return (
-    <div className="editor-bar" data-testid={testIds.publishBar}>
-      <div className="editor-bar-group">
-        <span className="editor-chip" data-testid={testIds.editorRoot}>
-          {t("editor.mode")}
-        </span>
-        <span className="editor-chip" data-testid={testIds.saveStatus}>
-          {draftState === "dirty" ? t("editor.dirty") : t("editor.published")}
-        </span>
-        <span className="editor-chip" data-testid={testIds.pageTitle}>
-          {t("editor.pageLabel", { title: page.title })}
-        </span>
-        <label className="editor-page-picker">
-          <span className="sr-only">{t("editor.choosePage")}</span>
-          <select
-            value={page.slug}
-            onChange={(event) => router.push(`/${event.currentTarget.value}?editor=1`)}
-          >
-            {pages.map((pageOption) => (
-              <option key={pageOption.id} value={pageOption.slug}>
-                {pageOption.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <span className="editor-chip">{statusMessage ?? t("editor.ready")}</span>
-        {lastSavedAt ? (
-          <span className="editor-chip">
-            {t("editor.savedAt", {
-              time: new Date(lastSavedAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit"
-              })
-            })}
-          </span>
-        ) : null}
-      </div>
-      <div className="editor-bar-group">
-        <button
-          className="editor-button"
-          type="button"
-          onClick={togglePanel}
-        >
-          {panelOpen ? t("editor.closePanel") : t("editor.openPanel")}
-        </button>
-        <Link className="editor-button" href="/media?editor=1">
-          {t("media.libraryTitle")}
-        </Link>
-        <button
-          className="editor-button"
-          type="button"
-          onClick={() =>
-            createPage({
-              title: t("editor.newPageTitle"),
-              slug: `page-${pages.length + 1}`
-            })
-          }
-        >
-          {t("editor.createPage")}
-        </button>
-        <button
-          className="editor-button"
-          type="button"
-          data-testid={testIds.editorAction}
-          onClick={() => void saveDraft()}
-          disabled={draftState !== "dirty"}
-        >
-          {t("editor.saveDraft")}
-        </button>
-        <button
-          className="editor-button editor-button-primary"
-          type="button"
-          data-testid={testIds.editorAction}
-          onClick={() => void publish()}
-        >
-          {t("editor.publish")}
-        </button>
-        <Link className="editor-button" href="/auth/sign-out">
-          {t("editor.signOut")}
-        </Link>
-        <Link className="editor-button" href={`/${page.slug}`}>
-          {t("editor.leaveEditor")}
-        </Link>
-      </div>
+    <div className="editor-bar editor-bar--compact" data-testid={testIds.publishBar}>
+      <EditorPageMenu />
+      <button
+        className="editor-button editor-button-primary"
+        type="button"
+        data-testid={testIds.editorAction}
+        onClick={() => void publish()}
+        disabled={draftState !== "dirty"}
+      >
+        {t("editor.publish")}
+      </button>
+      <Link className="editor-button" href="/media?editor=1">
+        {t("media.libraryTitle")}
+      </Link>
+      <Link className="editor-button" href={page.slug === "home" ? "/" : `/${page.slug}`}>
+        {t("editor.leaveEditor")}
+      </Link>
     </div>
   );
 }

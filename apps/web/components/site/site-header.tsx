@@ -1,41 +1,38 @@
-import Link from "next/link";
-
-import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { SiteHeaderClient } from "@/components/site/site-header-client";
+import { getBlockNavigationLabel } from "@/lib/block-navigation";
 import { getServerI18n } from "@/lib/i18n";
+import type { SiteBlockRecord } from "@/lib/content";
 
 export async function SiteHeader({
   currentSlug,
   pages,
-  currentPath
+  currentPath,
+  editorEnabled,
+  blocks
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
   currentPath: string;
+  editorEnabled: boolean;
+  blocks: SiteBlockRecord[];
 }) {
   const { t } = await getServerI18n();
+  const blockItems = blocks
+    .map((block) => ({
+      id: block.id,
+      label: getBlockNavigationLabel(block)
+    }))
+    .filter((item): item is { id: string; label: string } => Boolean(item.label));
 
   return (
-    <header className="site-header">
-      <div className="site-brand">
-        <span className="site-brand-kicker">{t("header.kicker")}</span>
-        <Link href="/" className="site-brand-title">
-          ArtSite
-        </Link>
-      </div>
-      <nav className="site-nav" aria-label={t("header.primaryNav")}>
-        {pages.map((page) => (
-          <Link
-            key={page.id}
-            href={`/${page.slug}`}
-            style={{
-              opacity: page.slug === currentSlug ? 1 : 0.66
-            }}
-          >
-            {page.title}
-          </Link>
-        ))}
-      </nav>
-      <LocaleSwitcher currentPath={currentPath} />
-    </header>
+    <SiteHeaderClient
+      currentSlug={currentSlug}
+      pages={pages}
+      currentPath={currentPath}
+      editorEnabled={editorEnabled}
+      kicker={t("header.kicker")}
+      primaryNavLabel={t("header.primaryNav")}
+      blockItems={blockItems}
+    />
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { defaultLocale, isLocale, localeCookieName } from "@/lib/i18n/config";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 function normalizeNextPath(input: string | null) {
   if (!input || !input.startsWith("/") || input.startsWith("//")) {
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   const locale = url.searchParams.get("locale");
   const next = normalizeNextPath(url.searchParams.get("next"));
 
-  const response = NextResponse.redirect(new URL(next, url.origin));
+  const response = NextResponse.redirect(new URL(next, getRequestOrigin(request)));
 
   response.cookies.set(localeCookieName, isLocale(locale) ? locale : defaultLocale, {
     path: "/",

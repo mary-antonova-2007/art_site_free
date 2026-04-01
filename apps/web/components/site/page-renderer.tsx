@@ -1,27 +1,239 @@
 "use client";
 
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  pointerWithin,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type CollisionDetection,
+  type DragEndEvent,
+  type DragStartEvent
+} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { type BlockDataMap, getBlockDefinition, type BlockType } from "@artsite/blocks";
 import { cn } from "@artsite/ui";
+import { Instagram, Mail, Phone } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
+import { BlockLibraryTray } from "@/components/editor/block-library-tray";
 import { EditableBlockFrame } from "@/components/editor/editable-block-frame";
-import { InlineEditableText } from "@/components/editor/inline-editing";
 import { useEditor } from "@/components/editor/editor-provider";
+import { ImageCarousel } from "@/components/site/image-carousel";
+import { getBlockAnchorId } from "@/lib/block-navigation";
 import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 import type { SitePageRecord } from "@/lib/content";
 
 export function PageRenderer({ page }: { page: SitePageRecord }) {
-  const { blocks } = useEditor();
+  const { blocks, insertBlockAt, moveBlockToIndex } = useEditor();
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  useEffect(() => {
+    if (!lightboxImage || typeof document === "undefined") {
+      return;
+    }
+
+    const { body, documentElement } = document;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyTouchAction = body.style.touchAction;
+    const previousHtmlOverflow = documentElement.style.overflow;
+
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    documentElement.style.overflow = "hidden";
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      body.style.touchAction = previousBodyTouchAction;
+      documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [lightboxImage]);
+
+  const collisionDetection: CollisionDetection = (args) => {
+    const activeKind = args.active.data.current?.kind;
+    const pointer = args.pointerCoordinates;
+
+    if (pointer && typeof document !== "undefined") {
+      const blockLibrarySheet = document.querySelector<HTMLElement>(".block-library__sheet");
+      const blockLibraryToggle = document.querySelector<HTMLElement>(".block-library__toggle");
+
+      const isInsideRect = (element: HTMLElement | null) => {
+        if (!element) {
+          return false;
+        }
+
+        const rect = element.getBoundingClientRect();
+        return (
+          pointer.x >= rect.left &&
+          pointer.x <= rect.right &&
+          pointer.y >= rect.top &&
+          pointer.y <= rect.bottom
+        );
+      };
+
+      if (isInsideRect(blockLibrarySheet) || isInsideRect(blockLibraryToggle)) {
+        return [];
+      }
+    }
+
+    if (activeKind === "palette") {
+      const insertContainers = args.droppableContainers.filter((container) =>
+        String(container.id).startsWith("__insert__:")
+      );
+
+      return pointerWithin({
+        ...args,
+        droppableContainers: insertContainers
+      });
+    }
+
+    const moveContainers = args.droppableContainers.filter((container) =>
+      String(container.id).startsWith("__insert__:")
+    );
+
+    return closestCenter({
+      ...args,
+      droppableContainers: moveContainers
+    });
+  };
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveDragId(String(event.active.id));
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveDragId(null);
+
+    if (!event.over) {
+      return;
+    }
+
+    const overId = String(event.over.id);
+    const activeId = String(event.active.id);
+    const activeData = event.active.data.current;
+
+    if (activeData?.kind === "palette") {
+      const blockType = activeData.blockType as BlockType;
+
+      if (overId.startsWith("__insert__:")) {
+        const insertIndex = Number(overId.replace("__insert__:", ""));
+
+        if (Number.isFinite(insertIndex)) {
+          insertBlockAt(insertIndex, blockType);
+        }
+
+        return;
+      }
+
+      return;
+    }
+
+    if (activeData?.kind !== "block") {
+      return;
+    }
+
+    if (overId.startsWith("__insert__:")) {
+      const insertIndex = Number(overId.replace("__insert__:", ""));
+      const currentIndex = blocks.findIndex((block) => block.id === activeId);
+
+      if (!Number.isFinite(insertIndex) || currentIndex === -1) {
+        return;
+      }
+
+      const adjustedIndex = currentIndex < insertIndex ? insertIndex - 1 : insertIndex;
+      moveBlockToIndex(activeId, adjustedIndex);
+    }
+  }
 
   return (
-    <main className="site-grid" data-testid={testIds.pageShell} data-page-shell data-page-slug={page.slug}>
-      {blocks.map((block, index) => (
-        <EditableBlockFrame key={block.id} block={block} index={index}>
-          <RenderedBlock blockId={block.id} type={block.blockType} data={block.data} />
-        </EditableBlockFrame>
-      ))}
-    </main>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={collisionDetection}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={blocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
+        <main
+          className="site-grid"
+          data-testid={testIds.pageShell}
+          data-page-shell
+          data-page-slug={page.slug}
+        >
+          {blocks.map((block, index) => (
+            <InsertDropTarget key={`insert-${block.id}`} index={index}>
+              <EditableBlockFrame block={block} anchorId={getBlockAnchorId(block.id)}>
+                <RenderedBlock
+                  blockId={block.id}
+                  type={block.blockType}
+                  data={block.data}
+                  onOpenImagePreview={(src, alt) => setLightboxImage({ src, alt })}
+                />
+              </EditableBlockFrame>
+            </InsertDropTarget>
+          ))}
+          <InsertDropTarget index={blocks.length}>
+            <PageEndDropTarget />
+          </InsertDropTarget>
+        </main>
+      </SortableContext>
+      <BlockLibraryTray />
+      <DragOverlay>{activeDragId ? <div className="block-drag-ghost" /> : null}</DragOverlay>
+      {lightboxImage && typeof document !== "undefined"
+        ? createPortal(
+            <button
+              className="image-lightbox"
+              type="button"
+              onClick={() => setLightboxImage(null)}
+              aria-label="Close image preview"
+            >
+              <img className="image-lightbox__image" src={lightboxImage.src} alt={lightboxImage.alt} />
+            </button>,
+            document.body
+          )
+        : null}
+    </DndContext>
   );
+}
+
+function InsertDropTarget({
+  index,
+  children
+}: {
+  index: number;
+  children: ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `__insert__:${index}`,
+    data: {
+      kind: "insert-slot",
+      index
+    }
+  });
+
+  return (
+    <div className="insert-drop-target" ref={setNodeRef} data-over={isOver}>
+      <div className="insert-drop-target__preview" />
+      {children}
+    </div>
+  );
+}
+
+function PageEndDropTarget() {
+  const { setNodeRef, isOver } = useDroppable({
+    id: "__page-end__",
+    data: {
+      kind: "canvas-end"
+    }
+  });
+
+  return <div ref={setNodeRef} className="block-drop-target" data-over={isOver} data-drop-target="page-end" />;
 }
 
 function assetPath(assetId: string, fallback: string) {
@@ -79,13 +291,14 @@ function hasEditorialCaption(value?: string | null) {
 function RenderedBlock<TType extends BlockType>({
   blockId,
   type,
-  data
+  data,
+  onOpenImagePreview
 }: {
   blockId: string;
   type: TType;
   data: BlockDataMap[TType];
+  onOpenImagePreview: (src: string, alt: string) => void;
 }) {
-  const { enabled, updateBlockField, openMediaLibrary } = useEditor();
   const t = useTranslations();
   const definition = getBlockDefinition(type);
 
@@ -95,33 +308,22 @@ function RenderedBlock<TType extends BlockType>({
       return (
         <section className="site-section poster-hero">
           <div className="hero-copy">
-            <span className="eyebrow">
-              <InlineEditableText blockId={blockId} field="eyebrow" value={heroData.eyebrow ?? ""} />
-            </span>
-            <h1 className="hero-title">
-              <InlineEditableText blockId={blockId} field="title" value={heroData.title ?? ""} />
-            </h1>
-            <p className="hero-subtitle">
-              <InlineEditableText blockId={blockId} field="subtitle" value={heroData.subtitle ?? ""} multiline />
-            </p>
+            <span className="eyebrow">{heroData.eyebrow ?? ""}</span>
+            <h1 className="hero-title">{heroData.title ?? ""}</h1>
+            <p className="hero-subtitle">{heroData.subtitle ?? ""}</p>
             <div className="hero-block__actions">
-              {enabled ? (
-                <span className="pill-link">
-                  <InlineEditableText blockId={blockId} field="buttonText" value={heroData.buttonText ?? ""} />
-                </span>
-              ) : (
-                <a className="pill-link" href={heroData.buttonLink}>
-                  <InlineEditableText blockId={blockId} field="buttonText" value={heroData.buttonText ?? ""} />
-                </a>
-              )}
+              <a className="pill-link" href={heroData.buttonLink}>
+                {heroData.buttonText ?? ""}
+              </a>
             </div>
           </div>
           <div className="hero-media">
-            <img
+            <EditableSingleImage
+              blockId={blockId}
               src={assetPath(heroData.image?.mediaAssetId ?? "hero", "/art-hero.svg")}
               alt={heroData.image?.alt ?? ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
+              className="site-image site-image--contain"
+              onOpenImagePreview={onOpenImagePreview}
             />
           </div>
         </section>
@@ -137,18 +339,8 @@ function RenderedBlock<TType extends BlockType>({
             richTextData.align === "center" ? "align-center" : "align-left"
           )}
         >
-          <h2 className="rich-title">
-            <InlineEditableText blockId={blockId} field="title" value={richTextData.title ?? ""} />
-          </h2>
-          {enabled ? (
-            <textarea
-              className="rich-body inline-editable inline-editable--textarea"
-              value={richTextData.text}
-              onChange={(event) => updateBlockField(blockId, "text", event.currentTarget.value)}
-            />
-          ) : (
-            <p className="rich-body">{richTextData.text}</p>
-          )}
+          <h2 className="rich-title">{richTextData.title ?? ""}</h2>
+          <p className="rich-body">{richTextData.text}</p>
         </section>
       );
     }
@@ -157,16 +349,15 @@ function RenderedBlock<TType extends BlockType>({
       return (
         <section className="site-section width-wide">
           <div className="image-panel">
-            <img
+            <EditableSingleImage
+              blockId={blockId}
               src={assetPath(imageData.image?.mediaAssetId ?? "sample-image", "/art-03.svg")}
               alt={imageData.alt ?? imageData.image?.alt ?? ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
+              className="site-image site-image--contain"
+              onOpenImagePreview={onOpenImagePreview}
             />
           </div>
-          <p className="image-caption">
-            <InlineEditableText blockId={blockId} field="caption" value={imageData.caption ?? ""} />
-          </p>
+          <p className="image-caption">{imageData.caption ?? ""}</p>
         </section>
       );
     }
@@ -176,64 +367,96 @@ function RenderedBlock<TType extends BlockType>({
         <section className="site-section image-text-grid">
           {imageTextData.imagePosition === "left" ? (
             <ImagePanel
+              blockId={blockId}
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
-              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
+              onOpenImagePreview={onOpenImagePreview}
             />
           ) : null}
           <div className="section-stack">
-            <h2 className="section-title">
-              <InlineEditableText blockId={blockId} field="title" value={imageTextData.title ?? ""} />
-            </h2>
-            {enabled ? (
-              <textarea
-                className="image-text-body inline-editable inline-editable--textarea"
-                value={imageTextData.text ?? ""}
-                onChange={(event) => updateBlockField(blockId, "text", event.currentTarget.value)}
-              />
-            ) : (
-              <p className="image-text-body">{imageTextData.text ?? ""}</p>
-            )}
-            <p className="caption">
-              <InlineEditableText blockId={blockId} field="caption" value={imageTextData.caption ?? ""} />
-            </p>
+            <h2 className="section-title">{imageTextData.title ?? ""}</h2>
+            <p className="image-text-body">{imageTextData.text ?? ""}</p>
+            <p className="caption">{imageTextData.caption ?? ""}</p>
           </div>
           {imageTextData.imagePosition === "right" ? (
             <ImagePanel
+              blockId={blockId}
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
-              onClick={enabled ? () => void openMediaLibrary(blockId, "replace") : undefined}
+              onOpenImagePreview={onOpenImagePreview}
             />
           ) : null}
         </section>
       );
     }
+    case "about": {
+      const aboutData = data as BlockDataMap["about"];
+      const aboutLinks = aboutData.links ?? [];
+      return (
+        <section className="site-section image-text-grid">
+          <div className="section-stack">
+            <h2 className="section-title">{aboutData.title ?? ""}</h2>
+            <p className="image-text-body">{aboutData.text ?? ""}</p>
+            {aboutLinks.length ? (
+              <div className="page-list">
+                {aboutLinks.map((item: { href: string; label: string; external?: boolean }) => (
+                  <a
+                    key={`${item.href}-${item.label}`}
+                    className="page-chip"
+                    href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noreferrer" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <ImagePanel
+            blockId={blockId}
+            caption={aboutData.image?.caption ?? ""}
+            alt={aboutData.image?.alt ?? t("media.image")}
+            src={aboutData.image?.mediaAssetId ?? "portrait"}
+            onOpenImagePreview={onOpenImagePreview}
+          />
+        </section>
+      );
+    }
     case "gallery": {
       const galleryData = data as BlockDataMap["gallery"];
+      const galleryItems = (galleryData.items ?? []).map(
+        (item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number) => ({
+          id: `${item.mediaAssetId ?? item.caption ?? "item"}-${index}`,
+          src: assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg"),
+          alt: item.alt ?? item.caption ?? item.mediaAssetId ?? t("media.galleryItem"),
+          caption: hasEditorialCaption(item.caption) ? item.caption : undefined
+        })
+      );
+
       return (
         <section className="site-section section-stack">
-          <h2 className="section-title">
-            <InlineEditableText blockId={blockId} field="title" value={galleryData.title ?? ""} />
-          </h2>
-          <div className="gallery-grid">
-            {(galleryData.items ?? []).map((item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number) => (
-              <article key={`${item.mediaAssetId ?? item.caption ?? "item"}-${index}`} className="gallery-card">
-                <img
-                  src={assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg")}
-                  alt={item.caption ?? item.mediaAssetId ?? t("media.galleryItem")}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-                {hasEditorialCaption(item.caption) ? <div className="media-label">{item.caption}</div> : null}
-              </article>
-            ))}
-          </div>
-          {enabled ? (
-            <button className="insert-button" type="button" onClick={() => void openMediaLibrary(blockId, "append")}>
-              {t("media.addImages")}
-            </button>
-          ) : null}
+          <h2 className="section-title">{galleryData.title ?? ""}</h2>
+          {galleryData.layout === "carousel" ? (
+            <ImageCarousel items={galleryItems} variant="gallery" />
+          ) : (
+            <div className="gallery-grid">
+              {galleryItems.map((item) => (
+                <article key={item.id} className="gallery-card">
+                  <button
+                    type="button"
+                    className="page-image-button"
+                    onClick={() => onOpenImagePreview(item.src, item.alt)}
+                  >
+                    <img src={item.src} alt={item.alt} className="site-image site-image--gallery" />
+                  </button>
+                  {item.caption ? <div className="media-label">{item.caption}</div> : null}
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       );
     }
@@ -241,12 +464,8 @@ function RenderedBlock<TType extends BlockType>({
       const quoteData = data as BlockDataMap["quote"];
       return (
         <section className="site-section quote-wrap">
-          <blockquote className="quote-text">
-            <InlineEditableText blockId={blockId} field="quote" value={quoteData.quote ?? ""} multiline />
-          </blockquote>
-          <div className="quote-author">
-            <InlineEditableText blockId={blockId} field="author" value={quoteData.author ?? ""} />
-          </div>
+          <blockquote className="quote-text">{quoteData.quote ?? ""}</blockquote>
+          <div className="quote-author">{quoteData.author ?? ""}</div>
         </section>
       );
     }
@@ -254,15 +473,9 @@ function RenderedBlock<TType extends BlockType>({
       const sectionHeaderData = data as BlockDataMap["sectionHeader"];
       return (
         <section className="site-section section-stack width-medium">
-          <span className="eyebrow">
-            <InlineEditableText blockId={blockId} field="eyebrow" value={sectionHeaderData.eyebrow ?? ""} />
-          </span>
-          <h2 className="section-title">
-            <InlineEditableText blockId={blockId} field="title" value={sectionHeaderData.title ?? ""} />
-          </h2>
-          <p className="section-description">
-            <InlineEditableText blockId={blockId} field="description" value={sectionHeaderData.description ?? ""} multiline />
-          </p>
+          <span className="eyebrow">{sectionHeaderData.eyebrow ?? ""}</span>
+          <h2 className="section-title">{sectionHeaderData.title ?? ""}</h2>
+          <p className="section-description">{sectionHeaderData.description ?? ""}</p>
         </section>
       );
     }
@@ -287,35 +500,22 @@ function RenderedBlock<TType extends BlockType>({
       const contactData = data as BlockDataMap["contact"];
       return (
         <section className="site-section contact-grid">
-          <div className="section-stack">
-            <h2 className="section-title">
-              <InlineEditableText blockId={blockId} field="title" value={contactData.title ?? ""} />
-            </h2>
-            <p className="contact-text">
-              <InlineEditableText blockId={blockId} field="text" value={contactData.text ?? ""} multiline />
-            </p>
+          <div className="section-stack contact-copy">
+            <h2 className="section-title">{contactData.title ?? ""}</h2>
+            <p className="contact-text">{contactData.text ?? ""}</p>
           </div>
-          <div className="links-grid">
-            {enabled ? (
-              <span className="page-chip">
-                <InlineEditableText blockId={blockId} field="email" value={contactData.email ?? ""} />
-              </span>
-            ) : (
-              <a className="page-chip" href={`mailto:${contactData.email ?? ""}`}>
-                <InlineEditableText blockId={blockId} field="email" value={contactData.email ?? ""} />
-              </a>
-            )}
-            {enabled ? (
-              <span className="page-chip">
-                <InlineEditableText blockId={blockId} field="phone" value={contactData.phone ?? ""} />
-              </span>
-            ) : (
-              <a className="page-chip" href={`tel:${contactData.phone ?? ""}`}>
-                <InlineEditableText blockId={blockId} field="phone" value={contactData.phone ?? ""} />
-              </a>
-            )}
+          <div className="links-grid contact-links">
+            <a className="page-chip contact-chip" href={`mailto:${contactData.email ?? ""}`}>
+              <Mail size={18} />
+              {contactData.email ?? ""}
+            </a>
+            <a className="page-chip contact-chip" href={`tel:${contactData.phone ?? ""}`}>
+              <Phone size={18} />
+              {contactData.phone ?? ""}
+            </a>
             {(contactData.socialLinks ?? []).map((item: { href: string; label: string; external?: boolean }) => (
-              <a className="page-chip" key={item.href} href={item.href}>
+              <a className="page-chip contact-chip" key={item.href} href={item.href}>
+                <Instagram size={18} />
                 {item.label}
               </a>
             ))}
@@ -326,39 +526,37 @@ function RenderedBlock<TType extends BlockType>({
     case "worksGrid":
     case "seriesGrid": {
       const collectionData = data as BlockDataMap["worksGrid"] | BlockDataMap["seriesGrid"];
+      const collectionItems = ((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
+        (itemId: string, index: number) => ({
+          id: `${itemId}-${index}`,
+          src: assetPath(itemId, "/art-04.svg"),
+          alt: itemId
+        })
+      );
+
       return (
         <section className="site-section section-stack">
-          <h2 className="section-title">
-            <InlineEditableText blockId={blockId} field="title" value={collectionData.title ?? ""} />
-          </h2>
-          <div
-            className={cn(
-              "collection-grid",
-              collectionData.layout === "carousel" ? "collection-grid--carousel" : undefined
-            )}
-            style={
-              collectionData.layout === "carousel"
-                ? undefined
-                : { gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }
-            }
-          >
-            {((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
-              (itemId: string, index: number) => (
-                <article key={`${itemId}-${index}`} className="collection-card">
-                  <img
-                    src={assetPath(itemId, "/art-04.svg")}
-                    alt={itemId}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
+          <h2 className="section-title">{collectionData.title ?? ""}</h2>
+          {collectionData.layout === "carousel" ? (
+            <ImageCarousel items={collectionItems} variant="collection" />
+          ) : (
+            <div
+              className="collection-grid"
+              style={{ gridTemplateColumns: `repeat(${collectionData.columns}, minmax(0, 1fr))` }}
+            >
+              {collectionItems.map((item) => (
+                <article key={item.id} className="collection-card">
+                  <button
+                    type="button"
+                    className="page-image-button"
+                    onClick={() => onOpenImagePreview(item.src, item.alt)}
+                  >
+                    <img src={item.src} alt={item.alt} className="site-image site-image--gallery" />
+                  </button>
                 </article>
-              )
-            )}
-          </div>
-          {enabled ? (
-            <button className="insert-button" type="button" onClick={() => void openMediaLibrary(blockId, "append")}>
-              {t("media.addImages")}
-            </button>
-          ) : null}
+              ))}
+            </div>
+          )}
         </section>
       );
     }
@@ -366,9 +564,7 @@ function RenderedBlock<TType extends BlockType>({
       const linksListData = data as BlockDataMap["linksList"];
       return (
         <section className="site-section section-stack width-medium">
-          <h2 className="section-title">
-            <InlineEditableText blockId={blockId} field="title" value={linksListData.title ?? ""} />
-          </h2>
+          <h2 className="section-title">{linksListData.title ?? ""}</h2>
           <div className="page-list">
             {(linksListData.items ?? []).map((item: { href: string; label: string; external?: boolean }) => (
               <a key={item.href} className="page-chip" href={item.href}>
@@ -384,21 +580,11 @@ function RenderedBlock<TType extends BlockType>({
       return (
         <section className="site-section">
           <div className="cta-panel">
-            <h2 className="cta-title">
-              <InlineEditableText blockId={blockId} field="title" value={ctaData.title ?? ""} />
-            </h2>
-            <p className="hero-subtitle">
-              <InlineEditableText blockId={blockId} field="text" value={ctaData.text ?? ""} multiline />
-            </p>
-            {enabled ? (
-              <span className="pill-link">
-                <InlineEditableText blockId={blockId} field="buttonText" value={ctaData.buttonText ?? ""} />
-              </span>
-            ) : (
-              <a className="pill-link" href={ctaData.buttonLink ?? "#"}>
-                <InlineEditableText blockId={blockId} field="buttonText" value={ctaData.buttonText ?? ""} />
-              </a>
-            )}
+            <h2 className="cta-title">{ctaData.title ?? ""}</h2>
+            <p className="hero-subtitle">{ctaData.text ?? ""}</p>
+            <a className="pill-link" href={ctaData.buttonLink ?? "#"}>
+              {ctaData.buttonText ?? ""}
+            </a>
           </div>
         </section>
       );
@@ -413,27 +599,70 @@ function RenderedBlock<TType extends BlockType>({
 }
 
 function ImagePanel({
+  blockId,
   alt,
   caption,
   src,
-  onClick
+  onOpenImagePreview
 }: {
+  blockId: string;
   alt: string;
   caption: string;
   src: string;
-  onClick?: () => void;
+  onOpenImagePreview: (src: string, alt: string) => void;
 }) {
   return (
     <div className="section-stack">
       <div className="image-panel">
-        <img
+        <EditableSingleImage
+          blockId={blockId}
           src={assetPath(src, "/portrait.svg")}
           alt={alt}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          onClick={onClick}
+          className="site-image site-image--contain"
+          onOpenImagePreview={onOpenImagePreview}
         />
       </div>
       <p className="caption">{caption}</p>
     </div>
+  );
+}
+
+function EditableSingleImage({
+  blockId,
+  src,
+  alt,
+  className,
+  onOpenImagePreview
+}: {
+  blockId: string;
+  src: string;
+  alt: string;
+  className?: string;
+  onOpenImagePreview: (src: string, alt: string) => void;
+}) {
+  const { enabled, setActiveBlockId, openPanel, openMediaLibrary } = useEditor();
+
+  if (!enabled) {
+    return (
+      <button type="button" className="page-image-button" onClick={() => onOpenImagePreview(src, alt)}>
+        <img src={src} alt={alt} className={className} />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="editable-image-hit"
+      onMouseDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        setActiveBlockId(blockId);
+        openPanel();
+        void openMediaLibrary(blockId, "replace");
+      }}
+    >
+      <img src={src} alt={alt} className={className} />
+    </button>
   );
 }

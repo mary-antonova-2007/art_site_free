@@ -1,89 +1,95 @@
 "use client";
-import type { ReactNode } from "react";
-import { Copy, Eye, EyeOff, Pencil, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
-import { getBlockLabel } from "@/lib/i18n/blocks";
-import { useLocaleMessages, useTranslations } from "@/lib/i18n/client";
+import { useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { ReactNode } from "react";
+import { ChevronDown, ChevronUp, GripVertical, Pencil, Trash2 } from "lucide-react";
+
+import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
 import { useEditor } from "./editor-provider";
 import type { SiteBlockRecord } from "@/lib/content";
 
-const quickInsertTypes = [
-  { key: "sectionHeader", type: "sectionHeader" },
-  { key: "richText", type: "richText" },
-  { key: "image", type: "image" },
-  { key: "imageText", type: "imageText" },
-  { key: "gallery", type: "gallery" },
-  { key: "worksGrid", type: "worksGrid" },
-  { key: "seriesGrid", type: "seriesGrid" },
-  { key: "quote", type: "quote" },
-  { key: "linksList", type: "linksList" },
-  { key: "cta", type: "cta" },
-  { key: "contact", type: "contact" },
-  { key: "divider", type: "divider" }
-] as const;
-
 export function EditableBlockFrame({
   children,
   block,
-  index
+  anchorId
 }: {
   children: ReactNode;
   block: SiteBlockRecord;
-  index: number;
+  anchorId?: string;
 }) {
   const t = useTranslations();
-  const localeMessages = useLocaleMessages();
   const {
     enabled,
     activeBlockId,
     setActiveBlockId,
     openPanel,
-    openMediaLibrary,
-    duplicateBlock,
     moveBlock,
-    removeBlock,
-    toggleHidden,
-    insertBlockAfter
+    removeBlock
   } = useEditor();
-  const hasMedia =
-    "image" in block.data ||
-    "items" in block.data ||
-    block.blockType === "gallery";
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: block.id,
+    data: {
+      kind: "block"
+    },
+    disabled: !enabled
+  });
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: block.id,
+    data: {
+      kind: "canvas-slot"
+    },
+    disabled: !enabled
+  });
 
   if (!enabled) {
-    return block.isHidden ? null : <>{children}</>;
+    if (block.isHidden) {
+      return null;
+    }
+
+    return (
+      <section id={anchorId} className="editable-frame editable-frame--view" data-testid={testIds.blockFrame}>
+        <div className="editable-frame__content">{children}</div>
+      </section>
+    );
   }
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  };
+
   return (
-    <>
-      <div className="insert-zone" data-testid={testIds.addBlockSlot}>
-        <button
-          className="insert-button"
-          type="button"
-          onClick={() => insertBlockAfter(index - 1, "sectionHeader")}
-        >
-          <Plus size={14} />
-          {t("insert.addAbove")}
-        </button>
-      </div>
-      <section
-        className="editable-frame"
-        data-active={activeBlockId === block.id}
-        data-testid={testIds.blockFrame}
-        onClick={() => {
-          setActiveBlockId(block.id);
-          openPanel();
-        }}
-      >
+    <section
+      ref={(node) => {
+        setNodeRef(node);
+        setDropRef(node);
+      }}
+      id={anchorId}
+      className="editable-frame"
+      style={style}
+      data-active={activeBlockId === block.id}
+      data-over={isOver}
+      data-dragging={isDragging}
+      data-testid={testIds.blockFrame}
+    >
+      <div className="editable-frame__chrome">
         <div className="block-actions">
           <button
             className="action-button"
             type="button"
             title={t("blockActions.edit")}
             data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
+            onClick={() => {
               setActiveBlockId(block.id);
               openPanel();
             }}
@@ -95,10 +101,7 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.moveUp")}
             data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
-              moveBlock(block.id, "up");
-            }}
+            onClick={() => moveBlock(block.id, "up")}
           >
             <ChevronUp size={15} />
           </button>
@@ -107,83 +110,32 @@ export function EditableBlockFrame({
             type="button"
             title={t("blockActions.moveDown")}
             data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
-              moveBlock(block.id, "down");
-            }}
+            onClick={() => moveBlock(block.id, "down")}
           >
             <ChevronDown size={15} />
           </button>
           <button
             className="action-button"
             type="button"
-            title={t("blockActions.duplicate")}
-            data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
-              duplicateBlock(block.id);
-            }}
-          >
-            <Copy size={15} />
-          </button>
-          <button
-            className="action-button"
-            type="button"
-            title={block.isHidden ? t("blockActions.show") : t("blockActions.hide")}
-            data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleHidden(block.id);
-            }}
-          >
-            {block.isHidden ? <Eye size={15} /> : <EyeOff size={15} />}
-          </button>
-          <button
-            className="action-button"
-            type="button"
             title={t("blockActions.remove")}
             data-testid={testIds.editorAction}
-            onClick={(event) => {
-              event.stopPropagation();
-              removeBlock(block.id);
-            }}
+            onClick={() => removeBlock(block.id)}
           >
             <Trash2 size={15} />
           </button>
-          {hasMedia ? (
-            <button
-              className="action-button"
-              type="button"
-              title={t("blockActions.replaceImage")}
-              data-testid={testIds.mediaReplace}
-              onClick={(event) => {
-                event.stopPropagation();
-                void openMediaLibrary(block.id);
-              }}
-            >
-              <Pencil size={15} />
-            </button>
-          ) : null}
-        </div>
-        <div className="mini-note" data-testid={testIds.blockType}>
-          {getBlockLabel(localeMessages, block.blockType, block.blockType)}
-        </div>
-        {block.isHidden ? <div className="mini-note">{t("blockActions.hiddenInPublishedView")}</div> : null}
-        {children}
-      </section>
-      <div className="insert-zone" data-testid={testIds.addBlockSlot}>
-        {quickInsertTypes.map((item) => (
           <button
-            key={`${block.id}-${item.type}`}
-            className="insert-button"
+            className="action-button action-button-drag"
             type="button"
-            onClick={() => insertBlockAfter(index, item.type)}
+            title={t("blockActions.drag")}
+            data-testid={testIds.editorAction}
+            {...attributes}
+            {...listeners}
           >
-            <Plus size={14} />
-            {t(`quickInsert.${item.key}`)}
+            <GripVertical size={15} />
           </button>
-        ))}
+        </div>
       </div>
-    </>
+      <div className="editable-frame__content">{children}</div>
+    </section>
   );
 }

@@ -16,7 +16,7 @@ export default async function MediaPage() {
 
   return (
     <div className="site-frame">
-      <SiteHeader currentSlug="media" pages={pages} currentPath="/media?editor=1" />
+      <SiteHeader currentSlug="media" pages={pages} currentPath="/media?editor=1" editorEnabled blocks={[]} />
       <MediaManager />
     </div>
   );

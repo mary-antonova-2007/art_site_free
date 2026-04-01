@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { EditorBar } from "@/components/editor/editor-bar";
+import { EditorBlockNav } from "@/components/editor/editor-block-nav";
 import { EditorProvider } from "@/components/editor/editor-provider";
 import { EditorSheet } from "@/components/editor/editor-sheet";
 import { MediaLibraryDialog } from "@/components/editor/media-library-dialog";
@@ -34,7 +35,14 @@ export async function PageScreen({
   return (
     <EditorProvider page={page} enabled={editorEnabled}>
       <div className="site-frame">
-        <SiteHeader currentSlug={page.slug} pages={page.availablePages} currentPath={currentViewPath} />
+        <SiteHeader
+          currentSlug={page.slug}
+          pages={page.availablePages}
+          currentPath={currentViewPath}
+          editorEnabled={editorEnabled}
+          blocks={page.blocks}
+        />
+        <EditorBlockNav />
         {editorEnabled ? <EditorBar /> : null}
         <PageRenderer page={page} />
         {editorEnabled ? <EditorSheet /> : null}
