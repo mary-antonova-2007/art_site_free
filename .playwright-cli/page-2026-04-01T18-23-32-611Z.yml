@@ -1,0 +1,83 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: Редакционный арт-сайт / живая публикация
+        - link "ArtSite" [ref=e7] [cursor=pointer]:
+          - /url: /
+      - navigation "Основная навигация" [ref=e8]:
+        - link "О проекте" [ref=e9] [cursor=pointer]:
+          - /url: /about
+        - link "Контакты" [ref=e10] [cursor=pointer]:
+          - /url: /contact
+        - link "Главная" [ref=e11] [cursor=pointer]:
+          - /url: /home
+      - generic [ref=e12]:
+        - generic [ref=e13]: Язык
+        - combobox "Язык" [ref=e14]:
+          - option "English"
+          - option "Русский" [selected]
+          - option "Հայերեն"
+          - option "Schwiizerdütsch"
+          - option "Français"
+          - option "Español"
+    - main [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: Редакционный арт-сайт
+          - heading "Привет" [level=1] [ref=e19]
+          - paragraph [ref=e20]: Публикуйте и редактируйте страницы прямо на живом сайте без тяжёлой админки и лишней сложности.
+          - link "Открыть архив" [ref=e22] [cursor=pointer]:
+            - /url: /about
+        - img "Главное изображение" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - generic [ref=e26]: Избранное
+        - heading "Управляемая система для визуальной публикации." [level=2] [ref=e27]
+        - paragraph [ref=e28]: Блоки сохраняют ритм, масштаб и композицию, а редактор меняет только содержимое.
+      - generic [ref=e29]:
+        - heading "Избранные работы" [level=2] [ref=e30]
+        - generic [ref=e31]:
+          - article [ref=e32]
+          - article [ref=e33]
+      - generic [ref=e34]:
+        - heading "Редактирование прямо на живом сайте." [level=2] [ref=e35]
+        - paragraph [ref=e36]: Владелец меняет тексты и изображения в контексте страницы, а продуманный шаблон удерживает композицию в порядке.
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - heading "Сайт для спокойной и точной работы с контентом." [level=2] [ref=e39]
+          - paragraph [ref=e40]: Шаблоны удерживают баланс, пропорции и типографику, пока редактор меняет историю, изображения и акценты.
+          - paragraph [ref=e41]: Портрет, 2026
+        - generic [ref=e42]:
+          - img "Портрет" [ref=e44] [cursor=pointer]
+          - paragraph [ref=e45]: Портрет, 2026
+      - generic [ref=e46]:
+        - blockquote [ref=e47]: Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.
+        - generic [ref=e48]: Заметка студии
+      - generic [ref=e49]:
+        - heading "Подборка работ" [level=2] [ref=e50]
+        - generic [ref=e51]:
+          - article [ref=e52]:
+            - img "/art-01.svg" [ref=e53] [cursor=pointer]
+          - article [ref=e54]:
+            - img "/art-02.svg" [ref=e55] [cursor=pointer]
+          - article [ref=e56]:
+            - img "/art-03.svg" [ref=e57] [cursor=pointer]
+      - generic [ref=e59]:
+        - heading "Начнем разговор." [level=2] [ref=e60]
+        - paragraph [ref=e61]: Пригласите посетителя к следующему точному шагу без лишнего шума.
+        - link "Связаться" [ref=e62] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - heading "Контакты" [level=2] [ref=e65]
+          - paragraph [ref=e66]: Для заказов, выставок и визитов в студию.
+        - generic [ref=e67]:
+          - link "studio@example.com" [ref=e68] [cursor=pointer]:
+            - /url: mailto:studio@example.com
+          - link "+7 000 000 0000" [ref=e69] [cursor=pointer]:
+            - /url: tel:+7 000 000 0000
+          - link "Instagram" [ref=e70] [cursor=pointer]:
+            - /url: https://instagram.com
+  - button "Open Next.js Dev Tools" [ref=e76] [cursor=pointer]:
+    - img [ref=e77]
+  - alert [ref=e80]

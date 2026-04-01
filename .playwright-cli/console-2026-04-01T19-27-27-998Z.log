@@ -1,0 +1,780 @@
+[     489ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/auth/sign-in?next=%2F%3Feditor%3D1:0
+[     806ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[     914ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(592:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[   27929ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[   28113ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(592:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  167185ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  167967ms] [LOG] [Fast Refresh] done in 783ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  172218ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  172390ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2] [2, 9] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  172390ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2] [2, 9] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  172390ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2, ] [2, , 9] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  172392ms] [LOG] [Fast Refresh] done in 174ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  222624ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  222759ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2, 9] [2] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  222759ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2, 9] [2] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  222759ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [2, , 9] [2, ] @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  222761ms] [LOG] [Fast Refresh] done in 137ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  228850ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[  298979ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  299721ms] [LOG] [Fast Refresh] done in 743ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  308861ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  309715ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  309738ms] [LOG] [Fast Refresh] done in 877ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  353989ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  415218ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  416053ms] [LOG] [Fast Refresh] done in 834ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  520238ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  521038ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  521073ms] [LOG] [Fast Refresh] done in 834ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  540279ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  548142ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  704520ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  707323ms] [LOG] [Fast Refresh] done in 2802ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  711988ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  712174ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  712199ms] [LOG] [Fast Refresh] done in 210ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  720588ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  993220ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[  995354ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1176860ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1201685ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1202735ms] [LOG] [Fast Refresh] done in 1050ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1211861ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1212085ms] [LOG] [Fast Refresh] done in 225ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1218566ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1220473ms] [LOG] [Fast Refresh] done in 1907ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1237045ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1237245ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1237280ms] [LOG] [Fast Refresh] done in 234ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1276146ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1279891ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1322577ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1323632ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1323663ms] [LOG] [Fast Refresh] done in 1086ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1455740ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1459456ms] [LOG] [Fast Refresh] done in 3716ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1469367ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1469559ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(610:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 1469589ms] [LOG] [Fast Refresh] done in 222ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1485947ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1486223ms] [LOG] [Fast Refresh] done in 275ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1568572ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1569750ms] [LOG] [Fast Refresh] done in 1179ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1580714ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1582591ms] [LOG] [Fast Refresh] done in 1878ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1609247ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1609514ms] [LOG] [Fast Refresh] done in 267ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1908398ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1909516ms] [LOG] [Fast Refresh] done in 1118ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2353653ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2354744ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2354863ms] [LOG] [Fast Refresh] done in 118ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2357002ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2357104ms] [LOG] [Fast Refresh] done in 102ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2363209ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:111
+[ 2364272ms] TypeError: Cannot read properties of undefined (reading 'call')
+    at options.factory (http://localhost:3000/_next/static/chunks/webpack.js?v=1775071875996:704:31)
+    at __webpack_require__ (http://localhost:3000/_next/static/chunks/webpack.js?v=1775071875996:29:33)
+    at fn (http://localhost:3000/_next/static/chunks/webpack.js?v=1775071875996:361:21)
+    at requireModule (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:100:27)
+    at initializeModuleChunk (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:1299:21)
+    at readChunk (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js:953:11)
+    at Object.react_stack_bottom_frame (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:23691:18)
+    at resolveLazy (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:5177:16)
+    at updateElement (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:5393:15)
+    at updateSlot (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:5554:34)
+    at reconcileChildrenArray (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:5766:26)
+    at reconcileChildFibersImpl (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:6124:30)
+    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:6229:33)
+    at reconcileChildren (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:8784:13)
+    at beginWork (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:11129:13)
+    at runWithFiberInDEV (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:872:30)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:15727:22)
+    at workLoopConcurrentByScheduler (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:15721:9)
+    at renderRootConcurrent (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:15696:15)
+    at performWorkOnRoot (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:14990:13)
+    at performWorkOnRootViaSchedulerTask (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:16816:7)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:45:48)
+[ 2365989ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[ 2366203ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <SegmentViewNode type="page" pagePath="page.tsx">
+      <SegmentTrieNode>
+      <HomePage>
+        <PageScreen>
+          <EditorProvider page={{id:"8f574c...", ...}} enabled={true}>
+            ...
+              <DndContext sensors={[...]} collisionDetection={function collisionDetection} ...>
+                ...
+                  <main className="site-grid" data-testid="page-shell" data-page-shell={true} data-page-slug="home">
+                    <InsertDropTarget index={0}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"74e9bd...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={1}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"0651ae...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={2}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"686180...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={3}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"cd780c...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={4}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"b6871a...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={5}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"91c922...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={6}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"c015b6...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={7}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"f6e884...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={8}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"f849df...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    <InsertDropTarget index={9}>
+                      <div className="insert-dro..." ref={function} data-over={false}>
+                        <div>
+                        <EditableBlockFrame block={{id:"3ec6a8...", ...}} anchorId="site-block...">
+                          <section ref={function ref} id="site-block..." className="editable-f..." style={{...}} ...>
+                            <div className="editable-f...">
+                              <div className="block-actions">
+                                <button>
+                                <button>
+                                <button>
+                                <button>
+                                <button
+                                  className="action-button action-button-drag"
+                                  type="button"
+                                  title="Перетащить блок"
+                                  data-testid="editor-action"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-disabled={false}
+                                  aria-pressed={undefined}
+                                  aria-roledescription="sortable"
++                                 aria-describedby="DndDescribedBy-0"
+-                                 aria-describedby="DndDescribedBy-1"
+                                  onPointerDown={function}
+                                >
+                            ...
+                    ...
+                <BlockLibraryTray>
+                  <aside className="block-library" data-open={false}>
+                    <button>
+                    <div className="block-libr...">
+                      <div>
+                      <div ref={{current:null}} className="block-libr...">
+                        <BlockLibraryCard type="hero" title="Главный блок">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="richText" title="Текстовый ...">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="image" title="Изображение">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="imageText" title="Изображени...">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="gallery" title="Галерея">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="quote" title="Цитата">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="sectionHeader" title="Заголовок ...">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="divider" title="Разделитель">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="about" title="О проекте">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="contact" title="Контакты">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="worksGrid" title="Сетка работ">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="seriesGrid" title="Сетка серий">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="linksList" title="Список ссылок">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                        <BlockLibraryCard type="cta" title="CTA">
+                          <button
+                            ref={function}
+                            className="block-library-card"
+                            type="button"
+                            style={{transform:undefined}}
+                            data-dragging={false}
+                            onClick={function onClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-disabled={false}
+                            aria-pressed={undefined}
+                            aria-roledescription="draggable"
++                           aria-describedby="DndDescribedBy-0"
+-                           aria-describedby="DndDescribedBy-1"
+                            onPointerDown={function}
+                          >
+                ...
+                ...
+                ...
+ @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[ 2371987ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2372522ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(675:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 2372601ms] [LOG] [Fast Refresh] done in 614ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2546737ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2547915ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(708:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 2548026ms] [LOG] [Fast Refresh] done in 1289ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2549627ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2549847ms] [LOG] [Fast Refresh] done in 221ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2592085ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 2592372ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(723:3) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+./app/globals.css @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 2592457ms] [LOG] [Fast Refresh] done in 372ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 2970577ms] [WARNING] ./app/globals.css.webpack[javascript/auto]!=!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css
+Warning
+
+(723:3) autoprefixer: start value has mixed support, consider using flex-start instead @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:241
+[ 3119029ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 3123905ms] [LOG] [Fast Refresh] done in 4877ms @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 3201067ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 3203388ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.14_@playwright+test@1.58.2_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:111
+[ 3238409ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:3000/portrait.svg:0
+[ 3238411ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:3000/art-02.svg:0
+[ 3238411ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:3000/_next/static/chunks/webpack.js?v=1775074855818:0

@@ -1,0 +1,243 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: Редакционный арт-сайт / живая публикация
+      - link "ArtSite" [ref=e7] [cursor=pointer]:
+        - /url: /
+    - navigation "Основная навигация" [ref=e8]:
+      - link "Главная" [ref=e9] [cursor=pointer]:
+        - /url: /home
+      - link "О проекте" [ref=e10] [cursor=pointer]:
+        - /url: /about
+      - link "Контакты" [ref=e11] [cursor=pointer]:
+        - /url: /contact
+    - generic [ref=e12]:
+      - generic [ref=e13]: Язык
+      - combobox "Язык" [ref=e14]:
+        - option "English"
+        - option "Русский" [selected]
+        - option "Հայերեն"
+        - option "Schwiizerdütsch"
+        - option "Français"
+        - option "Español"
+  - generic [ref=e15]:
+    - button "Главная" [ref=e17] [cursor=pointer]
+    - button "Опубликовать" [ref=e18] [cursor=pointer]
+    - link "Библиотека изображений" [ref=e19] [cursor=pointer]:
+      - /url: /media?editor=1
+    - link "Выйти из редактора" [ref=e20] [cursor=pointer]:
+      - /url: /
+  - main [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - button "Редактировать" [ref=e24] [cursor=pointer]:
+          - img [ref=e25]
+        - button "Переместить вверх" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+        - button "Переместить вниз" [ref=e31] [cursor=pointer]:
+          - img [ref=e32]
+        - button "Перетащить блок" [ref=e34]:
+          - img [ref=e35]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Редакционный арт-сайт
+          - heading "Привет" [level=1] [ref=e46]
+          - paragraph [ref=e47]: Публикуйте и редактируйте страницы прямо на живом сайте без тяжёлой админки и лишней сложности.
+          - link "Открыть архив" [ref=e49] [cursor=pointer]:
+            - /url: /about
+        - img "Главное изображение" [ref=e51] [cursor=pointer]
+    - generic [ref=e52]:
+      - generic [ref=e53]:
+        - button "Редактировать" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+        - button "Переместить вверх" [ref=e58] [cursor=pointer]:
+          - img [ref=e59]
+        - button "Переместить вниз" [ref=e61] [cursor=pointer]:
+          - img [ref=e62]
+        - button "Перетащить блок" [ref=e64]:
+          - img [ref=e65]
+      - generic [ref=e73]:
+        - generic [ref=e74]: Избранное
+        - heading "Управляемая система для визуальной публикации." [level=2] [ref=e75]
+        - paragraph [ref=e76]: Блоки сохраняют ритм, масштаб и композицию, а редактор меняет только содержимое.
+    - generic [ref=e77]:
+      - generic [ref=e78]:
+        - button "Редактировать" [ref=e79] [cursor=pointer]:
+          - img [ref=e80]
+        - button "Переместить вверх" [ref=e83] [cursor=pointer]:
+          - img [ref=e84]
+        - button "Переместить вниз" [ref=e86] [cursor=pointer]:
+          - img [ref=e87]
+        - button "Перетащить блок" [ref=e89]:
+          - img [ref=e90]
+      - generic [ref=e98]:
+        - heading "Избранные работы" [level=2] [ref=e99]
+        - generic [ref=e100]:
+          - article [ref=e101]
+          - article [ref=e102]
+    - generic [ref=e103]:
+      - generic [ref=e104]:
+        - button "Редактировать" [ref=e105] [cursor=pointer]:
+          - img [ref=e106]
+        - button "Переместить вверх" [ref=e109] [cursor=pointer]:
+          - img [ref=e110]
+        - button "Переместить вниз" [ref=e112] [cursor=pointer]:
+          - img [ref=e113]
+        - button "Перетащить блок" [ref=e115]:
+          - img [ref=e116]
+      - generic [ref=e124]:
+        - heading "Редактирование прямо на живом сайте." [level=2] [ref=e125]
+        - paragraph [ref=e126]: Владелец меняет тексты и изображения в контексте страницы, а продуманный шаблон удерживает композицию в порядке.
+    - generic [ref=e127]:
+      - generic [ref=e128]:
+        - button "Редактировать" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+        - button "Переместить вверх" [ref=e133] [cursor=pointer]:
+          - img [ref=e134]
+        - button "Переместить вниз" [ref=e136] [cursor=pointer]:
+          - img [ref=e137]
+        - button "Перетащить блок" [ref=e139]:
+          - img [ref=e140]
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - heading "Сайт для спокойной и точной работы с контентом." [level=2] [ref=e150]
+          - paragraph [ref=e151]: Шаблоны удерживают баланс, пропорции и типографику, пока редактор меняет историю, изображения и акценты.
+          - paragraph [ref=e152]: Портрет, 2026
+        - generic [ref=e153]:
+          - img "Портрет" [ref=e155] [cursor=pointer]
+          - paragraph [ref=e156]: Портрет, 2026
+    - generic [ref=e157]:
+      - generic [ref=e158]:
+        - button "Редактировать" [ref=e159] [cursor=pointer]:
+          - img [ref=e160]
+        - button "Переместить вверх" [ref=e163] [cursor=pointer]:
+          - img [ref=e164]
+        - button "Переместить вниз" [ref=e166] [cursor=pointer]:
+          - img [ref=e167]
+        - button "Перетащить блок" [ref=e169]:
+          - img [ref=e170]
+      - generic [ref=e178]:
+        - blockquote [ref=e179]: Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.
+        - generic [ref=e180]: Заметка студии
+    - generic [ref=e181]:
+      - generic [ref=e182]:
+        - button "Редактировать" [ref=e183] [cursor=pointer]:
+          - img [ref=e184]
+        - button "Переместить вверх" [ref=e187] [cursor=pointer]:
+          - img [ref=e188]
+        - button "Переместить вниз" [ref=e190] [cursor=pointer]:
+          - img [ref=e191]
+        - button "Перетащить блок" [ref=e193]:
+          - img [ref=e194]
+      - generic [ref=e202]:
+        - heading "Подборка работ" [level=2] [ref=e203]
+        - generic [ref=e204]:
+          - article [ref=e205]:
+            - img "/art-01.svg" [ref=e206] [cursor=pointer]
+          - article [ref=e207]:
+            - img "/art-02.svg" [ref=e208] [cursor=pointer]
+          - article [ref=e209]:
+            - img "/art-03.svg" [ref=e210] [cursor=pointer]
+    - generic [ref=e211]:
+      - generic [ref=e212]:
+        - button "Редактировать" [ref=e213] [cursor=pointer]:
+          - img [ref=e214]
+        - button "Переместить вверх" [ref=e217] [cursor=pointer]:
+          - img [ref=e218]
+        - button "Переместить вниз" [ref=e220] [cursor=pointer]:
+          - img [ref=e221]
+        - button "Перетащить блок" [ref=e223]:
+          - img [ref=e224]
+      - generic [ref=e233]:
+        - heading "Начнем разговор." [level=2] [ref=e234]
+        - paragraph [ref=e235]: Пригласите посетителя к следующему точному шагу без лишнего шума.
+        - link "Связаться" [ref=e236] [cursor=pointer]:
+          - /url: /contact
+    - generic [ref=e237]:
+      - generic [ref=e238]:
+        - button "Редактировать" [ref=e239] [cursor=pointer]:
+          - img [ref=e240]
+        - button "Переместить вверх" [ref=e243] [cursor=pointer]:
+          - img [ref=e244]
+        - button "Переместить вниз" [ref=e246] [cursor=pointer]:
+          - img [ref=e247]
+        - button "Перетащить блок" [ref=e249]:
+          - img [ref=e250]
+      - generic [ref=e258]:
+        - generic [ref=e259]:
+          - heading "Контакты" [level=2] [ref=e260]
+          - paragraph [ref=e261]: Для заказов, выставок и визитов в студию.
+        - generic [ref=e262]:
+          - link "studio@example.com" [ref=e263] [cursor=pointer]:
+            - /url: mailto:studio@example.com
+          - link "+7 000 000 0000" [ref=e264] [cursor=pointer]:
+            - /url: tel:+7 000 000 0000
+          - link "Instagram" [ref=e265] [cursor=pointer]:
+            - /url: https://instagram.com
+  - complementary:
+    - button "Добавить блок" [ref=e267]:
+      - img [ref=e268]
+      - text: Добавить блок
+    - generic [ref=e269]:
+      - generic [ref=e270]:
+        - generic [ref=e271]:
+          - text: Библиотека блоков
+          - heading "Перетащите блок на страницу" [level=3] [ref=e272]
+        - generic [ref=e273]: Крупные миниатюры показывают примерную структуру блока до вставки.
+      - generic [ref=e274]:
+        - button "Главный блок" [ref=e275]:
+          - generic [ref=e281]:
+            - strong [ref=e282]: Главный блок
+            - img [ref=e284]
+        - button "Текстовый блок" [ref=e291]:
+          - generic [ref=e297]:
+            - strong [ref=e298]: Текстовый блок
+            - img [ref=e300]
+        - button "Изображение" [ref=e307]:
+          - generic [ref=e312]:
+            - strong [ref=e313]: Изображение
+            - img [ref=e315]
+        - button "Изображение + текст" [ref=e322]:
+          - generic [ref=e327]:
+            - strong [ref=e328]: Изображение + текст
+            - img [ref=e330]
+        - button "Галерея" [ref=e337]:
+          - generic [ref=e344]:
+            - strong [ref=e345]: Галерея
+            - img [ref=e347]
+        - button "Цитата" [ref=e354]:
+          - generic [ref=e359]:
+            - strong [ref=e360]: Цитата
+            - img [ref=e362]
+        - button "Заголовок секции" [ref=e369]:
+          - generic [ref=e375]:
+            - strong [ref=e376]: Заголовок секции
+            - img [ref=e378]
+        - button "Разделитель" [ref=e385]:
+          - generic [ref=e388]:
+            - strong [ref=e389]: Разделитель
+            - img [ref=e391]
+        - button "О проекте" [ref=e398]:
+          - generic [ref=e404]:
+            - strong [ref=e405]: О проекте
+            - img [ref=e407]
+        - button "Контакты" [ref=e414]:
+          - generic [ref=e420]:
+            - strong [ref=e421]: Контакты
+            - img [ref=e423]
+        - button "Сетка работ" [ref=e430]:
+          - generic [ref=e437]:
+            - strong [ref=e438]: Сетка работ
+            - img [ref=e440]
+        - button "Сетка серий" [ref=e447]:
+          - generic [ref=e454]:
+            - strong [ref=e455]: Сетка серий
+            - img [ref=e457]
+        - button "Список ссылок" [ref=e464]:
+          - generic [ref=e470]:
+            - strong [ref=e471]: Список ссылок
+            - img [ref=e473]
+        - button "CTA" [ref=e480]:
+          - generic [ref=e486]:
+            - strong [ref=e487]: CTA
+            - img [ref=e489]
