@@ -14,9 +14,8 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const locale = url.searchParams.get("locale");
   const next = normalizeNextPath(url.searchParams.get("next"));
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? url.origin;
 
-  const response = NextResponse.redirect(new URL(next, siteUrl));
+  const response = NextResponse.redirect(new URL(next, url.origin));
 
   response.cookies.set(localeCookieName, isLocale(locale) ? locale : defaultLocale, {
     path: "/",

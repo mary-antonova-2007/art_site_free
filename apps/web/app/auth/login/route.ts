@@ -16,27 +16,26 @@ function normalizeNextPath(input: string | null) {
 
 export async function POST(request: Request) {
   const url = new URL(request.url);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? url.origin;
   const formData = await request.formData();
   const password = String(formData.get("password") ?? "");
   const next = normalizeNextPath(String(formData.get("next") ?? "/?editor=1"));
 
   if (!isAdminPasswordConfigured()) {
-    return NextResponse.redirect(new URL("/auth/sign-in?error=missing-password", siteUrl));
+    return NextResponse.redirect(new URL("/auth/sign-in?error=missing-password", url.origin));
   }
 
   if (!password) {
     return NextResponse.redirect(
-      new URL(`/auth/sign-in?error=password&next=${encodeURIComponent(next)}`, siteUrl)
+      new URL(`/auth/sign-in?error=password&next=${encodeURIComponent(next)}`, url.origin)
     );
   }
 
   if (!validateAdminPassword(password)) {
     return NextResponse.redirect(
-      new URL(`/auth/sign-in?error=invalid-password&next=${encodeURIComponent(next)}`, siteUrl)
+      new URL(`/auth/sign-in?error=invalid-password&next=${encodeURIComponent(next)}`, url.origin)
     );
   }
 
   await createAdminSession();
-  return NextResponse.redirect(new URL(next, siteUrl));
+  return NextResponse.redirect(new URL(next, url.origin));
 }
