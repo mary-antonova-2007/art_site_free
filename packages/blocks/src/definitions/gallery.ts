@@ -9,7 +9,8 @@ const schema = z.object({
       z.object({
         mediaAssetId: z.string().optional(),
         caption: z.string().optional(),
-        alt: z.string().optional()
+        alt: z.string().optional(),
+        variants: z.record(z.string(), z.unknown()).optional()
       })
     )
     .default([]),

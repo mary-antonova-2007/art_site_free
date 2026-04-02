@@ -33,6 +33,7 @@ export type MediaField = {
   caption?: string;
   focalX?: number;
   focalY?: number;
+  variants?: Record<string, unknown>;
 };
 
 export type ReferenceField = {

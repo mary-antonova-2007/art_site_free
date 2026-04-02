@@ -18,6 +18,15 @@ import {
   type SiteBlockRecord,
   type SitePageRecord
 } from "./content";
+import {
+  IMAGE_VARIANT_SPECS,
+  buildVariantFileName,
+  buildVariantUrl,
+  isRasterImageMimeType,
+  type MediaVariant,
+  type MediaVariantName,
+  type MediaVariants
+} from "./media";
 import { canUseEditor, getEditorIdentity } from "./auth";
 import { normalizeMediaCategoryName } from "./media-categories";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
@@ -41,6 +50,85 @@ type RawBlockRow = {
   is_hidden: boolean;
   data: unknown;
 };
+
+type GeneratedImageVariant = {
+  name: MediaVariantName;
+  fileName: string;
+  mimeType: "image/webp";
+  data: Buffer;
+  descriptor: MediaVariant;
+};
+
+async function generateImageVariants(
+  fileBuffer: Buffer,
+  fileName: string,
+  fileType: string,
+  sourceUrl: string
+): Promise<{ width?: number; height?: number; variants: MediaVariants; files: GeneratedImageVariant[] }> {
+  if (!isRasterImageMimeType(fileType)) {
+    return { variants: {}, files: [] };
+  }
+
+  let sharpModule: typeof import("sharp") | null = null;
+
+  try {
+    sharpModule = await import("sharp");
+  } catch {
+    return { variants: {}, files: [] };
+  }
+
+  const sharp = sharpModule.default;
+  const metadata = await sharp(fileBuffer).metadata();
+  const originalWidth = metadata.width;
+  const originalHeight = metadata.height;
+
+  if (!originalWidth || !originalHeight) {
+    return { variants: {}, files: [] };
+  }
+
+  const variants = await Promise.all(
+    Object.entries(IMAGE_VARIANT_SPECS).map(async ([name, spec]) => {
+      const pipeline = sharp(fileBuffer)
+        .rotate()
+        .resize({
+          width: spec.width,
+          withoutEnlargement: true,
+          fit: "inside"
+        })
+        .webp({ quality: spec.quality });
+
+      const output = await pipeline.toBuffer({ resolveWithObject: true });
+
+      if (!output.info.width || output.info.width >= originalWidth || output.info.width < 160) {
+        return null;
+      }
+
+      return {
+        name: name as MediaVariantName,
+        fileName: buildVariantFileName(fileName, name as MediaVariantName),
+        mimeType: "image/webp" as const,
+        data: output.data,
+        descriptor: {
+          url: buildVariantUrl(sourceUrl, name as MediaVariantName),
+          width: output.info.width,
+          height: output.info.height,
+          format: "webp"
+        }
+      } satisfies GeneratedImageVariant;
+    })
+  );
+
+  const generatedFiles = variants.filter((variant): variant is GeneratedImageVariant => Boolean(variant));
+
+  return {
+    width: originalWidth,
+    height: originalHeight,
+    variants: Object.fromEntries(
+      generatedFiles.map((variant) => [variant.name, variant.descriptor])
+    ) satisfies MediaVariants,
+    files: generatedFiles
+  };
+}
 
 export async function getPageForRequest(slug: string, editorRequested: boolean) {
   const editorEnabled = await canUseEditor(editorRequested);
@@ -706,9 +794,14 @@ async function uploadLocalEditorImage(input: {
   const filePath = path.join(pageDir, safeName);
   const publicUrl = `/media-files/${input.pageId}/${safeName}`;
   const readableTitle = toReadableMediaTitle(input.fileName);
+  const fileBuffer = Buffer.from(input.data);
+  const generated = await generateImageVariants(fileBuffer, safeName, input.fileType, publicUrl);
 
   await mkdir(pageDir, { recursive: true });
-  await writeFile(filePath, Buffer.from(input.data));
+  await writeFile(filePath, fileBuffer);
+  await Promise.all(
+    generated.files.map((variant) => writeFile(path.join(pageDir, variant.fileName), variant.data))
+  );
 
   const [mediaAsset] = await db
     .insert(mediaAssets)
@@ -718,7 +811,9 @@ async function uploadLocalEditorImage(input: {
       kind: "image" as const,
       mimeType: input.fileType,
       fileName: input.fileName,
-      sizeBytes: Buffer.byteLength(Buffer.from(input.data)),
+      width: generated.width,
+      height: generated.height,
+      sizeBytes: fileBuffer.byteLength,
       alt: "",
       caption: readableTitle,
       category: input.category ?? "uploaded",
@@ -733,10 +828,11 @@ async function uploadLocalEditorImage(input: {
     asset: {
       id: mediaAsset.id,
       mediaAssetId: publicUrl,
-      previewUrl: publicUrl,
+      previewUrl: generated.variants.thumb?.url ?? publicUrl,
       title: readableTitle,
       alt: "",
-      category: input.category ?? "uploaded"
+      category: input.category ?? "uploaded",
+      variants: generated.variants
     } satisfies MediaLibraryAsset
   };
 }
@@ -747,6 +843,8 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
     .select({
       id: mediaAssets.id,
       storagePath: mediaAssets.storagePath,
+      mimeType: mediaAssets.mimeType,
+      width: mediaAssets.width,
       fileName: mediaAssets.fileName,
       alt: mediaAssets.alt,
       caption: mediaAssets.caption,
@@ -758,7 +856,10 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
   return rows.map((asset) => ({
     id: asset.id,
     mediaAssetId: asset.storagePath,
-    previewUrl: asset.storagePath,
+    previewUrl:
+      asset.width && isRasterImageMimeType(asset.mimeType)
+        ? buildVariantUrl(asset.storagePath, "thumb")
+        : asset.storagePath,
     title: asset.caption ?? asset.fileName ?? "Image",
     alt: asset.alt ?? "",
     category: asset.category ?? inferMediaCategory(asset.storagePath)
@@ -767,7 +868,43 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
 
 export async function readLocalMediaFile(pathSegments: string[]) {
   const filePath = path.join(LOCAL_UPLOADS_DIR, ...pathSegments);
-  return await readFile(filePath);
+
+  try {
+    return {
+      file: await readFile(filePath),
+      fileName: pathSegments[pathSegments.length - 1] ?? ""
+    };
+  } catch (error) {
+    const requestedFile = pathSegments[pathSegments.length - 1] ?? "";
+    const match = requestedFile.match(/^(.*)--(thumb|card|panel|hero)\.webp$/i);
+
+    if (!match) {
+      throw error;
+    }
+
+    const baseName = match[1];
+    const candidateExtensions = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
+
+    for (const extension of candidateExtensions) {
+      const fallbackFileName = `${baseName}${extension}`;
+      const fallbackPath = path.join(
+        LOCAL_UPLOADS_DIR,
+        ...pathSegments.slice(0, -1),
+        fallbackFileName
+      );
+
+      try {
+        return {
+          file: await readFile(fallbackPath),
+          fileName: fallbackFileName
+        };
+      } catch {
+        continue;
+      }
+    }
+
+    throw error;
+  }
 }
 
 function inferMediaCategory(storagePath: string): MediaCategory {
@@ -1090,6 +1227,22 @@ async function uploadSupabaseEditorImage(input: {
   const {
     data: { publicUrl }
   } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(filePath);
+  const fileBuffer = Buffer.from(input.data);
+  const generated = await generateImageVariants(fileBuffer, safeName, input.fileType, publicUrl);
+
+  await Promise.all(
+    generated.files.map(async (variant) => {
+      const variantPath = `${input.pageId}/${variant.fileName}`;
+      const { error } = await admin.storage.from(PUBLIC_BUCKET).upload(variantPath, variant.data, {
+        contentType: variant.mimeType,
+        upsert: false
+      });
+
+      if (error) {
+        throw error;
+      }
+    })
+  );
 
   const { data: mediaAsset, error: assetError } = await admin
     .from("media_assets")
@@ -1099,6 +1252,11 @@ async function uploadSupabaseEditorImage(input: {
       kind: "image",
       mime_type: input.fileType,
       file_name: input.fileName,
+      width: generated.width,
+      height: generated.height,
+      size_bytes: fileBuffer.byteLength,
+      caption: readableTitle,
+      category: input.category ?? "uploaded",
       is_public: true
     })
     .select("id")
@@ -1115,10 +1273,11 @@ async function uploadSupabaseEditorImage(input: {
     asset: {
       id: mediaAsset.id,
       mediaAssetId: publicUrl,
-      previewUrl: publicUrl,
+      previewUrl: generated.variants.thumb?.url ?? publicUrl,
       title: readableTitle,
       alt: "",
-      category: input.category ?? "uploaded"
+      category: input.category ?? "uploaded",
+      variants: generated.variants
     } satisfies MediaLibraryAsset
   };
 }
@@ -1133,7 +1292,7 @@ async function listSupabaseMediaLibrary(): Promise<MediaLibraryAsset[]> {
   const admin = createAdminSupabaseClient();
   const { data, error } = await admin
     .from("media_assets")
-    .select("id, storage_bucket, storage_path, file_name, alt, caption")
+    .select("id, storage_bucket, storage_path, file_name, mime_type, width, alt, caption")
     .order("created_at", { ascending: false })
     .limit(200);
 

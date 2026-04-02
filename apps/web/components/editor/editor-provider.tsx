@@ -752,7 +752,7 @@ function applyMediaAssetToBlocks(
   asset: MediaLibraryAsset,
   mode: "replace" | "append"
 ) {
-  const resolvedMediaUrl = asset.previewUrl || asset.mediaAssetId;
+  const resolvedMediaUrl = asset.mediaAssetId;
   const singleImageBlockTypes = new Set(["hero", "image", "imageText", "about"]);
 
   return blocks.map((block) => {
@@ -773,7 +773,8 @@ function applyMediaAssetToBlocks(
           image: {
             ...currentImage,
             mediaAssetId: resolvedMediaUrl,
-            alt: asset.alt || ("alt" in currentImage && typeof currentImage.alt === "string" ? currentImage.alt : "")
+            alt: asset.alt || ("alt" in currentImage && typeof currentImage.alt === "string" ? currentImage.alt : ""),
+            variants: asset.variants
           }
         }
       };
@@ -791,7 +792,8 @@ function applyMediaAssetToBlocks(
                 {
                   mediaAssetId: resolvedMediaUrl,
                   alt: asset.alt ?? "",
-                  caption: ""
+                  caption: "",
+                  variants: asset.variants
                 }
               ]
             }
@@ -819,7 +821,8 @@ function applyMediaAssetToBlocks(
                   ...item,
                   mediaAssetId: resolvedMediaUrl,
                   alt: asset.alt || (typeof item.alt === "string" ? item.alt : ""),
-                  caption: typeof item.caption === "string" ? item.caption : ""
+                  caption: typeof item.caption === "string" ? item.caption : "",
+                  variants: asset.variants
                 }
               : item
           )

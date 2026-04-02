@@ -8,8 +8,11 @@ import { cn } from "@artsite/ui";
 type CarouselItem = {
   id: string;
   src: string;
+  fullSrc?: string;
   alt: string;
   caption?: string;
+  srcSet?: string;
+  sizes?: string;
 };
 
 export function ImageCarousel({
@@ -337,7 +340,15 @@ export function ImageCarousel({
                   setLightboxIndex((current) => (current === sourceIndex ? null : sourceIndex))
                 }
               >
-                <img src={item.src} alt={item.alt} className="site-image site-image--carousel" />
+                <img
+                  src={item.src}
+                  srcSet={item.srcSet}
+                  sizes={item.sizes}
+                  alt={item.alt}
+                  className="site-image site-image--carousel"
+                  loading="lazy"
+                  decoding="async"
+                />
                 {variant === "gallery" && item.caption ? <div className="media-label">{item.caption}</div> : null}
               </button>
             );
@@ -352,11 +363,11 @@ export function ImageCarousel({
               onClick={() => setLightboxIndex(null)}
               aria-label="Close image preview"
             >
-              <img
-                className="image-lightbox__image"
-                src={items[lightboxIndex]?.src}
-                alt={items[lightboxIndex]?.alt ?? ""}
-              />
+                <img
+                  className="image-lightbox__image"
+                  src={items[lightboxIndex]?.fullSrc ?? items[lightboxIndex]?.src}
+                  alt={items[lightboxIndex]?.alt ?? ""}
+                />
             </button>,
             document.body
           )

@@ -7,6 +7,17 @@ import { useEditor } from "@/components/editor/editor-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SitePageMenu } from "@/components/site/site-page-menu";
 
+function measureNavContentWidth(nav: HTMLElement) {
+  const styles = window.getComputedStyle(nav);
+  const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
+  const items = Array.from(nav.children) as HTMLElement[];
+
+  return items.reduce((total, item, index) => {
+    const nextTotal = total + item.getBoundingClientRect().width;
+    return index === 0 ? nextTotal : nextTotal + gap;
+  }, 0);
+}
+
 export function SiteHeaderClient({
   currentSlug,
   pages,
@@ -31,6 +42,9 @@ export function SiteHeaderClient({
   const controlsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const media = window.matchMedia("(max-width: 920px)");
+    let frameId: number | null = null;
+
     const updateOverflow = () => {
       const header = headerRef.current;
       const brand = brandRef.current;
@@ -41,24 +55,40 @@ export function SiteHeaderClient({
         return;
       }
 
+      if (media.matches) {
+        setCompactNavigation(true);
+        return;
+      }
+
       const headerWidth = header.clientWidth;
       const brandWidth = brand.offsetWidth;
       const controlsWidth = controls?.offsetWidth ?? 0;
-      const navWidth = nav.scrollWidth;
+      const navWidth = measureNavContentWidth(nav);
       const availableWidth = headerWidth - brandWidth - controlsWidth - 88;
       const pageNavOverflow = availableWidth <= 0 || navWidth > availableWidth + 4;
       const blockTrack = document.querySelector<HTMLElement>("[data-block-nav-track='true']");
       const blockNavOverflow = blockTrack
         ? blockTrack.scrollWidth > blockTrack.clientWidth + 4
         : false;
-      const nextCompact = window.innerWidth <= 920 || pageNavOverflow || blockNavOverflow;
+      const nextCompact = pageNavOverflow || blockNavOverflow;
 
       setCompactNavigation((current) => (current === nextCompact ? current : nextCompact));
     };
 
-    updateOverflow();
+    const scheduleUpdate = () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
 
-    const resizeObserver = new ResizeObserver(updateOverflow);
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateOverflow();
+      });
+    };
+
+    scheduleUpdate();
+
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
 
     if (headerRef.current) {
       resizeObserver.observe(headerRef.current);
@@ -66,10 +96,6 @@ export function SiteHeaderClient({
 
     if (brandRef.current) {
       resizeObserver.observe(brandRef.current);
-    }
-
-    if (navRef.current) {
-      resizeObserver.observe(navRef.current);
     }
 
     if (controlsRef.current) {
@@ -83,11 +109,16 @@ export function SiteHeaderClient({
       Array.from(blockTrack.children).forEach((child) => resizeObserver.observe(child));
     }
 
-    window.addEventListener("resize", updateOverflow);
+    window.addEventListener("resize", scheduleUpdate);
+    media.addEventListener("change", scheduleUpdate);
 
     return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
       resizeObserver.disconnect();
-      window.removeEventListener("resize", updateOverflow);
+      window.removeEventListener("resize", scheduleUpdate);
+      media.removeEventListener("change", scheduleUpdate);
     };
   }, [blockItems, setCompactNavigation]);
 

@@ -5,7 +5,8 @@ import { defineBlock } from "../lib/helpers";
 const imageSchema = z.object({
   mediaAssetId: z.string().optional(),
   alt: z.string().optional(),
-  caption: z.string().optional()
+  caption: z.string().optional(),
+  variants: z.record(z.string(), z.unknown()).optional()
 });
 
 const schema = z.object({

@@ -26,6 +26,12 @@ import { useEditor } from "@/components/editor/editor-provider";
 import { ImageCarousel } from "@/components/site/image-carousel";
 import { getBlockAnchorId } from "@/lib/block-navigation";
 import { useTranslations } from "@/lib/i18n/client";
+import {
+  buildResponsiveImageSource,
+  getPreferredImageUrl,
+  type MediaVariants,
+  type MediaVariantName
+} from "@/lib/media";
 import { testIds } from "@/lib/test-ids";
 import type { SitePageRecord } from "@/lib/content";
 
@@ -274,6 +280,28 @@ function assetPath(assetId: string, fallback: string) {
   return fallback;
 }
 
+function getFieldVariants(field: unknown): MediaVariants | undefined {
+  if (!field || typeof field !== "object" || !("variants" in field)) {
+    return undefined;
+  }
+
+  return (field as { variants?: MediaVariants }).variants;
+}
+
+function getResponsiveAssetSource(
+  assetId: string | undefined,
+  fallback: string,
+  variants: MediaVariants | undefined,
+  preferredVariant: MediaVariantName,
+  sizes?: string
+) {
+  const resolvedSource = assetPath(assetId ?? "", fallback);
+  return {
+    fullSrc: resolvedSource,
+    ...buildResponsiveImageSource(resolvedSource, variants, preferredVariant, sizes)
+  };
+}
+
 function hasEditorialCaption(value?: string | null) {
   if (!value) {
     return false;
@@ -305,6 +333,13 @@ function RenderedBlock<TType extends BlockType>({
   switch (type) {
     case "hero": {
       const heroData = data as BlockDataMap["hero"];
+      const heroImage = getResponsiveAssetSource(
+        heroData.image?.mediaAssetId,
+        "/art-hero.svg",
+        getFieldVariants(heroData.image),
+        "hero",
+        "(max-width: 920px) 100vw, 55vw"
+      );
       return (
         <section className="site-section poster-hero">
           <div className="hero-copy">
@@ -320,10 +355,14 @@ function RenderedBlock<TType extends BlockType>({
           <div className="hero-media">
             <EditableSingleImage
               blockId={blockId}
-              src={assetPath(heroData.image?.mediaAssetId ?? "hero", "/art-hero.svg")}
+              src={heroImage.src}
+              fullSrc={heroImage.fullSrc}
+              srcSet={heroImage.srcSet}
+              sizes={heroImage.sizes}
               alt={heroData.image?.alt ?? ""}
               className="site-image site-image--contain"
               onOpenImagePreview={onOpenImagePreview}
+              loading="eager"
             />
           </div>
         </section>
@@ -346,12 +385,22 @@ function RenderedBlock<TType extends BlockType>({
     }
     case "image": {
       const imageData = data as BlockDataMap["image"];
+      const blockImage = getResponsiveAssetSource(
+        imageData.image?.mediaAssetId,
+        "/art-03.svg",
+        getFieldVariants(imageData.image),
+        "panel",
+        "(max-width: 920px) 100vw, min(1280px, 92vw)"
+      );
       return (
         <section className="site-section width-wide">
           <div className="image-panel">
             <EditableSingleImage
               blockId={blockId}
-              src={assetPath(imageData.image?.mediaAssetId ?? "sample-image", "/art-03.svg")}
+              src={blockImage.src}
+              fullSrc={blockImage.fullSrc}
+              srcSet={blockImage.srcSet}
+              sizes={blockImage.sizes}
               alt={imageData.alt ?? imageData.image?.alt ?? ""}
               className="site-image site-image--contain"
               onOpenImagePreview={onOpenImagePreview}
@@ -371,6 +420,7 @@ function RenderedBlock<TType extends BlockType>({
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
+              variants={getFieldVariants(imageTextData.image)}
               onOpenImagePreview={onOpenImagePreview}
             />
           ) : null}
@@ -385,6 +435,7 @@ function RenderedBlock<TType extends BlockType>({
               caption={imageTextData.caption ?? ""}
               alt={imageTextData.image?.alt ?? t("media.image")}
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
+              variants={getFieldVariants(imageTextData.image)}
               onOpenImagePreview={onOpenImagePreview}
             />
           ) : null}
@@ -420,6 +471,7 @@ function RenderedBlock<TType extends BlockType>({
             caption={aboutData.image?.caption ?? ""}
             alt={aboutData.image?.alt ?? t("media.image")}
             src={aboutData.image?.mediaAssetId ?? "portrait"}
+            variants={getFieldVariants(aboutData.image)}
             onOpenImagePreview={onOpenImagePreview}
           />
         </section>
@@ -428,12 +480,28 @@ function RenderedBlock<TType extends BlockType>({
     case "gallery": {
       const galleryData = data as BlockDataMap["gallery"];
       const galleryItems = (galleryData.items ?? []).map(
-        (item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number) => ({
-          id: `${item.mediaAssetId ?? item.caption ?? "item"}-${index}`,
-          src: assetPath(item.mediaAssetId ?? item.caption ?? "gallery-1", "/art-04.svg"),
-          alt: item.alt ?? item.caption ?? item.mediaAssetId ?? t("media.galleryItem"),
-          caption: hasEditorialCaption(item.caption) ? item.caption : undefined
-        })
+        (
+          item: { mediaAssetId?: string; caption?: string; alt?: string; variants?: MediaVariants },
+          index: number
+        ) => {
+          const source = getResponsiveAssetSource(
+            item.mediaAssetId,
+            "/art-04.svg",
+            item.variants,
+            "card",
+            "(max-width: 920px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          );
+
+          return {
+            id: `${item.mediaAssetId ?? item.caption ?? "item"}-${index}`,
+            src: source.src,
+            fullSrc: source.fullSrc,
+            srcSet: source.srcSet,
+            sizes: source.sizes,
+            alt: item.alt ?? item.caption ?? item.mediaAssetId ?? t("media.galleryItem"),
+            caption: hasEditorialCaption(item.caption) ? item.caption : undefined
+          };
+        }
       );
 
       return (
@@ -448,9 +516,17 @@ function RenderedBlock<TType extends BlockType>({
                   <button
                     type="button"
                     className="page-image-button"
-                    onClick={() => onOpenImagePreview(item.src, item.alt)}
+                    onClick={() => onOpenImagePreview(item.fullSrc, item.alt)}
                   >
-                    <img src={item.src} alt={item.alt} className="site-image site-image--gallery" />
+                    <img
+                      src={item.src}
+                      srcSet={item.srcSet}
+                      sizes={item.sizes}
+                      alt={item.alt}
+                      className="site-image site-image--gallery"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </button>
                   {item.caption ? <div className="media-label">{item.caption}</div> : null}
                 </article>
@@ -527,11 +603,17 @@ function RenderedBlock<TType extends BlockType>({
     case "seriesGrid": {
       const collectionData = data as BlockDataMap["worksGrid"] | BlockDataMap["seriesGrid"];
       const collectionItems = ((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
-        (itemId: string, index: number) => ({
-          id: `${itemId}-${index}`,
-          src: assetPath(itemId, "/art-04.svg"),
-          alt: itemId
-        })
+        (itemId: string, index: number) => {
+          const originalSrc = assetPath(itemId, "/art-04.svg");
+          const displaySrc = getPreferredImageUrl(originalSrc, undefined, "card");
+
+          return {
+            id: `${itemId}-${index}`,
+            src: displaySrc,
+            fullSrc: originalSrc,
+            alt: itemId
+          };
+        }
       );
 
       return (
@@ -549,9 +631,15 @@ function RenderedBlock<TType extends BlockType>({
                   <button
                     type="button"
                     className="page-image-button"
-                    onClick={() => onOpenImagePreview(item.src, item.alt)}
+                    onClick={() => onOpenImagePreview(item.fullSrc, item.alt)}
                   >
-                    <img src={item.src} alt={item.alt} className="site-image site-image--gallery" />
+                    <img
+                      src={item.src}
+                      alt={item.alt}
+                      className="site-image site-image--gallery"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </button>
                 </article>
               ))}
@@ -603,20 +691,33 @@ function ImagePanel({
   alt,
   caption,
   src,
+  variants,
   onOpenImagePreview
 }: {
   blockId: string;
   alt: string;
   caption: string;
   src: string;
+  variants?: MediaVariants;
   onOpenImagePreview: (src: string, alt: string) => void;
 }) {
+  const panelImage = getResponsiveAssetSource(
+    src,
+    "/portrait.svg",
+    variants,
+    "panel",
+    "(max-width: 920px) 100vw, 50vw"
+  );
+
   return (
     <div className="section-stack">
       <div className="image-panel">
         <EditableSingleImage
           blockId={blockId}
-          src={assetPath(src, "/portrait.svg")}
+          src={panelImage.src}
+          fullSrc={panelImage.fullSrc}
+          srcSet={panelImage.srcSet}
+          sizes={panelImage.sizes}
           alt={alt}
           className="site-image site-image--contain"
           onOpenImagePreview={onOpenImagePreview}
@@ -630,22 +731,38 @@ function ImagePanel({
 function EditableSingleImage({
   blockId,
   src,
+  fullSrc,
+  srcSet,
+  sizes,
   alt,
   className,
-  onOpenImagePreview
+  onOpenImagePreview,
+  loading = "lazy"
 }: {
   blockId: string;
   src: string;
+  fullSrc: string;
+  srcSet?: string;
+  sizes?: string;
   alt: string;
   className?: string;
   onOpenImagePreview: (src: string, alt: string) => void;
+  loading?: "eager" | "lazy";
 }) {
   const { enabled, setActiveBlockId, openPanel, openMediaLibrary } = useEditor();
 
   if (!enabled) {
     return (
-      <button type="button" className="page-image-button" onClick={() => onOpenImagePreview(src, alt)}>
-        <img src={src} alt={alt} className={className} />
+      <button type="button" className="page-image-button" onClick={() => onOpenImagePreview(fullSrc, alt)}>
+        <img
+          src={src}
+          srcSet={srcSet}
+          sizes={sizes}
+          alt={alt}
+          className={className}
+          loading={loading}
+          decoding="async"
+        />
       </button>
     );
   }
@@ -662,7 +779,15 @@ function EditableSingleImage({
         void openMediaLibrary(blockId, "replace");
       }}
     >
-      <img src={src} alt={alt} className={className} />
+      <img
+        src={src}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt={alt}
+        className={className}
+        loading={loading}
+        decoding="async"
+      />
     </button>
   );
 }

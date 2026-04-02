@@ -17,14 +17,10 @@ export function BlockLibraryTray() {
   const definitions = listBlockDefinitions();
   const gridRef = useRef<HTMLDivElement | null>(null);
 
-  if (!enabled) {
-    return null;
-  }
-
   useEffect(() => {
     const gridElement = gridRef.current;
 
-    if (!gridElement || !blockLibraryOpen) {
+    if (!enabled || !gridElement || !blockLibraryOpen) {
       return;
     }
 
@@ -49,7 +45,11 @@ export function BlockLibraryTray() {
     return () => {
       grid.removeEventListener("wheel", handleWheel);
     };
-  }, [blockLibraryOpen]);
+  }, [enabled, blockLibraryOpen]);
+
+  if (!enabled) {
+    return null;
+  }
 
   return (
     <aside className="block-library" data-open={blockLibraryOpen}>

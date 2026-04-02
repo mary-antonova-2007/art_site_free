@@ -1,5 +1,7 @@
 import { createDefaultBlock, type BlockDataMap, type BlockType } from "@artsite/blocks";
 
+import type { MediaVariants } from "./media";
+
 export type SiteBlockRecord<TType extends BlockType = BlockType> = {
   id: string;
   blockType: TType;
@@ -35,6 +37,7 @@ export type MediaLibraryAsset = {
   title: string;
   alt: string;
   category: MediaCategory;
+  variants?: MediaVariants;
 };
 
 export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source">;

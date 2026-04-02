@@ -7,6 +7,7 @@ import { getBlockDefinition } from "@artsite/blocks";
 import type { SiteBlockRecord } from "@/lib/content";
 import { getBlockLabel, getFieldLabel, getFieldOptionLabel } from "@/lib/i18n/blocks";
 import { useLocaleMessages, useTranslations } from "@/lib/i18n/client";
+import type { MediaVariants } from "@/lib/media";
 import { testIds } from "@/lib/test-ids";
 import { useEditor } from "./editor-provider";
 
@@ -298,7 +299,12 @@ function hasMediaCollection(block: SiteBlockRecord) {
 
 function getMediaCollectionItems(block: SiteBlockRecord) {
   if ("items" in block.data && Array.isArray(block.data.items)) {
-    return block.data.items.map((item: { mediaAssetId?: string; caption?: string; alt?: string }, index: number): {
+    return block.data.items.map((item: {
+      mediaAssetId?: string;
+      caption?: string;
+      alt?: string;
+      variants?: MediaVariants;
+    }, index: number): {
       id: string;
       label: string;
       caption: string;
@@ -309,9 +315,11 @@ function getMediaCollectionItems(block: SiteBlockRecord) {
       label: item.caption || item.alt || `Изображение ${index + 1}`,
       caption: item.caption ?? "",
       alt: item.alt ?? "",
-      previewUrl: item.mediaAssetId?.startsWith("/") || item.mediaAssetId?.startsWith("data:")
-        ? item.mediaAssetId
-        : fallbackPreview(item.mediaAssetId)
+      previewUrl:
+        item.variants?.thumb?.url ??
+        (item.mediaAssetId?.startsWith("/") || item.mediaAssetId?.startsWith("data:")
+          ? item.mediaAssetId
+          : fallbackPreview(item.mediaAssetId))
     }));
   }
 
