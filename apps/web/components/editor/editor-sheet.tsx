@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 
 import { getBlockDefinition } from "@artsite/blocks";
@@ -9,11 +10,22 @@ import { getBlockLabel, getFieldLabel, getFieldOptionLabel } from "@/lib/i18n/bl
 import { useLocaleMessages, useTranslations } from "@/lib/i18n/client";
 import type { MediaVariants } from "@/lib/media";
 import { testIds } from "@/lib/test-ids";
+import { useTheme } from "@/components/layout/theme-provider";
+import { getThemeTokenValues, themeColorTokens, themePresets } from "@/lib/theme-presets";
 import { useEditor } from "./editor-provider";
+
+type SavedThemePalette = {
+  id: string;
+  name: string;
+  colors: Record<string, string>;
+};
+
+const savedPalettesStorageKey = "artsite-saved-theme-palettes";
 
 export function EditorSheet() {
   const t = useTranslations();
   const localeMessages = useLocaleMessages();
+  const { themeId: globalThemeId } = useTheme();
   const {
     activeBlockId,
     blocks,
@@ -27,6 +39,28 @@ export function EditorSheet() {
     updateBlockMediaItemMeta
   } = useEditor();
   const activeBlock = blocks.find((block) => block.id === activeBlockId);
+  const [savedPalettes, setSavedPalettes] = useState<SavedThemePalette[]>([]);
+  const [paletteName, setPaletteName] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const stored = window.localStorage.getItem(savedPalettesStorageKey);
+
+    if (!stored) {
+      setSavedPalettes([]);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as SavedThemePalette[];
+      setSavedPalettes(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setSavedPalettes([]);
+    }
+  }, []);
 
   if (!panelOpen) {
     return null;
@@ -70,6 +104,79 @@ export function EditorSheet() {
     label: page.title
   }));
   const showInNavigation = Boolean((activeBlock.data as Record<string, unknown>).showInNavigation);
+  const themeOverride =
+    typeof (activeBlock.data as Record<string, unknown>).themeOverride === "string"
+      ? String((activeBlock.data as Record<string, unknown>).themeOverride)
+      : "";
+  const useCustomThemeColors = Boolean((activeBlock.data as Record<string, unknown>).useCustomThemeColors);
+  const customThemeColors =
+    (activeBlock.data as Record<string, unknown>).customThemeColors &&
+    typeof (activeBlock.data as Record<string, unknown>).customThemeColors === "object"
+      ? ((activeBlock.data as Record<string, unknown>).customThemeColors as Record<string, unknown>)
+      : {};
+  const resolvedThemeId = themeOverride || globalThemeId;
+  const resolvedThemeColors = getThemeTokenValues(resolvedThemeId);
+  const themesByGroup = themePresets.reduce<Record<string, typeof themePresets>>((groups, theme) => {
+    if (!groups[theme.group]) {
+      groups[theme.group] = [];
+    }
+
+      groups[theme.group].push(theme);
+      return groups;
+    }, {});
+
+  const applyResolvedThemeColors = () =>
+    updateBlockField(activeBlock.id, "customThemeColors", {
+      ...resolvedThemeColors
+    });
+
+  const activePaletteColors = themeColorTokens.reduce<Record<string, string>>((colors, token) => {
+    const rawValue = customThemeColors[token.field];
+    const resolvedValue =
+      typeof rawValue === "string" && rawValue.trim()
+        ? rawValue
+        : resolvedThemeColors[token.field] ?? "";
+
+    if (resolvedValue) {
+      colors[token.field] = resolvedValue;
+    }
+
+    return colors;
+  }, {});
+
+  const persistSavedPalettes = (nextPalettes: SavedThemePalette[]) => {
+    setSavedPalettes(nextPalettes);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(savedPalettesStorageKey, JSON.stringify(nextPalettes));
+    }
+  };
+
+  const saveCurrentPalette = () => {
+    const trimmedName = paletteName.trim();
+
+    if (!trimmedName) {
+      return;
+    }
+
+    const nextPalette: SavedThemePalette = {
+      id: crypto.randomUUID(),
+      name: trimmedName,
+      colors: activePaletteColors
+    };
+
+    persistSavedPalettes([nextPalette, ...savedPalettes]);
+    setPaletteName("");
+  };
+
+  const applySavedPalette = (palette: SavedThemePalette) => {
+    updateBlockField(activeBlock.id, "useCustomThemeColors", true);
+    updateBlockField(activeBlock.id, "customThemeColors", palette.colors);
+  };
+
+  const removeSavedPalette = (paletteId: string) => {
+    persistSavedPalettes(savedPalettes.filter((palette) => palette.id !== paletteId));
+  };
 
   return (
     <aside className="editor-panel">
@@ -91,6 +198,147 @@ export function EditorSheet() {
           }
         />
       </label>
+      <label className="editor-field" data-testid={testIds.blockField}>
+        <span>Цветовая схема блока</span>
+        <select
+          value={themeOverride}
+          onChange={(event) =>
+            updateBlockField(
+              activeBlock.id,
+              "themeOverride",
+              event.currentTarget.value ? event.currentTarget.value : undefined
+            )
+          }
+        >
+          <option value="">По умолчанию</option>
+          {Object.entries(themesByGroup).map(([group, themes]) => (
+            <optgroup key={group} label={group}>
+              {themes.map((theme) => (
+                <option key={theme.id} value={theme.id}>
+                  {theme.name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </label>
+      <label className="editor-field editor-field-checkbox" data-testid={testIds.blockField}>
+        <span>Свои цвета</span>
+        <input
+          type="checkbox"
+          checked={useCustomThemeColors}
+          onChange={(event) => {
+            const nextChecked = event.currentTarget.checked;
+            updateBlockField(activeBlock.id, "useCustomThemeColors", nextChecked);
+
+            if (nextChecked) {
+              const hasAnyCustomColor = themeColorTokens.some(
+                (token) =>
+                  typeof customThemeColors[token.field] === "string" &&
+                  String(customThemeColors[token.field]).trim()
+              );
+
+              if (!hasAnyCustomColor) {
+                applyResolvedThemeColors();
+              }
+            }
+          }}
+        />
+      </label>
+      {useCustomThemeColors ? (
+        <div className="editor-theme-grid" data-testid={testIds.blockField}>
+          <div className="editor-theme-actions">
+            <button
+              className="editor-button"
+              type="button"
+              onClick={applyResolvedThemeColors}
+            >
+              Сбросить цвета
+            </button>
+            <div className="editor-theme-save">
+              <input
+                value={paletteName}
+                placeholder="Имя палитры"
+                onChange={(event) => setPaletteName(event.currentTarget.value)}
+              />
+              <button
+                className="editor-button"
+                type="button"
+                onClick={saveCurrentPalette}
+                disabled={!paletteName.trim()}
+              >
+                Сохранить палитру
+              </button>
+            </div>
+          </div>
+          {savedPalettes.length ? (
+            <div className="editor-theme-library">
+              {savedPalettes.map((palette) => (
+                <div className="editor-theme-library__item" key={palette.id}>
+                  <div className="editor-theme-library__meta">
+                    <strong>{palette.name}</strong>
+                    <div className="editor-theme-library__swatches">
+                      {themeColorTokens.slice(0, 5).map((token) => (
+                        <span
+                          key={`${palette.id}-${token.field}`}
+                          className="editor-theme-library__swatch"
+                          style={{ background: palette.colors[token.field] ?? resolvedThemeColors[token.field] }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="editor-theme-library__actions">
+                    <button className="editor-button" type="button" onClick={() => applySavedPalette(palette)}>
+                      Применить
+                    </button>
+                    <button className="editor-button" type="button" onClick={() => removeSavedPalette(palette.id)}>
+                      Удалить
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {themeColorTokens.map((token) => {
+            const rawValue = customThemeColors[token.field];
+            const resolvedValue =
+              typeof rawValue === "string" && rawValue.trim()
+                ? rawValue
+                : resolvedThemeColors[token.field] ?? "";
+            const colorValue =
+              /^#[0-9a-fA-F]{6}$/.test(resolvedValue) ? resolvedValue : "#000000";
+
+            return (
+              <label className="editor-theme-color" key={token.field}>
+                <span>{token.label}</span>
+                <div className="editor-theme-color__controls">
+                  <input
+                    type="color"
+                    value={colorValue}
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "customThemeColors", {
+                        ...customThemeColors,
+                        [token.field]: event.currentTarget.value
+                      })
+                    }
+                  />
+                  <input
+                    type="text"
+                    value={resolvedValue}
+                    placeholder="#000000"
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "customThemeColors", {
+                        ...customThemeColors,
+                        [token.field]: event.currentTarget.value
+                      })
+                    }
+                  />
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      ) : null}
       {hasMediaSupport(activeBlock.blockType) ? (
         <button
           className="editor-button editor-button-primary editor-panel-media-button"

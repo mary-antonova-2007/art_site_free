@@ -8,6 +8,7 @@ import { ChevronDown, ChevronUp, GripVertical, Pencil, Trash2 } from "lucide-rea
 
 import { useTranslations } from "@/lib/i18n/client";
 import { testIds } from "@/lib/test-ids";
+import { themeColorTokens } from "@/lib/theme-presets";
 import { useEditor } from "./editor-provider";
 import type { SiteBlockRecord } from "@/lib/content";
 
@@ -51,13 +52,37 @@ export function EditableBlockFrame({
     disabled: !enabled
   });
 
+  const themeData = block.data as Record<string, unknown>;
+  const themeOverride = typeof themeData.themeOverride === "string" ? String(themeData.themeOverride) : undefined;
+  const useCustomThemeColors = Boolean(themeData.useCustomThemeColors);
+  const customThemeColors =
+    themeData.customThemeColors && typeof themeData.customThemeColors === "object"
+      ? (themeData.customThemeColors as Record<string, unknown>)
+      : {};
+
+  const customThemeStyle = themeColorTokens.reduce<Record<string, string>>((styles, token) => {
+    const value = customThemeColors[token.field];
+
+    if (useCustomThemeColors && typeof value === "string" && value.trim()) {
+      styles[token.cssVar] = value;
+    }
+
+    return styles;
+  }, {});
+
   if (!enabled) {
     if (block.isHidden) {
       return null;
     }
 
     return (
-      <section id={anchorId} className="editable-frame editable-frame--view" data-testid={testIds.blockFrame}>
+      <section
+        id={anchorId}
+        className="editable-frame editable-frame--view"
+        data-theme={themeOverride}
+        style={customThemeStyle}
+        data-testid={testIds.blockFrame}
+      >
         <div className="editable-frame__content">{children}</div>
       </section>
     );
@@ -65,7 +90,8 @@ export function EditableBlockFrame({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition
+    transition,
+    ...customThemeStyle
   };
 
   return (
@@ -77,6 +103,7 @@ export function EditableBlockFrame({
       id={anchorId}
       className="editable-frame"
       style={style}
+      data-theme={themeOverride}
       data-active={activeBlockId === block.id}
       data-over={isOver}
       data-dragging={isDragging}

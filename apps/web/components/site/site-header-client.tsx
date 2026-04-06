@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { useEditor } from "@/components/editor/editor-provider";
+import { useTheme } from "@/components/layout/theme-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SitePageMenu } from "@/components/site/site-page-menu";
+import { themePresets } from "@/lib/theme-presets";
 
 function measureNavContentWidth(nav: HTMLElement) {
   const styles = window.getComputedStyle(nav);
@@ -36,6 +38,7 @@ export function SiteHeaderClient({
   blockItems: Array<{ id: string; label: string }>;
 }) {
   const { compactNavigation, setCompactNavigation } = useEditor();
+  const { themeId, setThemeId } = useTheme();
   const headerRef = useRef<HTMLElement | null>(null);
   const brandRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
@@ -122,6 +125,15 @@ export function SiteHeaderClient({
     };
   }, [blockItems, setCompactNavigation]);
 
+  const themesByGroup = themePresets.reduce<Record<string, typeof themePresets>>((groups, theme) => {
+    if (!groups[theme.group]) {
+      groups[theme.group] = [];
+    }
+
+    groups[theme.group].push(theme);
+    return groups;
+  }, {});
+
   return (
     <header ref={headerRef} className="site-header" data-compact-nav={compactNavigation}>
       <div ref={brandRef} className="site-brand">
@@ -148,6 +160,24 @@ export function SiteHeaderClient({
         ))}
       </nav>
       <div ref={controlsRef} className="site-header__controls">
+        <label className="theme-switcher">
+          <span className="sr-only">Color scheme</span>
+          <select
+            value={themeId}
+            aria-label="Color scheme"
+            onChange={(event) => setThemeId(event.currentTarget.value)}
+          >
+            {Object.entries(themesByGroup).map(([group, themes]) => (
+              <optgroup key={group} label={group}>
+                {themes.map((theme) => (
+                  <option key={theme.id} value={theme.id}>
+                    {theme.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
         {editorEnabled ? <LocaleSwitcher currentPath={currentPath} /> : null}
       </div>
       <SitePageMenu currentSlug={currentSlug} pages={pages} blockItems={blockItems} />
