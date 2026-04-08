@@ -69,15 +69,13 @@ async function generateImageVariants(
     return { variants: {}, files: [] };
   }
 
-  let sharpModule: typeof import("sharp") | null = null;
+  const sharp = await import("sharp")
+    .then((module) => module.default)
+    .catch(() => null);
 
-  try {
-    sharpModule = await import("sharp");
-  } catch {
+  if (!sharp) {
     return { variants: {}, files: [] };
   }
-
-  const sharp = sharpModule.default;
   const metadata = await sharp(fileBuffer).metadata();
   const originalWidth = metadata.width;
   const originalHeight = metadata.height;
