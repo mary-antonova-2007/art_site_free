@@ -8,6 +8,7 @@ import { createDb, hasDatabaseUrl, mediaAssets, pageBlocks, pageRevisions, pages
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
+  DEFAULT_SITE_COMMERCE_SETTINGS,
   DEFAULT_MEDIA_CATEGORIES,
   createSeedMediaLibrary,
   createSeedPages,
@@ -16,7 +17,8 @@ import {
   type MediaCategory,
   type MediaLibraryAsset,
   type SiteBlockRecord,
-  type SitePageRecord
+  type SitePageRecord,
+  type SiteCommerceSettings
 } from "./content";
 import {
   IMAGE_VARIANT_SPECS,
@@ -312,6 +314,64 @@ export async function listEditorMediaCategories(): Promise<MediaCategory[]> {
   return await listLocalMediaCategories();
 }
 
+export async function getCommerceSettings(): Promise<SiteCommerceSettings> {
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { data } = await admin.from("site_settings").select("metadata").limit(1).maybeSingle();
+    return normalizeCommerceSettings(data?.metadata ?? null);
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+  return normalizeCommerceSettings(settings?.metadata ?? null);
+}
+
+export async function saveCommerceSettings(input: SiteCommerceSettings) {
+  const normalized = normalizeCommerceSettings(input);
+
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { data: settings } = await admin.from("site_settings").select("id, metadata").limit(1).maybeSingle();
+    if (!settings) {
+      throw new Error("Site settings not found.");
+    }
+
+    await admin
+      .from("site_settings")
+      .update({
+        metadata: {
+          ...(settings.metadata ?? {}),
+          ...normalized
+        },
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", settings.id);
+
+    return normalized;
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+  if (!settings) {
+    throw new Error("Site settings not found.");
+  }
+
+  await db
+    .update(siteSettings)
+    .set({
+      metadata: {
+        ...(settings.metadata ?? {}),
+        ...normalized
+      },
+      updatedAt: new Date()
+    })
+    .where(eq(siteSettings.id, settings.id));
+
+  return normalized;
+}
+
 export async function createEditorMediaCategory(name: string) {
   const normalizedName = normalizeMediaCategoryName(name);
 
@@ -449,8 +509,61 @@ async function ensureLocalDatabaseReady() {
     siteName: "Art Site",
     defaultLocale: "ru",
     homepagePageId: homepage?.id ?? null,
-    metadata: {}
+    metadata: {
+      ...DEFAULT_SITE_COMMERCE_SETTINGS
+    }
   });
+}
+
+function normalizeCommerceSettings(metadata: Record<string, unknown> | null | undefined): SiteCommerceSettings {
+  const base = DEFAULT_SITE_COMMERCE_SETTINGS;
+  const rawPrintFormats = Array.isArray(metadata?.printFormats) ? metadata.printFormats : [];
+  const printFormats = rawPrintFormats
+    .map((item, index) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const candidate = item as Record<string, unknown>;
+      const widthCm = Number(candidate.widthCm);
+      const heightCm = Number(candidate.heightCm);
+
+      if (!Number.isFinite(widthCm) || !Number.isFinite(heightCm) || widthCm <= 0 || heightCm <= 0) {
+        return null;
+      }
+
+      return {
+        id: typeof candidate.id === "string" && candidate.id.trim() ? candidate.id : `format-${index}`,
+        widthCm,
+        heightCm,
+        label: typeof candidate.label === "string" ? candidate.label : undefined
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const rawProviders = metadata?.paymentProviders && typeof metadata.paymentProviders === "object"
+    ? (metadata.paymentProviders as Record<string, unknown>)
+    : {};
+
+  const paymentProviders = Object.fromEntries(
+    Object.entries({ ...base.paymentProviders, ...rawProviders }).map(([key, value]) => {
+      const candidate = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+      return [key, {
+        enabled: Boolean(candidate.enabled),
+        title: typeof candidate.title === "string" && candidate.title.trim() ? candidate.title : key,
+        description: typeof candidate.description === "string" ? candidate.description : "",
+        settings: candidate.settings && typeof candidate.settings === "object"
+          ? (candidate.settings as Record<string, string>)
+          : {}
+      }];
+    })
+  );
+
+  return {
+    cartEnabled: metadata?.cartEnabled === false ? false : true,
+    printFormats: printFormats.length ? printFormats : base.printFormats,
+    paymentProviders: paymentProviders as SiteCommerceSettings["paymentProviders"]
+  };
 }
 
 async function ensureLocalSchemaCompatibility() {

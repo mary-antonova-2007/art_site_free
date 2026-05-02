@@ -108,6 +108,10 @@ export function EditorSheet() {
     typeof (activeBlock.data as Record<string, unknown>).themeOverride === "string"
       ? String((activeBlock.data as Record<string, unknown>).themeOverride)
       : "";
+  const printFormats =
+    Array.isArray((activeBlock.data as Record<string, unknown>).printFormats)
+      ? ((activeBlock.data as Record<string, unknown>).printFormats as Array<Record<string, unknown>>)
+      : [];
   const useCustomThemeColors = Boolean((activeBlock.data as Record<string, unknown>).useCustomThemeColors);
   const customThemeColors =
     (activeBlock.data as Record<string, unknown>).customThemeColors &&
@@ -427,6 +431,76 @@ export function EditorSheet() {
             )})}
           </div>
         </div>
+      ) : null}
+      {activeBlock.blockType === "image" ? (
+        <section className="section-stack">
+          <span className="eyebrow">Форматы печати</span>
+          {printFormats.map((format, index) => (
+            <div key={`${index}-${String(format.id ?? index)}`} className="editor-media-item">
+              <div className="editor-media-item__body">
+                <strong>{String(format.label ?? `${format.widthCm ?? ""} × ${format.heightCm ?? ""}`)}</strong>
+                <div className="editor-media-item__meta">
+                  <input
+                    type="number"
+                    min={1}
+                    value={Number(format.widthCm ?? 0)}
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
+                        itemIndex === index ? { ...item, widthCm: Number(event.currentTarget.value) } : item
+                      )))
+                    }
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    value={Number(format.heightCm ?? 0)}
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
+                        itemIndex === index ? { ...item, heightCm: Number(event.currentTarget.value) } : item
+                      )))
+                    }
+                  />
+                  <input
+                    value={String(format.label ?? "")}
+                    placeholder="Подпись"
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
+                        itemIndex === index ? { ...item, label: event.currentTarget.value } : item
+                      )))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="editor-media-item__actions">
+                <button
+                  type="button"
+                  className="action-button"
+                  onClick={() =>
+                    updateBlockField(
+                      activeBlock.id,
+                      "printFormats",
+                      [...printFormats.slice(0, index), ...printFormats.slice(index + 1)]
+                    )
+                  }
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="editor-button"
+            onClick={() =>
+              updateBlockField(activeBlock.id, "printFormats", [
+                ...printFormats,
+                { id: crypto.randomUUID(), widthCm: 30, heightCm: 40, label: "30 × 40" }
+              ])
+            }
+          >
+            Добавить формат
+          </button>
+        </section>
       ) : null}
       {definition.fields.map((field) => {
         const value = activeBlock.data[field.name as keyof typeof activeBlock.data];

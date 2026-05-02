@@ -7,7 +7,7 @@ import { EditorSheet } from "@/components/editor/editor-sheet";
 import { MediaLibraryDialog } from "@/components/editor/media-library-dialog";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { SiteHeader } from "@/components/site/site-header";
-import { getPageForRequest } from "@/lib/content-service";
+import { getCommerceSettings, getPageForRequest } from "@/lib/content-service";
 import { isEditorModeEnabled } from "@/lib/editor-mode";
 
 export async function PageScreen({
@@ -21,6 +21,7 @@ export async function PageScreen({
 }) {
   const requestedEdit = isEditorModeEnabled(edit);
   const { page, editorEnabled } = await getPageForRequest(slug, requestedEdit);
+  const commerceSettings = await getCommerceSettings();
   const currentViewPath = requestedEdit ? `${currentPath}?editor=1` : currentPath;
 
   if (!page) {
@@ -44,7 +45,7 @@ export async function PageScreen({
         />
         <EditorBlockNav />
         {editorEnabled ? <EditorBar /> : null}
-        <PageRenderer page={page} />
+        <PageRenderer page={page} commerceSettings={commerceSettings} />
         {editorEnabled ? <EditorSheet /> : null}
         {editorEnabled ? <MediaLibraryDialog /> : null}
       </div>

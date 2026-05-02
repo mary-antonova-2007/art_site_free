@@ -40,6 +40,40 @@ export type MediaLibraryAsset = {
   variants?: MediaVariants;
 };
 
+export type PrintFormat = {
+  id: string;
+  widthCm: number;
+  heightCm: number;
+  label?: string;
+};
+
+export type PaymentProviderConfig = {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  settings?: Record<string, string>;
+};
+
+export type SiteCommerceSettings = {
+  cartEnabled: boolean;
+  printFormats: PrintFormat[];
+  paymentProviders: Record<string, PaymentProviderConfig>;
+};
+
+export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
+  cartEnabled: true,
+  printFormats: [
+    { id: "30x40", widthCm: 30, heightCm: 40, label: "30 × 40" },
+    { id: "40x50", widthCm: 40, heightCm: 50, label: "40 × 50" },
+    { id: "50x70", widthCm: 50, heightCm: 70, label: "50 × 70" }
+  ],
+  paymentProviders: {
+    yoomoney: { enabled: false, title: "YooMoney", settings: {} },
+    sbp: { enabled: false, title: "СБП", settings: {} },
+    paypal: { enabled: false, title: "PayPal", settings: {} }
+  }
+};
+
 export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source">;
 
 const cyrillicToLatinMap: Record<string, string> = {

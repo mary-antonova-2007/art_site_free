@@ -27,6 +27,9 @@ export function EditorBar() {
       <Link className="editor-button" href="/media?editor=1">
         {t("media.libraryTitle")}
       </Link>
+      <Link className="editor-button" href="/settings?editor=1">
+        Настройки
+      </Link>
       <Link className="editor-button" href={page.slug === "home" ? "/" : `/${page.slug}`}>
         {t("editor.leaveEditor")}
       </Link>

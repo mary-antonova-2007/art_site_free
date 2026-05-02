@@ -9,11 +9,19 @@ const imageSchema = z.object({
   variants: z.record(z.string(), z.unknown()).optional()
 });
 
+const printFormatSchema = z.object({
+  id: z.string().optional(),
+  widthCm: z.coerce.number().positive().max(500),
+  heightCm: z.coerce.number().positive().max(500),
+  label: z.string().optional()
+});
+
 const schema = z.object({
   image: imageSchema.optional(),
   caption: z.string().optional(),
   alt: z.string().optional(),
-  displayMode: z.enum(["fit", "cover", "original"]).default("cover")
+  displayMode: z.enum(["fit", "cover", "original"]).default("cover"),
+  printFormats: z.array(printFormatSchema).default([])
 });
 
 export const imageBlock = defineBlock({
@@ -24,7 +32,8 @@ export const imageBlock = defineBlock({
   schema,
   createDefault: () => ({
     caption: "Caption",
-    displayMode: "cover"
+    displayMode: "cover",
+    printFormats: []
   } satisfies z.infer<typeof schema>),
   fields: [
     { name: "image", label: "Image", kind: "image" },
