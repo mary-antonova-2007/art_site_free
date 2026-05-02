@@ -514,7 +514,14 @@ function RenderedBlock<TType extends BlockType>({
         "panel",
         "(max-width: 920px) 100vw, min(1280px, 92vw)"
       );
-      const formats = imageData.printFormats?.length ? imageData.printFormats : commerceSettings.printFormats;
+      const formats = imageData.printFormats?.length
+        ? imageData.printFormats.map((format, index) => ({
+            id: format.id ?? `${blockId}-format-${index}`,
+            widthCm: format.widthCm,
+            heightCm: format.heightCm,
+            label: format.label
+          }))
+        : commerceSettings.printFormats;
       const purchasableFormats = commerceSettings.cartEnabled ? formats : [];
       return (
         <section className="site-section width-wide">

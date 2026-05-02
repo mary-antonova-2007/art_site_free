@@ -60,7 +60,7 @@ function isCartItem(value: unknown): value is CartItem {
     typeof candidate.imageSrc === "string" &&
     typeof candidate.title === "string" &&
     typeof candidate.alt === "string" &&
-    candidate.format &&
+    Boolean(candidate.format) &&
     typeof candidate.format === "object" &&
     typeof (candidate.format as Record<string, unknown>).widthCm === "number" &&
     typeof (candidate.format as Record<string, unknown>).heightCm === "number" &&
