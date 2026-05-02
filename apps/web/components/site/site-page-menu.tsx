@@ -4,19 +4,19 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { useEditor } from "@/components/editor/editor-provider";
 import { getBlockAnchorId } from "@/lib/block-navigation";
 
 export function SitePageMenu({
   currentSlug,
   pages,
-  blockItems
+  blockItems,
+  compactNavigation
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
   blockItems: Array<{ id: string; label: string }>;
+  compactNavigation: boolean;
 }) {
-  const { compactNavigation } = useEditor();
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);

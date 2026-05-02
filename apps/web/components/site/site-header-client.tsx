@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { useEditor } from "@/components/editor/editor-provider";
 import { useTheme } from "@/components/layout/theme-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SitePageMenu } from "@/components/site/site-page-menu";
@@ -37,12 +36,12 @@ export function SiteHeaderClient({
   primaryNavLabel: string;
   blockItems: Array<{ id: string; label: string }>;
 }) {
-  const { compactNavigation, setCompactNavigation } = useEditor();
   const { themeId, setThemeId } = useTheme();
   const headerRef = useRef<HTMLElement | null>(null);
   const brandRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
   const controlsRef = useRef<HTMLDivElement | null>(null);
+  const [compactNavigation, setCompactNavigation] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 920px)");
@@ -123,7 +122,7 @@ export function SiteHeaderClient({
       window.removeEventListener("resize", scheduleUpdate);
       media.removeEventListener("change", scheduleUpdate);
     };
-  }, [blockItems, setCompactNavigation]);
+  }, [blockItems]);
 
   const themesByGroup = themePresets.reduce<Record<string, typeof themePresets>>((groups, theme) => {
     if (!groups[theme.group]) {
@@ -180,7 +179,12 @@ export function SiteHeaderClient({
         </label>
         {editorEnabled ? <LocaleSwitcher currentPath={currentPath} /> : null}
       </div>
-      <SitePageMenu currentSlug={currentSlug} pages={pages} blockItems={blockItems} />
+      <SitePageMenu
+        currentSlug={currentSlug}
+        pages={pages}
+        blockItems={blockItems}
+        compactNavigation={compactNavigation}
+      />
     </header>
   );
 }
