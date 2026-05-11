@@ -216,5 +216,8 @@ export const esMessages = {
     heroImage: "Imagen principal",
     image: "Imagen",
     galleryItem: "Elemento de galería"
+  },
+  commerce: {
+    unitCm: "cm"
   }
 } as const;

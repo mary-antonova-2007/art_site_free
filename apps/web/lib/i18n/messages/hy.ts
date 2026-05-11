@@ -214,5 +214,8 @@ export const hyMessages = {
     heroImage: "Գլխավոր պատկեր",
     image: "Պատկեր",
     galleryItem: "Պատկերասրահի տարր"
+  },
+  commerce: {
+    unitCm: "սմ"
   }
 } as const;

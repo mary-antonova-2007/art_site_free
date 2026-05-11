@@ -215,5 +215,8 @@ export const deCHMessages = {
     heroImage: "Hero-Bild",
     image: "Bild",
     galleryItem: "Galerie-Element"
+  },
+  commerce: {
+    unitCm: "cm"
   }
 } as const;
