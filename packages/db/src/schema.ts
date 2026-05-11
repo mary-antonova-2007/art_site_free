@@ -164,6 +164,8 @@ export const mediaAssets = pgTable(
     focalX: integer("focal_x"),
     focalY: integer("focal_y"),
     checksum: varchar("checksum", { length: 128 }),
+    isProduct: boolean("is_product").notNull().default(false),
+    printFormats: jsonb("print_formats").$type<Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }>>().notNull().default([]),
     uploadedBy: uuid("uploaded_by").references(() => appUsers.id, { onDelete: "set null" }),
     isPublic: boolean("is_public").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

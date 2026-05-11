@@ -216,5 +216,8 @@ export const ruMessages = {
     heroImage: "Главное изображение",
     image: "Изображение",
     galleryItem: "Элемент галереи"
+  },
+  commerce: {
+    unitCm: "см"
   }
 } as const;

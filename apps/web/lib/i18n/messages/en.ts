@@ -216,5 +216,8 @@ export const enMessages = {
     heroImage: "Hero image",
     image: "Image",
     galleryItem: "Gallery item"
+  },
+  commerce: {
+    unitCm: "cm"
   }
 } as const;

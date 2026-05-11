@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@artsite/ui";
+import { readCart, writeCart } from "@/lib/cart";
+import type { PrintFormat } from "@/lib/content";
+import { useTranslations } from "@/lib/i18n/client";
 
 type CarouselItem = {
   id: string;
@@ -13,6 +16,9 @@ type CarouselItem = {
   caption?: string;
   srcSet?: string;
   sizes?: string;
+  formats?: PrintFormat[];
+  isProduct?: boolean;
+  mediaAssetId?: string;
 };
 
 export function ImageCarousel({
@@ -23,12 +29,15 @@ export function ImageCarousel({
   variant: "gallery" | "collection";
 }) {
   const repeatCount = items.length > 1 ? 9 : 1;
+  const t = useTranslations();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const autoScrollRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const resumeTimeoutRef = useRef<number | null>(null);
   const interactionPauseRef = useRef(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [selectedFormatId, setSelectedFormatId] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const repeatedItems =
     items.length > 1
       ? Array.from({ length: repeatCount }, () => items).flat()
@@ -316,6 +325,44 @@ export function ImageCarousel({
     };
   }, [lightboxIndex]);
 
+  useEffect(() => {
+    const item = lightboxIndex == null ? undefined : items[lightboxIndex];
+    const firstFormat = item?.formats?.[0];
+    setSelectedFormatId(firstFormat?.id ?? "");
+    setQuantity(1);
+  }, [items, lightboxIndex]);
+
+  function addProductToCart(item: CarouselItem) {
+    const format = item.formats?.find((candidate) => candidate.id === selectedFormatId) ?? item.formats?.[0];
+    const imageSrc = item.fullSrc ?? item.src;
+
+    if (!format) {
+      return;
+    }
+
+    const key = `${imageSrc}:${format.id}`;
+    const current = readCart();
+    const next = current.find((cartItem) => cartItem.id === key)
+      ? current.map((cartItem) =>
+          cartItem.id === key ? { ...cartItem, quantity: cartItem.quantity + quantity } : cartItem
+        )
+      : [
+          {
+            id: key,
+            imageSrc,
+            title: item.caption ?? item.alt,
+            alt: item.alt,
+            format,
+            availableFormats: item.formats,
+            quantity
+          },
+          ...current
+        ];
+
+    writeCart(next);
+    setLightboxIndex(null);
+  }
+
   return (
     <>
       <div
@@ -356,22 +403,134 @@ export function ImageCarousel({
         </div>
       </div>
       {lightboxIndex != null && typeof document !== "undefined"
-        ? createPortal(
-            <button
-              className="image-lightbox"
-              type="button"
-              onClick={() => setLightboxIndex(null)}
-              aria-label="Close image preview"
-            >
-                <img
-                  className="image-lightbox__image"
-                  src={items[lightboxIndex]?.fullSrc ?? items[lightboxIndex]?.src}
-                  alt={items[lightboxIndex]?.alt ?? ""}
-                />
-            </button>,
-            document.body
-          )
+        ? (() => {
+            const item = items[lightboxIndex];
+            const hasProductPanel = Boolean(item?.isProduct && item.formats?.length);
+            const selectedFormat = item?.formats?.find((format) => format.id === selectedFormatId) ?? item?.formats?.[0];
+
+            return item
+              ? createPortal(
+                  <div
+                    className="image-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image preview"
+                    onClick={() => setLightboxIndex(null)}
+                  >
+                    <div
+                      className="image-lightbox__stage"
+                      data-product={hasProductPanel ? "true" : "false"}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <img
+                        className="image-lightbox__image"
+                        src={item.fullSrc ?? item.src}
+                        alt={item.alt}
+                        onClick={() => setLightboxIndex(null)}
+                      />
+                      {hasProductPanel ? (
+                        <div className="product-modal__panel image-lightbox__product-panel">
+                          <div className="product-modal__content">
+                            <h3>{item.caption ?? item.alt}</h3>
+                            <p className="product-modal__note">
+                              Выберите формат печати и количество перед добавлением в корзину.
+                            </p>
+                            <label className="editor-field">
+                              <span>Формат печати</span>
+                              <select
+                                value={selectedFormatId}
+                                onChange={(event) => setSelectedFormatId(event.currentTarget.value)}
+                              >
+                                {(item.formats ?? []).map((format) => (
+                                  <option key={format.id} value={format.id}>
+                                    {getFormatName(format)} ·{" "}
+                                    {formatPrice(getEffectivePrice(format))}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="editor-field">
+                              <span>Количество</span>
+                              <input
+                                type="number"
+                                min={1}
+                                value={quantity}
+                                onChange={(event) => setQuantity(Math.max(1, Number(event.currentTarget.value) || 1))}
+                              />
+                            </label>
+                            {selectedFormat ? (
+                              <div className="product-modal__format-card">
+                                <div className="product-modal__format-preview" aria-hidden="true">
+                                  <div
+                                    className="product-modal__format-preview-inner"
+                                    style={getPreviewStyle(selectedFormat.widthCm, selectedFormat.heightCm)}
+                                  />
+                                </div>
+                                <div className="product-modal__format-info">
+                                  <strong>
+                                    {getFormatName(selectedFormat)}
+                                  </strong>
+                                  <span>
+                                    {selectedFormat.widthCm} × {selectedFormat.heightCm} {t("commerce.unitCm")}
+                                  </span>
+                                  <span>{formatPrice(getEffectivePrice(selectedFormat))}</span>
+                                </div>
+                              </div>
+                            ) : null}
+                            <div className="product-modal__actions">
+                              <button className="editor-button" type="button" onClick={() => addProductToCart(item)}>
+                                Добавить в корзину
+                              </button>
+                              <button
+                                className="editor-button editor-button-primary"
+                                type="button"
+                                onClick={() => {
+                                  addProductToCart(item);
+                                  window.location.assign("/cart");
+                                }}
+                              >
+                                Купить
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>,
+                  document.body
+                )
+              : null;
+          })()
         : null}
     </>
   );
+}
+
+function getPreviewStyle(widthCm: number, heightCm: number) {
+  const width = Math.max(1, Number(widthCm) || 1);
+  const height = Math.max(1, Number(heightCm) || 1);
+  const ratio = width / height;
+
+  return ratio >= 1
+    ? { aspectRatio: `${ratio}`, width: "100%" }
+    : { aspectRatio: `${ratio}`, height: "100%" };
+}
+
+function getEffectivePrice(format: PrintFormat) {
+  return format.priceOverride ?? format.price;
+}
+
+function formatPrice(value: unknown) {
+  if (value == null || value === "") {
+    return "Цена не задана";
+  }
+
+  const price = Number(value);
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+}
+
+function getFormatName(format: PrintFormat) {
+  const width = Math.max(1, Number(format.widthCm) || 1);
+  const height = Math.max(1, Number(format.heightCm) || 1);
+  return `${width} × ${height} cm`;
 }

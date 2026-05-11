@@ -5,6 +5,9 @@ dist
 coverage
 .env
 .env.local
+secret_key.txt
+secretkey.txt
+*secret*key*.txt
 .env.*.local
 !.env.example
 package-lock.json

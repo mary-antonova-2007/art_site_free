@@ -27,7 +27,7 @@ import { ImageCarousel } from "@/components/site/image-carousel";
 import { getBlockAnchorId } from "@/lib/block-navigation";
 import { readCart, writeCart } from "@/lib/cart";
 import { useTranslations } from "@/lib/i18n/client";
-import type { PrintFormat, SiteCommerceSettings } from "@/lib/content";
+import type { MediaLibraryAsset, PrintFormat, SiteCommerceSettings } from "@/lib/content";
 import {
   buildResponsiveImageSource,
   getPreferredImageUrl,
@@ -39,26 +39,30 @@ import type { SitePageRecord } from "@/lib/content";
 
 export function PageRenderer({
   page,
-  commerceSettings
+  commerceSettings,
+  mediaAssetsById
 }: {
   page: SitePageRecord;
   commerceSettings: SiteCommerceSettings;
+  mediaAssetsById: Record<string, MediaLibraryAsset>;
 }) {
+  const t = useTranslations();
   const { blocks, insertBlockAt, moveBlockToIndex } = useEditor();
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
-  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
-  const [productImage, setProductImage] = useState<{
+  const [previewImage, setPreviewImage] = useState<{
     src: string;
     alt: string;
     title: string;
     formats: PrintFormat[];
+    isProduct: boolean;
+    mediaAssetId?: string;
   } | null>(null);
   const [selectedFormatId, setSelectedFormatId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   useEffect(() => {
-    if (!lightboxImage || typeof document === "undefined") {
+    if (!previewImage || typeof document === "undefined") {
       return;
     }
 
@@ -76,13 +80,13 @@ export function PageRenderer({
       body.style.touchAction = previousBodyTouchAction;
       documentElement.style.overflow = previousHtmlOverflow;
     };
-  }, [lightboxImage]);
+  }, [previewImage]);
 
   useEffect(() => {
-    const firstFormat = productImage?.formats[0];
+    const firstFormat = previewImage?.formats[0];
     setSelectedFormatId((current) => current || firstFormat?.id || "");
     setQuantity((current) => Math.max(1, current));
-  }, [productImage]);
+  }, [previewImage]);
 
   const collisionDetection: CollisionDetection = (args) => {
     const activeKind = args.active.data.current?.kind;
@@ -181,33 +185,34 @@ export function PageRenderer({
   }
 
   function addProductToCart() {
-    if (!productImage) {
+    if (!previewImage) {
       return;
     }
 
-    const format = productImage.formats.find((item) => item.id === selectedFormatId) ?? productImage.formats[0];
+    const format = previewImage.formats.find((item) => item.id === selectedFormatId) ?? previewImage.formats[0];
     if (!format) {
       return;
     }
 
     const current = readCart();
-    const key = `${productImage.src}:${format.id}`;
+    const key = `${previewImage.src}:${format.id}`;
     const next = current.find((item) => item.id === key)
       ? current.map((item) => (item.id === key ? { ...item, quantity: item.quantity + quantity } : item))
       : [
           {
             id: key,
-            imageSrc: productImage.src,
-            title: productImage.title,
-            alt: productImage.alt,
+            imageSrc: previewImage.src,
+            title: previewImage.title,
+            alt: previewImage.alt,
             format,
+            availableFormats: previewImage.formats,
             quantity
           },
           ...current
         ];
 
     writeCart(next);
-    setProductImage(null);
+    setPreviewImage(null);
   }
 
   return (
@@ -231,9 +236,9 @@ export function PageRenderer({
                   blockId={block.id}
                   type={block.blockType}
                   data={block.data}
-                  onOpenImagePreview={(src, alt) => setLightboxImage({ src, alt })}
-                  onOpenProductPreview={setProductImage}
+                  onOpenImagePreview={setPreviewImage}
                   commerceSettings={commerceSettings}
+                  mediaAssetsById={mediaAssetsById}
                 />
               </EditableBlockFrame>
             </InsertDropTarget>
@@ -245,70 +250,94 @@ export function PageRenderer({
       </SortableContext>
       <BlockLibraryTray />
       <DragOverlay>{activeDragId ? <div className="block-drag-ghost" /> : null}</DragOverlay>
-      {lightboxImage && typeof document !== "undefined"
+      {previewImage && typeof document !== "undefined"
         ? createPortal(
-            <button
+            <div
               className="image-lightbox"
-              type="button"
-              onClick={() => setLightboxImage(null)}
-              aria-label="Close image preview"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Image preview"
+              onClick={() => setPreviewImage(null)}
             >
-              <img className="image-lightbox__image" src={lightboxImage.src} alt={lightboxImage.alt} />
-            </button>,
-            document.body
-          )
-        : null}
-      {productImage && typeof document !== "undefined"
-        ? createPortal(
-            <div className="product-modal" role="dialog" aria-modal="true">
-              <button
-                className="product-modal__backdrop"
-                type="button"
-                onClick={() => setProductImage(null)}
-                aria-label="Close product dialog"
-              />
-              <div className="product-modal__panel">
-                <img className="product-modal__image" src={productImage.src} alt={productImage.alt} />
-                <div className="product-modal__content">
-                  <h3>{productImage.title}</h3>
-                  <label className="editor-field">
-                    <span>Формат печати</span>
-                    <select
-                      value={selectedFormatId}
-                      onChange={(event) => setSelectedFormatId(event.currentTarget.value)}
-                    >
-                      {productImage.formats.map((format) => (
-                        <option key={format.id} value={format.id}>
-                          {format.label ?? `${format.widthCm} × ${format.heightCm} см`}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="editor-field">
-                    <span>Количество</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={quantity}
-                      onChange={(event) => setQuantity(Math.max(1, Number(event.currentTarget.value) || 1))}
-                    />
-                  </label>
-                  <div className="product-modal__actions">
-                    <button className="editor-button" type="button" onClick={addProductToCart}>
-                      Добавить в корзину
-                    </button>
-                    <button
-                      className="editor-button editor-button-primary"
-                      type="button"
-                      onClick={() => {
-                        addProductToCart();
-                        window.location.assign("/cart");
-                      }}
-                    >
-                      Купить
-                    </button>
+              <div
+                className="image-lightbox__stage"
+                data-product={
+                  previewImage.isProduct && commerceSettings.cartEnabled && previewImage.formats.length ? "true" : "false"
+                }
+                onClick={(event) => event.stopPropagation()}
+              >
+                <img
+                  className="image-lightbox__image"
+                  src={previewImage.src}
+                  alt={previewImage.alt}
+                  onClick={() => setPreviewImage(null)}
+                />
+                {previewImage.isProduct && commerceSettings.cartEnabled && previewImage.formats.length ? (
+                  <div className="product-modal__panel image-lightbox__product-panel">
+                    <div className="product-modal__content">
+                      <h3>{previewImage.title}</h3>
+                      <p className="product-modal__note">Выберите формат печати и количество перед добавлением в корзину.</p>
+                      <label className="editor-field">
+                        <span>Формат печати</span>
+                        <select
+                          value={selectedFormatId}
+                          onChange={(event) => setSelectedFormatId(event.currentTarget.value)}
+                        >
+                          {previewImage.formats.map((format) => (
+                            <option key={format.id} value={format.id}>
+                              {getFormatName(format, t)} · {formatPrice(getEffectivePrice(format))}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="editor-field">
+                        <span>Количество</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={quantity}
+                          onChange={(event) => setQuantity(Math.max(1, Number(event.currentTarget.value) || 1))}
+                        />
+                      </label>
+                      {(() => {
+                        const selectedFormat =
+                          previewImage.formats.find((item) => item.id === selectedFormatId) ?? previewImage.formats[0];
+                        return selectedFormat ? (
+                          <div className="product-modal__format-card">
+                            <div className="product-modal__format-preview" aria-hidden="true">
+                              <div
+                                className="product-modal__format-preview-inner"
+                                style={getPreviewStyle(selectedFormat.widthCm, selectedFormat.heightCm)}
+                              />
+                            </div>
+                            <div className="product-modal__format-info">
+                              <strong>{getFormatName(selectedFormat, t)}</strong>
+                              <span>
+                                {selectedFormat.widthCm} × {selectedFormat.heightCm} {t("commerce.unitCm")}
+                              </span>
+                              <span>{formatPrice(getEffectivePrice(selectedFormat))}</span>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
+                      <div className="product-modal__actions">
+                        <button className="editor-button" type="button" onClick={addProductToCart}>
+                          Добавить в корзину
+                        </button>
+                        <button
+                          className="editor-button editor-button-primary"
+                          type="button"
+                          onClick={() => {
+                            addProductToCart();
+                            window.location.assign("/cart");
+                          }}
+                        >
+                          Купить
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : null}
               </div>
             </div>,
             document.body
@@ -431,20 +460,22 @@ function RenderedBlock<TType extends BlockType>({
   type,
   data,
   onOpenImagePreview,
-  onOpenProductPreview,
-  commerceSettings
+  commerceSettings,
+  mediaAssetsById
 }: {
   blockId: string;
   type: TType;
   data: BlockDataMap[TType];
-  onOpenImagePreview: (src: string, alt: string) => void;
-  onOpenProductPreview: (input: {
+  onOpenImagePreview: (input: {
     src: string;
     alt: string;
     title: string;
     formats: PrintFormat[];
+    isProduct: boolean;
+    mediaAssetId?: string;
   }) => void;
   commerceSettings: SiteCommerceSettings;
+  mediaAssetsById: Record<string, MediaLibraryAsset>;
 }) {
   const t = useTranslations();
   const definition = getBlockDefinition(type);
@@ -452,6 +483,7 @@ function RenderedBlock<TType extends BlockType>({
   switch (type) {
     case "hero": {
       const heroData = data as BlockDataMap["hero"];
+      const heroAsset = heroData.image?.mediaAssetId ? mediaAssetsById[heroData.image.mediaAssetId] : undefined;
       const heroImage = getResponsiveAssetSource(
         heroData.image?.mediaAssetId,
         "/art-hero.svg",
@@ -481,9 +513,10 @@ function RenderedBlock<TType extends BlockType>({
               alt={heroData.image?.alt ?? ""}
               className="site-image site-image--contain"
               onOpenImagePreview={onOpenImagePreview}
-              onOpenProductPreview={onOpenProductPreview}
               productTitle={heroData.title ?? heroData.image?.alt ?? t("media.image")}
-              formats={[]}
+              formats={heroAsset?.isProduct && commerceSettings.cartEnabled ? getMediaAssetPrintFormats(heroAsset, commerceSettings) : []}
+              isProduct={Boolean(heroAsset?.isProduct)}
+              mediaAssetId={heroData.image?.mediaAssetId}
               loading="eager"
             />
           </div>
@@ -507,6 +540,7 @@ function RenderedBlock<TType extends BlockType>({
     }
     case "image": {
       const imageData = data as BlockDataMap["image"];
+      const productAsset = imageData.image?.mediaAssetId ? mediaAssetsById[imageData.image.mediaAssetId] : undefined;
       const blockImage = getResponsiveAssetSource(
         imageData.image?.mediaAssetId,
         "/art-03.svg",
@@ -514,15 +548,19 @@ function RenderedBlock<TType extends BlockType>({
         "panel",
         "(max-width: 920px) 100vw, min(1280px, 92vw)"
       );
-      const formats = imageData.printFormats?.length
+      const blockFormats = imageData.printFormats?.length
         ? imageData.printFormats.map((format, index) => ({
             id: format.id ?? `${blockId}-format-${index}`,
             widthCm: format.widthCm,
             heightCm: format.heightCm,
-            label: format.label
+            label: format.label,
+            price: format.price,
+            priceOverride: format.priceOverride
           }))
         : commerceSettings.printFormats;
-      const purchasableFormats = commerceSettings.cartEnabled ? formats : [];
+      const formats = productAsset?.printFormats?.length ? productAsset.printFormats : blockFormats;
+      const purchasableFormats = commerceSettings.cartEnabled && productAsset?.isProduct ? formats : [];
+      const isPurchasable = commerceSettings.cartEnabled && (productAsset?.isProduct || purchasableFormats.length > 0);
       return (
         <section className="site-section width-wide">
           <div className="image-panel">
@@ -535,9 +573,10 @@ function RenderedBlock<TType extends BlockType>({
               alt={imageData.alt ?? imageData.image?.alt ?? ""}
               className="site-image site-image--contain"
               onOpenImagePreview={onOpenImagePreview}
-              onOpenProductPreview={onOpenProductPreview}
               productTitle={imageData.caption ?? imageData.alt ?? imageData.image?.alt ?? t("media.image")}
               formats={purchasableFormats}
+              isProduct={isPurchasable}
+              mediaAssetId={imageData.image?.mediaAssetId}
             />
           </div>
           <p className="image-caption">{imageData.caption ?? ""}</p>
@@ -556,9 +595,16 @@ function RenderedBlock<TType extends BlockType>({
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
               variants={getFieldVariants(imageTextData.image)}
               onOpenImagePreview={onOpenImagePreview}
-              onOpenProductPreview={onOpenProductPreview}
               productTitle={imageTextData.title ?? imageTextData.image?.alt ?? t("media.image")}
-              formats={[]}
+              formats={
+                imageTextData.image?.mediaAssetId &&
+                mediaAssetsById[imageTextData.image.mediaAssetId]?.isProduct &&
+                commerceSettings.cartEnabled
+                  ? getMediaAssetPrintFormats(mediaAssetsById[imageTextData.image.mediaAssetId], commerceSettings)
+                  : []
+              }
+              isProduct={Boolean(imageTextData.image?.mediaAssetId && mediaAssetsById[imageTextData.image.mediaAssetId]?.isProduct)}
+              mediaAssetId={imageTextData.image?.mediaAssetId}
             />
           ) : null}
           <div className="section-stack">
@@ -574,9 +620,16 @@ function RenderedBlock<TType extends BlockType>({
               src={imageTextData.image?.mediaAssetId ?? "portrait"}
               variants={getFieldVariants(imageTextData.image)}
               onOpenImagePreview={onOpenImagePreview}
-              onOpenProductPreview={onOpenProductPreview}
               productTitle={imageTextData.title ?? imageTextData.image?.alt ?? t("media.image")}
-              formats={[]}
+              formats={
+                imageTextData.image?.mediaAssetId &&
+                mediaAssetsById[imageTextData.image.mediaAssetId]?.isProduct &&
+                commerceSettings.cartEnabled
+                  ? getMediaAssetPrintFormats(mediaAssetsById[imageTextData.image.mediaAssetId], commerceSettings)
+                  : []
+              }
+              isProduct={Boolean(imageTextData.image?.mediaAssetId && mediaAssetsById[imageTextData.image.mediaAssetId]?.isProduct)}
+              mediaAssetId={imageTextData.image?.mediaAssetId}
             />
           ) : null}
         </section>
@@ -613,9 +666,16 @@ function RenderedBlock<TType extends BlockType>({
             src={aboutData.image?.mediaAssetId ?? "portrait"}
             variants={getFieldVariants(aboutData.image)}
             onOpenImagePreview={onOpenImagePreview}
-            onOpenProductPreview={onOpenProductPreview}
             productTitle={aboutData.title ?? aboutData.image?.alt ?? t("media.image")}
-            formats={[]}
+            formats={
+              aboutData.image?.mediaAssetId &&
+              mediaAssetsById[aboutData.image.mediaAssetId]?.isProduct &&
+              commerceSettings.cartEnabled
+                ? getMediaAssetPrintFormats(mediaAssetsById[aboutData.image.mediaAssetId], commerceSettings)
+                : []
+            }
+            isProduct={Boolean(aboutData.image?.mediaAssetId && mediaAssetsById[aboutData.image.mediaAssetId]?.isProduct)}
+            mediaAssetId={aboutData.image?.mediaAssetId}
           />
         </section>
       );
@@ -642,7 +702,15 @@ function RenderedBlock<TType extends BlockType>({
             srcSet: source.srcSet,
             sizes: source.sizes,
             alt: item.alt ?? item.caption ?? item.mediaAssetId ?? t("media.galleryItem"),
-            caption: hasEditorialCaption(item.caption) ? item.caption : undefined
+            caption: hasEditorialCaption(item.caption) ? item.caption : undefined,
+            mediaAssetId: item.mediaAssetId,
+            isProduct: Boolean(item.mediaAssetId && mediaAssetsById[item.mediaAssetId]?.isProduct),
+            formats:
+              item.mediaAssetId && mediaAssetsById[item.mediaAssetId]?.isProduct && commerceSettings.cartEnabled
+                ? mediaAssetsById[item.mediaAssetId]?.printFormats?.length
+                  ? mediaAssetsById[item.mediaAssetId]!.printFormats!
+                  : commerceSettings.printFormats
+                : []
           };
         }
       );
@@ -659,7 +727,16 @@ function RenderedBlock<TType extends BlockType>({
                   <button
                     type="button"
                     className="page-image-button"
-                    onClick={() => onOpenImagePreview(item.fullSrc, item.alt)}
+                    onClick={() =>
+                      onOpenImagePreview({
+                        src: item.fullSrc,
+                        alt: item.alt,
+                        title: item.alt,
+                        formats: item.formats,
+                        isProduct: item.isProduct,
+                        mediaAssetId: item.mediaAssetId
+                      })
+                    }
                   >
                     <img
                       src={item.src}
@@ -774,7 +851,15 @@ function RenderedBlock<TType extends BlockType>({
                   <button
                     type="button"
                     className="page-image-button"
-                    onClick={() => onOpenImagePreview(item.fullSrc, item.alt)}
+                    onClick={() =>
+                      onOpenImagePreview({
+                        src: item.fullSrc,
+                        alt: item.alt,
+                        title: item.alt,
+                        formats: [],
+                        isProduct: false
+                      })
+                    }
                   >
                     <img
                       src={item.src}
@@ -836,24 +921,28 @@ function ImagePanel({
   src,
   variants,
   onOpenImagePreview,
-  onOpenProductPreview,
   productTitle,
-  formats
+  formats,
+  isProduct,
+  mediaAssetId
 }: {
   blockId: string;
   alt: string;
   caption: string;
   src: string;
   variants?: MediaVariants;
-  onOpenImagePreview: (src: string, alt: string) => void;
-  onOpenProductPreview: (input: {
+  onOpenImagePreview: (input: {
     src: string;
     alt: string;
     title: string;
     formats: PrintFormat[];
+    isProduct: boolean;
+    mediaAssetId?: string;
   }) => void;
   productTitle: string;
   formats: PrintFormat[];
+  isProduct?: boolean;
+  mediaAssetId?: string;
 }) {
   const panelImage = getResponsiveAssetSource(
     src,
@@ -875,9 +964,10 @@ function ImagePanel({
           alt={alt}
           className="site-image site-image--contain"
           onOpenImagePreview={onOpenImagePreview}
-          onOpenProductPreview={onOpenProductPreview}
           productTitle={productTitle}
           formats={formats}
+          isProduct={isProduct}
+          mediaAssetId={mediaAssetId}
         />
       </div>
       <p className="caption">{caption}</p>
@@ -894,9 +984,10 @@ function EditableSingleImage({
   alt,
   className,
   onOpenImagePreview,
-  onOpenProductPreview,
   productTitle,
   formats,
+  isProduct,
+  mediaAssetId,
   loading = "lazy"
 }: {
   blockId: string;
@@ -906,15 +997,18 @@ function EditableSingleImage({
   sizes?: string;
   alt: string;
   className?: string;
-  onOpenImagePreview: (src: string, alt: string) => void;
-  onOpenProductPreview: (input: {
+  onOpenImagePreview: (input: {
     src: string;
     alt: string;
     title: string;
     formats: PrintFormat[];
+    isProduct: boolean;
+    mediaAssetId?: string;
   }) => void;
   productTitle: string;
   formats: PrintFormat[];
+  isProduct?: boolean;
+  mediaAssetId?: string;
   loading?: "eager" | "lazy";
 }) {
   const { enabled, setActiveBlockId, openPanel, openMediaLibrary } = useEditor();
@@ -922,20 +1016,17 @@ function EditableSingleImage({
   if (!enabled) {
     return (
       <button
-        type="button"
-        className="page-image-button"
-        onClick={() => {
-          if (formats.length) {
-            onOpenProductPreview({
-              src: fullSrc,
-              alt,
-              title: productTitle,
-              formats
-            });
-            return;
-          }
-
-          onOpenImagePreview(fullSrc, alt);
+      type="button"
+      className="page-image-button"
+      onClick={() => {
+        onOpenImagePreview({
+          src: fullSrc,
+          alt,
+          title: productTitle,
+          formats: isProduct ? formats : [],
+          isProduct: Boolean(isProduct),
+          mediaAssetId
+        });
         }}
       >
         <img
@@ -974,4 +1065,41 @@ function EditableSingleImage({
       />
     </button>
   );
+}
+
+function getPreviewStyle(widthCm: number, heightCm: number) {
+  const width = Math.max(1, Number(widthCm) || 1);
+  const height = Math.max(1, Number(heightCm) || 1);
+  const ratio = width / height;
+
+  return ratio >= 1
+    ? { aspectRatio: `${ratio}`, width: "100%" }
+    : { aspectRatio: `${ratio}`, height: "100%" };
+}
+
+function getMediaAssetPrintFormats(asset: MediaLibraryAsset | undefined, commerceSettings: SiteCommerceSettings) {
+  if (!asset?.isProduct) {
+    return [];
+  }
+
+  return asset.printFormats?.length ? asset.printFormats : commerceSettings.printFormats;
+}
+
+function formatPrice(value: unknown) {
+  if (value == null || value === "") {
+    return "Цена не задана";
+  }
+
+  const price = Number(value);
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+}
+
+function getEffectivePrice(format: PrintFormat) {
+  return format.priceOverride ?? format.price;
+}
+
+function getFormatName(format: PrintFormat, t: (key: "commerce.unitCm") => string) {
+  const width = Math.max(1, Number(format.widthCm) || 1);
+  const height = Math.max(1, Number(format.heightCm) || 1);
+  return `${width} × ${height} ${t("commerce.unitCm")}`;
 }

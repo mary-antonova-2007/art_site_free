@@ -148,7 +148,7 @@ export async function getPageForRequest(slug: string, editorRequested: boolean) 
   return { page, editorEnabled };
 }
 
-export async function listEditorPages() {
+export async function listEditorPages(): Promise<Array<{ id: string; slug: string; title: string }>> {
   const editor = await getEditorIdentity();
 
   if (!editor) {
@@ -298,6 +298,15 @@ export async function listEditorMediaLibrary(): Promise<MediaLibraryAsset[]> {
   return await listLocalMediaLibrary();
 }
 
+export async function listPublicMediaLibrary(): Promise<MediaLibraryAsset[]> {
+  if (hasSupabaseEnv()) {
+    return await listSupabaseMediaLibrary();
+  }
+
+  await ensureLocalDatabaseReady();
+  return await listLocalMediaLibrary();
+}
+
 export async function listEditorMediaCategories(): Promise<MediaCategory[]> {
   const editor = await getEditorIdentity();
 
@@ -370,6 +379,50 @@ export async function saveCommerceSettings(input: SiteCommerceSettings) {
     .where(eq(siteSettings.id, settings.id));
 
   return normalized;
+}
+
+export async function updateEditorMediaAssetCommerceSettings(input: {
+  mediaAssetId: string;
+  isProduct: boolean;
+  printFormats: Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }>;
+}) {
+  const normalizedFormats = normalizePrintFormats(input.printFormats);
+
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { error } = await admin
+      .from("media_assets")
+      .update({
+        is_product: input.isProduct,
+        print_formats: normalizedFormats,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", input.mediaAssetId);
+
+    if (error) {
+      throw error;
+    }
+
+    return { isProduct: input.isProduct, printFormats: normalizedFormats };
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db
+    .update(mediaAssets)
+    .set({
+      isProduct: input.isProduct,
+      printFormats: normalizedFormats,
+      updatedAt: new Date()
+    })
+    .where(eq(mediaAssets.id, input.mediaAssetId));
+
+  return { isProduct: input.isProduct, printFormats: normalizedFormats };
+}
+
+export async function getEditorCommerceFormats() {
+  const settings = await getCommerceSettings();
+  return settings.printFormats;
 }
 
 export async function createEditorMediaCategory(name: string) {
@@ -517,7 +570,8 @@ async function ensureLocalDatabaseReady() {
 
 function normalizeCommerceSettings(metadata: Record<string, unknown> | null | undefined): SiteCommerceSettings {
   const base = DEFAULT_SITE_COMMERCE_SETTINGS;
-  const rawPrintFormats = Array.isArray(metadata?.printFormats) ? metadata.printFormats : [];
+  const hasPrintFormats = Array.isArray(metadata?.printFormats);
+  const rawPrintFormats = hasPrintFormats ? (metadata.printFormats as unknown[]) : [];
   const printFormats = rawPrintFormats
     .map((item, index) => {
       if (!item || typeof item !== "object") {
@@ -536,7 +590,9 @@ function normalizeCommerceSettings(metadata: Record<string, unknown> | null | un
         id: typeof candidate.id === "string" && candidate.id.trim() ? candidate.id : `format-${index}`,
         widthCm,
         heightCm,
-        label: typeof candidate.label === "string" ? candidate.label : undefined
+        label: typeof candidate.label === "string" ? candidate.label : undefined,
+        price: normalizePrice(candidate.price),
+        priceOverride: normalizePrice(candidate.priceOverride)
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -552,6 +608,17 @@ function normalizeCommerceSettings(metadata: Record<string, unknown> | null | un
         enabled: Boolean(candidate.enabled),
         title: typeof candidate.title === "string" && candidate.title.trim() ? candidate.title : key,
         description: typeof candidate.description === "string" ? candidate.description : "",
+        kind: candidate.kind === "yoomoney" || candidate.kind === "sbp" || candidate.kind === "paypal" || candidate.kind === "cards"
+          ? candidate.kind
+          : key === "yoomoney"
+            ? "yoomoney"
+            : key === "sbp"
+              ? "sbp"
+              : key === "paypal"
+                ? "paypal"
+                : key === "cards"
+                  ? "cards"
+                  : undefined,
         settings: candidate.settings && typeof candidate.settings === "object"
           ? (candidate.settings as Record<string, string>)
           : {}
@@ -561,9 +628,42 @@ function normalizeCommerceSettings(metadata: Record<string, unknown> | null | un
 
   return {
     cartEnabled: metadata?.cartEnabled === false ? false : true,
-    printFormats: printFormats.length ? printFormats : base.printFormats,
+    printFormats: hasPrintFormats ? printFormats : base.printFormats,
     paymentProviders: paymentProviders as SiteCommerceSettings["paymentProviders"]
   };
+}
+
+function normalizePrintFormats(value: Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }>) {
+  const normalized: Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }> = [];
+
+  value.forEach((item, index) => {
+    if (!item || typeof item !== "object") {
+      return;
+    }
+
+    const widthCm = Number(item.widthCm);
+    const heightCm = Number(item.heightCm);
+
+    if (!Number.isFinite(widthCm) || !Number.isFinite(heightCm) || widthCm <= 0 || heightCm <= 0) {
+      return;
+    }
+
+    normalized.push({
+      id: typeof item.id === "string" && item.id.trim() ? item.id : `format-${index}`,
+      widthCm,
+      heightCm,
+      label: typeof item.label === "string" && item.label.trim() ? item.label : undefined,
+      price: normalizePrice(item.price),
+      priceOverride: normalizePrice(item.priceOverride)
+    });
+  });
+
+  return normalized;
+}
+
+function normalizePrice(value: unknown) {
+  const price = Number(value);
+  return Number.isFinite(price) && price >= 0 ? price : undefined;
 }
 
 async function ensureLocalSchemaCompatibility() {
@@ -574,6 +674,8 @@ async function ensureLocalSchemaCompatibility() {
     alter table if exists media_assets add column if not exists focal_y integer;
     alter table if exists media_assets add column if not exists checksum text;
     alter table if exists media_assets add column if not exists category text;
+    alter table if exists media_assets add column if not exists is_product boolean not null default false;
+    alter table if exists media_assets add column if not exists print_formats jsonb not null default '[]'::jsonb;
     alter table if exists pages add column if not exists created_by uuid;
     alter table if exists pages add column if not exists updated_by uuid;
     alter table if exists page_revisions add column if not exists created_by uuid;
@@ -654,7 +756,7 @@ async function hydrateLocalPage(pageId: string, includeDraft: boolean) {
   } satisfies SitePageRecord;
 }
 
-async function getLocalPageList() {
+async function getLocalPageList(): Promise<Array<{ id: string; slug: string; title: string }>> {
   const db = createDb();
   const rows = await db
     .select({
@@ -928,6 +1030,8 @@ async function uploadLocalEditorImage(input: {
       alt: "",
       caption: readableTitle,
       category: input.category ?? "uploaded",
+      isProduct: false,
+      printFormats: [],
       isPublic: true
     })
     .returning();
@@ -943,7 +1047,9 @@ async function uploadLocalEditorImage(input: {
       title: readableTitle,
       alt: "",
       category: input.category ?? "uploaded",
-      variants: generated.variants
+      variants: generated.variants,
+      isProduct: false,
+      printFormats: []
     } satisfies MediaLibraryAsset
   };
 }
@@ -959,7 +1065,9 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
       fileName: mediaAssets.fileName,
       alt: mediaAssets.alt,
       caption: mediaAssets.caption,
-      category: mediaAssets.category
+      category: mediaAssets.category,
+      isProduct: mediaAssets.isProduct,
+      printFormats: mediaAssets.printFormats
     })
     .from(mediaAssets)
     .orderBy(desc(mediaAssets.createdAt));
@@ -973,7 +1081,9 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
         : asset.storagePath,
     title: asset.caption ?? asset.fileName ?? "Image",
     alt: asset.alt ?? "",
-    category: asset.category ?? inferMediaCategory(asset.storagePath)
+    category: asset.category ?? inferMediaCategory(asset.storagePath),
+    isProduct: asset.isProduct,
+    printFormats: normalizePrintFormats(Array.isArray(asset.printFormats) ? asset.printFormats : [])
   }));
 }
 
@@ -1403,7 +1513,7 @@ async function listSupabaseMediaLibrary(): Promise<MediaLibraryAsset[]> {
   const admin = createAdminSupabaseClient();
   const { data, error } = await admin
     .from("media_assets")
-    .select("id, storage_bucket, storage_path, file_name, mime_type, width, alt, caption")
+    .select("id, storage_bucket, storage_path, file_name, mime_type, width, alt, caption, is_product, print_formats")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -1422,7 +1532,13 @@ async function listSupabaseMediaLibrary(): Promise<MediaLibraryAsset[]> {
       previewUrl: publicUrl,
       title: String(asset.caption ?? asset.file_name ?? "Image"),
       alt: String(asset.alt ?? ""),
-      category: inferMediaCategory(String(asset.storage_path))
+      category: inferMediaCategory(String(asset.storage_path)),
+      isProduct: Boolean((asset as { is_product?: boolean }).is_product),
+      printFormats: normalizePrintFormats(
+        Array.isArray((asset as { print_formats?: unknown }).print_formats)
+          ? ((asset as { print_formats?: Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }> }).print_formats ?? [])
+          : []
+      )
     } satisfies MediaLibraryAsset;
   });
 }

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { MediaManager } from "@/components/editor/media-manager";
 import { SiteHeader } from "@/components/site/site-header";
 import { getEditorIdentity } from "@/lib/auth";
-import { listEditorPages } from "@/lib/content-service";
+import { getEditorCommerceFormats, listEditorPages } from "@/lib/content-service";
 
 export default async function MediaPage() {
   const editor = await getEditorIdentity();
@@ -13,11 +13,12 @@ export default async function MediaPage() {
   }
 
   const pages = await listEditorPages();
+  const printFormats = await getEditorCommerceFormats();
 
   return (
     <div className="site-frame">
       <SiteHeader currentSlug="media" pages={pages} currentPath="/media?editor=1" editorEnabled blocks={[]} />
-      <MediaManager />
+      <MediaManager printFormats={printFormats} />
     </div>
   );
 }

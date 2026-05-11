@@ -469,6 +469,17 @@ export function EditorSheet() {
                       )))
                     }
                   />
+                  <input
+                    type="number"
+                    min={0}
+                    value={Number(format.price ?? 0)}
+                    placeholder="Цена"
+                    onChange={(event) =>
+                      updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
+                        itemIndex === index ? { ...item, price: Number(event.currentTarget.value) } : item
+                      )))
+                    }
+                  />
                 </div>
               </div>
               <div className="editor-media-item__actions">
@@ -494,7 +505,7 @@ export function EditorSheet() {
             onClick={() =>
               updateBlockField(activeBlock.id, "printFormats", [
                 ...printFormats,
-                { id: crypto.randomUUID(), widthCm: 30, heightCm: 40, label: "30 × 40" }
+                { id: crypto.randomUUID(), widthCm: 30, heightCm: 40, label: "30 × 40", price: 0 }
               ])
             }
           >

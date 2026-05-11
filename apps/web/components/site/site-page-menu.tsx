@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -10,12 +11,14 @@ export function SitePageMenu({
   currentSlug,
   pages,
   blockItems,
-  compactNavigation
+  compactNavigation,
+  editorEnabled
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
   blockItems: Array<{ id: string; label: string }>;
   compactNavigation: boolean;
+  editorEnabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,6 +58,10 @@ export function SitePageMenu({
   }, [open]);
 
   const visible = isCompact || isScrolled || compactNavigation;
+  const getEditorAwarePath = (slug: string): Route => {
+    const path = slug === "home" ? "/" : `/${slug}`;
+    return (editorEnabled ? `${path}?editor=1` : path) as Route;
+  };
 
   if (!visible) {
     return null;
@@ -81,7 +88,7 @@ export function SitePageMenu({
               {pages.map((page) => (
                 <Link
                   key={page.id}
-                  href={page.slug === "home" ? "/" : `/${page.slug}`}
+                  href={getEditorAwarePath(page.slug)}
                   className="site-page-menu__link"
                   data-current={page.slug === currentSlug}
                   onClick={() => setOpen(false)}

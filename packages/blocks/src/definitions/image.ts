@@ -13,7 +13,9 @@ const printFormatSchema = z.object({
   id: z.string().optional(),
   widthCm: z.coerce.number().positive().max(500),
   heightCm: z.coerce.number().positive().max(500),
-  label: z.string().optional()
+  label: z.string().optional(),
+  price: z.coerce.number().nonnegative().optional(),
+  priceOverride: z.coerce.number().nonnegative().optional()
 });
 
 const schema = z.object({

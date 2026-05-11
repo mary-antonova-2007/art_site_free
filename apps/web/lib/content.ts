@@ -38,6 +38,8 @@ export type MediaLibraryAsset = {
   alt: string;
   category: MediaCategory;
   variants?: MediaVariants;
+  isProduct?: boolean;
+  printFormats?: PrintFormat[];
 };
 
 export type PrintFormat = {
@@ -45,12 +47,15 @@ export type PrintFormat = {
   widthCm: number;
   heightCm: number;
   label?: string;
+  price?: number;
+  priceOverride?: number;
 };
 
 export type PaymentProviderConfig = {
   enabled?: boolean;
   title?: string;
   description?: string;
+  kind?: "yoomoney" | "sbp" | "paypal" | "cards";
   settings?: Record<string, string>;
 };
 
@@ -63,16 +68,36 @@ export type SiteCommerceSettings = {
 export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
   cartEnabled: true,
   printFormats: [
-    { id: "30x40", widthCm: 30, heightCm: 40, label: "30 × 40" },
-    { id: "40x50", widthCm: 40, heightCm: 50, label: "40 × 50" },
-    { id: "50x70", widthCm: 50, heightCm: 70, label: "50 × 70" }
+    { id: "30x40", widthCm: 30, heightCm: 40, label: "30 × 40", price: 2500 },
+    { id: "40x50", widthCm: 40, heightCm: 50, label: "40 × 50", price: 3500 },
+    { id: "50x70", widthCm: 50, heightCm: 70, label: "50 × 70", price: 5200 }
   ],
   paymentProviders: {
-    yoomoney: { enabled: false, title: "YooMoney", settings: {} },
-    sbp: { enabled: false, title: "СБП", settings: {} },
-    paypal: { enabled: false, title: "PayPal", settings: {} }
+    yoomoney: { enabled: false, title: "ЮKassa", kind: "yoomoney", settings: { currency: "RUB" } },
+    sbp: { enabled: false, title: "СБП", kind: "sbp", settings: {} },
+    paypal: { enabled: false, title: "PayPal", kind: "paypal", settings: {} },
+    cards: { enabled: false, title: "Visa / Mastercard", kind: "cards", settings: {} }
   }
 };
+
+const PUBLIC_PAYMENT_SETTING_KEYS = new Set(["currency", "returnUrl", "descriptionTemplate"]);
+
+export function toPublicCommerceSettings(settings: SiteCommerceSettings): SiteCommerceSettings {
+  return {
+    ...settings,
+    paymentProviders: Object.fromEntries(
+      Object.entries(settings.paymentProviders).map(([key, provider]) => [
+        key,
+        {
+          ...provider,
+          settings: Object.fromEntries(
+            Object.entries(provider.settings ?? {}).filter(([settingKey]) => PUBLIC_PAYMENT_SETTING_KEYS.has(settingKey))
+          )
+        }
+      ])
+    )
+  };
+}
 
 export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source">;
 

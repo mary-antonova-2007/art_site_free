@@ -8,6 +8,7 @@ export type CartItem = {
   title: string;
   alt: string;
   format: PrintFormat;
+  availableFormats?: PrintFormat[];
   quantity: number;
 };
 
@@ -64,6 +65,7 @@ function isCartItem(value: unknown): value is CartItem {
     typeof candidate.format === "object" &&
     typeof (candidate.format as Record<string, unknown>).widthCm === "number" &&
     typeof (candidate.format as Record<string, unknown>).heightCm === "number" &&
+    (candidate.availableFormats === undefined || Array.isArray(candidate.availableFormats)) &&
     typeof candidate.quantity === "number"
   );
 }

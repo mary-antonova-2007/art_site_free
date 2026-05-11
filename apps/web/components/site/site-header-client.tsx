@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 
 import { useTheme } from "@/components/layout/theme-provider";
@@ -132,12 +133,16 @@ export function SiteHeaderClient({
     groups[theme.group].push(theme);
     return groups;
   }, {});
+  const getEditorAwarePath = (slug: string): Route => {
+    const path = slug === "home" ? "/" : `/${slug}`;
+    return (editorEnabled ? `${path}?editor=1` : path) as Route;
+  };
 
   return (
     <header ref={headerRef} className="site-header" data-compact-nav={compactNavigation}>
       <div ref={brandRef} className="site-brand">
         <span className="site-brand-kicker">{kicker}</span>
-        <Link href="/" className="site-brand-title">
+        <Link href={(editorEnabled ? "/?editor=1" : "/") as Route} className="site-brand-title">
           ArtSite
         </Link>
       </div>
@@ -151,7 +156,7 @@ export function SiteHeaderClient({
           <Link
             key={page.id}
             className="site-nav__link"
-            href={page.slug === "home" ? "/" : `/${page.slug}`}
+            href={getEditorAwarePath(page.slug)}
             data-current={page.slug === currentSlug}
           >
             {page.title}
@@ -184,6 +189,7 @@ export function SiteHeaderClient({
         pages={pages}
         blockItems={blockItems}
         compactNavigation={compactNavigation}
+        editorEnabled={editorEnabled}
       />
     </header>
   );

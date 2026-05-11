@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { ShopSettingsPage } from "@/components/editor/shop-settings-page";
+import { SiteHeader } from "@/components/site/site-header";
 import { getEditorIdentity } from "@/lib/auth";
-import { getCommerceSettings } from "@/lib/content-service";
+import { getCommerceSettings, listEditorPages } from "@/lib/content-service";
 
 export default async function SettingsRoutePage() {
   const editor = await getEditorIdentity();
@@ -11,5 +12,12 @@ export default async function SettingsRoutePage() {
   }
 
   const initialSettings = await getCommerceSettings();
-  return <ShopSettingsPage initialSettings={initialSettings} />;
+  const pages = await listEditorPages();
+
+  return (
+    <div className="site-frame">
+      <SiteHeader currentSlug="settings" pages={pages} currentPath="/settings?editor=1" editorEnabled blocks={[]} />
+      <ShopSettingsPage initialSettings={initialSettings} />
+    </div>
+  );
 }
