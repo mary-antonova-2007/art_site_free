@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         description,
         metadata: {
           orderId,
-          customer: sanitizeCustomer(payload.customer)
+          ...sanitizeCustomerMetadata(payload.customer)
         }
       })
     });
@@ -148,17 +148,17 @@ function buildDescription(template: string | undefined, orderId: string) {
   return `${base} ${orderId.slice(0, 8)}`.slice(0, 128);
 }
 
-function sanitizeCustomer(customer: CheckoutPayload["customer"]) {
+function sanitizeCustomerMetadata(customer: CheckoutPayload["customer"]) {
   if (!customer || typeof customer !== "object") {
     return {};
   }
 
   return {
-    name: stringifyMetadataValue(customer.name),
-    email: stringifyMetadataValue(customer.email),
-    phone: stringifyMetadataValue(customer.phone),
-    city: stringifyMetadataValue(customer.city),
-    address: stringifyMetadataValue(customer.address)
+    customerName: stringifyMetadataValue(customer.name),
+    customerEmail: stringifyMetadataValue(customer.email),
+    customerPhone: stringifyMetadataValue(customer.phone),
+    customerCity: stringifyMetadataValue(customer.city),
+    customerAddress: stringifyMetadataValue(customer.address)
   };
 }
 

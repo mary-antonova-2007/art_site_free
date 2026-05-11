@@ -266,10 +266,17 @@ async function startYooKassaCheckout(input: {
     })
   });
 
-  const payload = (await response.json()) as { confirmationUrl?: string; error?: string };
+  const payload = (await response.json()) as {
+    confirmationUrl?: string;
+    error?: string;
+    details?: { description?: string; parameter?: string; code?: string };
+  };
 
   if (!response.ok || !payload.confirmationUrl) {
-    input.setCheckoutStatus(payload.error ?? "Не удалось перейти к оплате.");
+    const details = payload.details?.description
+      ? `${payload.details.description}${payload.details.parameter ? ` (${payload.details.parameter})` : ""}`
+      : "";
+    input.setCheckoutStatus(details || payload.error || "Не удалось перейти к оплате.");
     return;
   }
 
