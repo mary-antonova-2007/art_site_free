@@ -754,7 +754,7 @@ function normalizeEmailNotificationSettings(value: unknown): SiteCommerceSetting
     smtpPort: normalizeString(candidate.smtpPort) || base.smtpPort,
     smtpSecure: typeof candidate.smtpSecure === "boolean" ? candidate.smtpSecure : base.smtpSecure,
     smtpUser: normalizeString(candidate.smtpUser),
-    smtpPassword: normalizeString(candidate.smtpPassword)
+    smtpPassword: normalizeString(candidate.smtpPassword).replace(/\s+/g, "")
   };
 }
 

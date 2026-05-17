@@ -65,7 +65,7 @@ async function sendMail(input: {
   const smtpHost = input.settings.smtpHost?.trim();
   const smtpPort = Number(input.settings.smtpPort);
   const smtpUser = input.settings.smtpUser?.trim();
-  const smtpPassword = input.settings.smtpPassword?.trim();
+  const smtpPassword = input.settings.smtpPassword?.replace(/\s+/g, "");
   const fromEmail = input.settings.fromEmail?.trim() || smtpUser;
 
   if (!smtpHost || !Number.isFinite(smtpPort) || smtpPort <= 0 || !smtpUser || !smtpPassword || !fromEmail) {
