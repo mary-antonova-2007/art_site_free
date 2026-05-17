@@ -385,6 +385,19 @@ function galleryItem(fileName: string, caption: string, alt: string) {
   };
 }
 
+function collectionCarousel(title: string, position: number, fileNames: string[]) {
+  return {
+    ...block("worksGrid", position),
+    data: {
+      ...createDefaultBlock("worksGrid"),
+      title,
+      itemIds: fileNames.map(artworkPath),
+      columns: "4",
+      layout: "carousel"
+    }
+  };
+}
+
 export function createSeedMediaLibrary(): MediaLibraryAsset[] {
   return ARTWORKS.map((artwork) => ({
     id: `media-${artwork.fileName.replace(/\.[^.]+$/, "")}`,
@@ -469,31 +482,21 @@ export function createSeedPages(): SeedPageDefinition[] {
           ...block("sectionHeader", 5),
           data: {
             ...createDefaultBlock("sectionHeader"),
-            eyebrow: "Selected works",
-            title: "A visual archive of cold light and living matter.",
+            eyebrow: "Collections",
+            title: "Seven ways through the archive.",
             description:
-              "The homepage begins with a focused selection. The full media library is already seeded with all available works and print dimensions."
+              "Each carousel gathers works by visual language and inner movement, from blue silence to mythic bodies and threshold spaces."
           }
         },
+        collectionCarousel("Crystalline Geometry", 6, ["001_60x60.jpg", "009_60x65.jpg"]),
+        collectionCarousel("Blue Silence", 7, ["003_60x80.jpg", "006_60x60.jpg", "008_52x80.jpg", "012_60x80.jpg"]),
+        collectionCarousel("Mythic Figures", 8, ["005_60x80.jpg", "013_60x80.jpg", "015_60x80.jpg"]),
+        collectionCarousel("Fire and Transformation", 9, ["007_50x50.jpg", "014_60x80.jpg"]),
+        collectionCarousel("Organic Memory", 10, ["002_60x60.jpg", "005_50x80.jpg", "018_60x85.jpg"]),
+        collectionCarousel("Thresholds", 11, ["016_50x60.jpg", "017_55x80.jpg"]),
+        collectionCarousel("Cycles of Time", 12, ["010_60x60.jpg", "011_60x80.jpg"]),
         {
-          ...block("worksGrid", 6),
-          data: {
-            ...createDefaultBlock("worksGrid"),
-            title: "Selected works",
-            itemIds: [
-              artworkPath("015_60x80.jpg"),
-              artworkPath("013_60x80.jpg"),
-              artworkPath("003_60x80.jpg"),
-              artworkPath("011_60x80.jpg"),
-              artworkPath("001_60x60.jpg"),
-              artworkPath("018_60x85.jpg")
-            ],
-            columns: "3",
-            layout: "grid"
-          }
-        },
-        {
-          ...block("cta", 7),
+          ...block("cta", 13),
           data: {
             ...createDefaultBlock("cta"),
             title: "For commissions, acquisitions, and exhibition conversations.",
@@ -503,7 +506,7 @@ export function createSeedPages(): SeedPageDefinition[] {
           }
         },
         {
-          ...block("contact", 8),
+          ...block("contact", 14),
           data: {
             ...createDefaultBlock("contact"),
             title: "Studio contact",

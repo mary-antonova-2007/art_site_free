@@ -824,14 +824,29 @@ function RenderedBlock<TType extends BlockType>({
       const collectionData = data as BlockDataMap["worksGrid"] | BlockDataMap["seriesGrid"];
       const collectionItems = ((collectionData.itemIds ?? []).length ? collectionData.itemIds ?? [] : ["alpha", "beta", "gamma"]).map(
         (itemId: string, index: number) => {
-          const originalSrc = assetPath(itemId, "/art-04.svg");
-          const displaySrc = getPreferredImageUrl(originalSrc, undefined, "card");
+          const asset = mediaAssetsById[itemId];
+          const source = getResponsiveAssetSource(
+            itemId,
+            "/art-04.svg",
+            asset?.variants,
+            "card",
+            "(max-width: 920px) 82vw, (max-width: 1280px) 42vw, 28vw"
+          );
+          const formats = asset?.isProduct && commerceSettings.cartEnabled
+            ? getMediaAssetPrintFormats(asset, commerceSettings)
+            : [];
 
           return {
             id: `${itemId}-${index}`,
-            src: displaySrc,
-            fullSrc: originalSrc,
-            alt: itemId
+            src: source.src,
+            fullSrc: source.fullSrc,
+            srcSet: source.srcSet,
+            sizes: source.sizes,
+            alt: asset?.alt || asset?.title || itemId,
+            caption: asset?.title,
+            mediaAssetId: asset?.mediaAssetId ?? itemId,
+            formats,
+            isProduct: Boolean(asset?.isProduct && formats.length)
           };
         }
       );
@@ -855,14 +870,17 @@ function RenderedBlock<TType extends BlockType>({
                       onOpenImagePreview({
                         src: item.fullSrc,
                         alt: item.alt,
-                        title: item.alt,
-                        formats: [],
-                        isProduct: false
+                        title: item.caption ?? item.alt,
+                        formats: item.formats,
+                        isProduct: item.isProduct,
+                        mediaAssetId: item.mediaAssetId
                       })
                     }
                   >
                     <img
                       src={item.src}
+                      srcSet={item.srcSet}
+                      sizes={item.sizes}
                       alt={item.alt}
                       className="site-image site-image--gallery"
                       loading="lazy"
