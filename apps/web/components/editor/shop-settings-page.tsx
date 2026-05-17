@@ -344,6 +344,16 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
         <div className="shop-payment-card">
           <div className="shop-payment-card__grid">
             <label className="editor-field">
+              <span>Email provider</span>
+              <select
+                value={settings.emailNotifications.provider ?? "resend"}
+                onChange={(event) => updateEmailNotifications({ provider: event.currentTarget.value === "smtp" ? "smtp" : "resend" })}
+              >
+                <option value="resend">Resend HTTPS API</option>
+                <option value="smtp">SMTP</option>
+              </select>
+            </label>
+            <label className="editor-field">
               <span>Notification email</span>
               <input
                 type="email"
@@ -369,6 +379,28 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                 onChange={(event) => updateEmailNotifications({ fromName: event.currentTarget.value })}
               />
             </label>
+            <label className="editor-field">
+              <span>Reply-to email</span>
+              <input
+                type="email"
+                value={settings.emailNotifications.replyToEmail ?? ""}
+                placeholder="schmid.olga@yandex.ru"
+                onChange={(event) => updateEmailNotifications({ replyToEmail: event.currentTarget.value })}
+              />
+            </label>
+            {(settings.emailNotifications.provider ?? "resend") === "resend" ? (
+              <label className="editor-field">
+                <span>Resend API key</span>
+                <input
+                  type="password"
+                  value={settings.emailNotifications.resendApiKey ?? ""}
+                  placeholder="re_..."
+                  onChange={(event) => updateEmailNotifications({ resendApiKey: event.currentTarget.value })}
+                />
+              </label>
+            ) : null}
+            {(settings.emailNotifications.provider ?? "resend") === "smtp" ? (
+              <>
             <label className="editor-field">
               <span>SMTP host</span>
               <input
@@ -403,15 +435,19 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                 onChange={(event) => updateEmailNotifications({ smtpPassword: event.currentTarget.value })}
               />
             </label>
+              </>
+            ) : null}
           </div>
-          <label className="editor-field editor-field-checkbox">
-            <span>Use SSL/TLS</span>
-            <input
-              type="checkbox"
-              checked={settings.emailNotifications.smtpSecure !== false}
-              onChange={(event) => updateEmailNotifications({ smtpSecure: event.currentTarget.checked })}
-            />
-          </label>
+          {(settings.emailNotifications.provider ?? "resend") === "smtp" ? (
+            <label className="editor-field editor-field-checkbox">
+              <span>Use SSL/TLS</span>
+              <input
+                type="checkbox"
+                checked={settings.emailNotifications.smtpSecure !== false}
+                onChange={(event) => updateEmailNotifications({ smtpSecure: event.currentTarget.checked })}
+              />
+            </label>
+          ) : null}
           <div className="shop-settings-hero__actions">
             <button type="button" className="editor-button" onClick={() => void persistSettings(settings)}>
               Save email settings

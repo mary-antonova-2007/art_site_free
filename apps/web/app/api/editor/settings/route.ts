@@ -33,9 +33,12 @@ export async function PATCH(request: Request) {
       paymentProviders: body.paymentProviders ?? {},
       emailNotifications: {
         enabled: body.emailNotifications?.enabled,
+        provider: body.emailNotifications?.provider,
         adminEmail: body.emailNotifications?.adminEmail,
         fromEmail: body.emailNotifications?.fromEmail,
         fromName: body.emailNotifications?.fromName,
+        replyToEmail: body.emailNotifications?.replyToEmail,
+        resendApiKey: body.emailNotifications?.resendApiKey,
         smtpHost: body.emailNotifications?.smtpHost,
         smtpPort: body.emailNotifications?.smtpPort,
         smtpSecure: body.emailNotifications?.smtpSecure,

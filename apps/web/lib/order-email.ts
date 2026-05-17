@@ -62,6 +62,11 @@ async function sendMail(input: {
   text: string;
   html: string;
 }) {
+  if (input.settings.provider !== "smtp") {
+    await sendResendMail(input);
+    return;
+  }
+
   const smtpHost = input.settings.smtpHost?.trim();
   const smtpPort = Number(input.settings.smtpPort);
   const smtpUser = input.settings.smtpUser?.trim();
@@ -90,6 +95,43 @@ async function sendMail(input: {
     text: input.text,
     html: input.html
   });
+}
+
+async function sendResendMail(input: {
+  settings: EmailSettings;
+  to: string | string[];
+  subject: string;
+  text: string;
+  html: string;
+}) {
+  const apiKey = input.settings.resendApiKey?.trim();
+  const fromEmail = input.settings.fromEmail?.trim();
+  const fromName = input.settings.fromName?.trim();
+
+  if (!apiKey || !fromEmail) {
+    throw new Error("Resend API key and sender email are required.");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: fromName ? `${fromName} <${fromEmail}>` : fromEmail,
+      to: Array.isArray(input.to) ? input.to : [input.to],
+      reply_to: input.settings.replyToEmail?.trim() || undefined,
+      subject: input.subject,
+      text: input.text,
+      html: input.html
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => "");
+    throw new Error(`Resend email failed (${response.status}): ${details || response.statusText}`);
+  }
 }
 
 function buildOrderText(order: StoredOrder) {

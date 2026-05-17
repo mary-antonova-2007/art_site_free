@@ -747,9 +747,12 @@ function normalizeEmailNotificationSettings(value: unknown): SiteCommerceSetting
 
   return {
     enabled: candidate.enabled === true,
+    provider: candidate.provider === "smtp" ? "smtp" : "resend",
     adminEmail: normalizeString(candidate.adminEmail) || base.adminEmail,
     fromEmail: normalizeString(candidate.fromEmail),
     fromName: normalizeString(candidate.fromName) || base.fromName,
+    replyToEmail: normalizeString(candidate.replyToEmail),
+    resendApiKey: normalizeString(candidate.resendApiKey),
     smtpHost: normalizeString(candidate.smtpHost),
     smtpPort: normalizeString(candidate.smtpPort) || base.smtpPort,
     smtpSecure: typeof candidate.smtpSecure === "boolean" ? candidate.smtpSecure : base.smtpSecure,

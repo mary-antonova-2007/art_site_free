@@ -65,9 +65,12 @@ export type SiteCommerceSettings = {
   paymentProviders: Record<string, PaymentProviderConfig>;
   emailNotifications: {
     enabled?: boolean;
+    provider?: "resend" | "smtp";
     adminEmail?: string;
     fromEmail?: string;
     fromName?: string;
+    replyToEmail?: string;
+    resendApiKey?: string;
     smtpHost?: string;
     smtpPort?: string;
     smtpSecure?: boolean;
@@ -97,9 +100,12 @@ export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
   },
   emailNotifications: {
     enabled: false,
+    provider: "resend",
     adminEmail: "schmid.olga@yandex.ru",
     fromEmail: "",
     fromName: "Olga Schmid",
+    replyToEmail: "",
+    resendApiKey: "",
     smtpHost: "",
     smtpPort: "465",
     smtpSecure: true,
@@ -115,9 +121,12 @@ export function toPublicCommerceSettings(settings: SiteCommerceSettings): SiteCo
     ...settings,
     emailNotifications: {
       enabled: settings.emailNotifications.enabled,
+      provider: settings.emailNotifications.provider,
       adminEmail: settings.emailNotifications.adminEmail,
       fromEmail: settings.emailNotifications.fromEmail,
       fromName: settings.emailNotifications.fromName,
+      replyToEmail: settings.emailNotifications.replyToEmail,
+      resendApiKey: "",
       smtpHost: "",
       smtpPort: "",
       smtpSecure: settings.emailNotifications.smtpSecure,
