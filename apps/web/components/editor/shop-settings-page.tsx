@@ -9,6 +9,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
   const t = useTranslations();
   const [settings, setSettings] = useState(initialSettings);
   const [status, setStatus] = useState("");
+  const [testEmailStatus, setTestEmailStatus] = useState("");
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
   const [editingFormatIndex, setEditingFormatIndex] = useState<number | null>(null);
   const [draftFormat, setDraftFormat] = useState<PrintFormat>({
@@ -128,6 +129,33 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
         }
       };
     });
+  };
+
+  const updateEmailNotifications = (
+    patch: Partial<SiteCommerceSettings["emailNotifications"]>
+  ) => {
+    setSettings((current) => ({
+      ...current,
+      emailNotifications: {
+        ...current.emailNotifications,
+        ...patch
+      }
+    }));
+  };
+
+  const sendTestEmail = async () => {
+    setTestEmailStatus("Sending test email...");
+    const response = await fetch("/api/editor/settings/test-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipient: settings.emailNotifications.adminEmail,
+        emailNotifications: settings.emailNotifications
+      })
+    });
+    const payload = (await response.json()) as { error?: string };
+
+    setTestEmailStatus(response.ok ? "Test email sent." : payload.error ?? "Could not send test email.");
   };
 
   return (
@@ -296,6 +324,103 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="section-stack">
+        <h2>Email notifications</h2>
+        <p className="mini-note">
+          After YooKassa confirms a paid order, the buyer and this notification email receive the order details.
+          Use the webhook URL <code>/api/payments/yookassa/webhook</code> in YooKassa.
+        </p>
+        <label className="editor-field editor-field-checkbox">
+          <span>Enable email notifications</span>
+          <input
+            type="checkbox"
+            checked={Boolean(settings.emailNotifications.enabled)}
+            onChange={(event) => updateEmailNotifications({ enabled: event.currentTarget.checked })}
+          />
+        </label>
+        <div className="shop-payment-card">
+          <div className="shop-payment-card__grid">
+            <label className="editor-field">
+              <span>Notification email</span>
+              <input
+                type="email"
+                value={settings.emailNotifications.adminEmail ?? ""}
+                placeholder="schmid.olga@yandex.ru"
+                onChange={(event) => updateEmailNotifications({ adminEmail: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>Sender email</span>
+              <input
+                type="email"
+                value={settings.emailNotifications.fromEmail ?? ""}
+                placeholder="shop@example.com"
+                onChange={(event) => updateEmailNotifications({ fromEmail: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>Sender name</span>
+              <input
+                value={settings.emailNotifications.fromName ?? ""}
+                placeholder="Olga Schmid"
+                onChange={(event) => updateEmailNotifications({ fromName: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>SMTP host</span>
+              <input
+                value={settings.emailNotifications.smtpHost ?? ""}
+                placeholder="smtp.yandex.ru"
+                onChange={(event) => updateEmailNotifications({ smtpHost: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>SMTP port</span>
+              <input
+                type="number"
+                value={settings.emailNotifications.smtpPort ?? ""}
+                placeholder="465"
+                onChange={(event) => updateEmailNotifications({ smtpPort: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>SMTP user</span>
+              <input
+                value={settings.emailNotifications.smtpUser ?? ""}
+                placeholder="shop@example.com"
+                onChange={(event) => updateEmailNotifications({ smtpUser: event.currentTarget.value })}
+              />
+            </label>
+            <label className="editor-field">
+              <span>SMTP password</span>
+              <input
+                type="password"
+                value={settings.emailNotifications.smtpPassword ?? ""}
+                placeholder="App password"
+                onChange={(event) => updateEmailNotifications({ smtpPassword: event.currentTarget.value })}
+              />
+            </label>
+          </div>
+          <label className="editor-field editor-field-checkbox">
+            <span>Use SSL/TLS</span>
+            <input
+              type="checkbox"
+              checked={settings.emailNotifications.smtpSecure !== false}
+              onChange={(event) => updateEmailNotifications({ smtpSecure: event.currentTarget.checked })}
+            />
+          </label>
+          <div className="shop-settings-hero__actions">
+            <button type="button" className="editor-button" onClick={() => void persistSettings(settings)}>
+              Save email settings
+            </button>
+            <button type="button" className="editor-button" onClick={() => void sendTestEmail()}>
+              Send test email
+            </button>
+          </div>
+          {testEmailStatus ? <p className="mini-note">{testEmailStatus}</p> : null}
         </div>
       </section>
 

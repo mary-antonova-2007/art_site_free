@@ -8,6 +8,7 @@ import { MediaLibraryDialog } from "@/components/editor/media-library-dialog";
 import { PageRenderer } from "@/components/site/page-renderer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getCommerceSettings, getPageForRequest, listPublicMediaLibrary } from "@/lib/content-service";
+import { toPublicCommerceSettings } from "@/lib/content";
 import { isEditorModeEnabled } from "@/lib/editor-mode";
 
 export async function PageScreen({
@@ -47,7 +48,7 @@ export async function PageScreen({
         />
         <EditorBlockNav />
         {editorEnabled ? <EditorBar /> : null}
-        <PageRenderer page={page} commerceSettings={commerceSettings} mediaAssetsById={mediaAssetsById} />
+        <PageRenderer page={page} commerceSettings={toPublicCommerceSettings(commerceSettings)} mediaAssetsById={mediaAssetsById} />
         {editorEnabled ? <EditorSheet /> : null}
         {editorEnabled ? <MediaLibraryDialog /> : null}
       </div>

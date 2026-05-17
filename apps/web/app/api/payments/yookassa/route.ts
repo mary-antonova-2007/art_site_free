@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
-import { getCommerceSettings } from "@/lib/content-service";
+import { attachOrderPaymentId, createPendingOrder, getCommerceSettings } from "@/lib/content-service";
 import { getRequestOrigin } from "@/lib/request-origin";
 
 type CheckoutPayload = {
@@ -34,6 +34,7 @@ type YooKassaPaymentResponse = {
   };
 };
 
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as CheckoutPayload;
@@ -61,7 +62,20 @@ export async function POST(request: Request) {
     const returnUrl = normalizeReturnUrl(settings.returnUrl, origin);
     const currency = normalizeCurrency(settings.currency);
     const orderId = randomUUID();
+    const orderNumber = `OS-${orderId.slice(0, 8).toUpperCase()}`;
     const description = buildDescription(settings.descriptionTemplate, orderId);
+    const sanitizedCustomer = sanitizeCustomerMetadata(payload.customer);
+    const normalizedItems = normalizeOrderItems(payload.items);
+
+    await createPendingOrder({
+      orderNumber,
+      paymentProvider: "yoomoney",
+      currency,
+      amount: Math.round(amount * 100),
+      customer: sanitizedCustomer,
+      items: normalizedItems,
+      metadata: { orderId }
+    });
 
     const response = await fetch("https://api.yookassa.ru/v3/payments", {
       method: "POST",
@@ -83,7 +97,8 @@ export async function POST(request: Request) {
         description,
         metadata: {
           orderId,
-          ...sanitizeCustomerMetadata(payload.customer)
+          orderNumber,
+          ...sanitizedCustomer
         }
       })
     });
@@ -96,6 +111,10 @@ export async function POST(request: Request) {
         { error: "Could not create the YooKassa payment.", details: payment },
         { status: response.ok ? 502 : response.status }
       );
+    }
+
+    if (payment.id) {
+      await attachOrderPaymentId(orderNumber, payment.id);
     }
 
     return NextResponse.json({
@@ -160,6 +179,23 @@ function sanitizeCustomerMetadata(customer: CheckoutPayload["customer"]) {
     customerCity: stringifyMetadataValue(customer.city),
     customerAddress: stringifyMetadataValue(customer.address)
   };
+}
+
+function normalizeOrderItems(items: CheckoutPayload["items"]) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.map((item) => ({
+    title: stringifyMetadataValue(item.title),
+    quantity: Math.max(1, Number(item.quantity) || 1),
+    format: {
+      widthCm: Number(item.format?.widthCm) || undefined,
+      heightCm: Number(item.format?.heightCm) || undefined,
+      price: Number(item.format?.price) || undefined,
+      priceOverride: Number(item.format?.priceOverride) || undefined
+    }
+  }));
 }
 
 function stringifyMetadataValue(value: unknown) {

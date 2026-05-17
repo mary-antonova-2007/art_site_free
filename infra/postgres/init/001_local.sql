@@ -28,6 +28,13 @@ exception
   when duplicate_object then null;
 end $$;
 
+do $$
+begin
+  create type order_status as enum ('pending', 'paid', 'failed', 'cancelled');
+exception
+  when duplicate_object then null;
+end $$;
+
 create table if not exists app_users (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid unique,
@@ -120,6 +127,23 @@ create table if not exists media_assets (
   checksum text,
   uploaded_by uuid references app_users(id) on delete set null,
   is_public boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists orders (
+  id uuid primary key default gen_random_uuid(),
+  order_number text not null unique,
+  payment_provider text not null default 'yoomoney',
+  payment_id text unique,
+  status order_status not null default 'pending',
+  currency text not null default 'RUB',
+  amount integer not null default 0,
+  customer jsonb not null default '{}'::jsonb,
+  items jsonb not null default '[]'::jsonb,
+  metadata jsonb not null default '{}'::jsonb,
+  paid_at timestamptz,
+  notified_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

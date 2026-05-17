@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { createDefaultBlock, validateBlock, type BlockType } from "@artsite/blocks";
-import { createDb, hasDatabaseUrl, mediaAssets, pageBlocks, pageRevisions, pages, siteSettings } from "@artsite/db";
+import { createDb, hasDatabaseUrl, mediaAssets, orders, pageBlocks, pageRevisions, pages, siteSettings } from "@artsite/db";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
@@ -390,6 +390,84 @@ export async function saveCommerceSettings(input: SiteCommerceSettings) {
   return normalized;
 }
 
+export type StoredOrderInput = {
+  orderNumber: string;
+  paymentProvider: string;
+  paymentId?: string | null;
+  status?: "pending" | "paid" | "failed" | "cancelled";
+  currency: string;
+  amount: number;
+  customer: Record<string, unknown>;
+  items: Array<Record<string, unknown>>;
+  metadata?: Record<string, unknown>;
+};
+
+export type StoredOrder = StoredOrderInput & {
+  id: string;
+  paymentId: string | null;
+  status: "pending" | "paid" | "failed" | "cancelled";
+  paidAt?: Date | null;
+  notifiedAt?: Date | null;
+};
+
+export async function createPendingOrder(input: StoredOrderInput): Promise<StoredOrder> {
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const [row] = await db
+    .insert(orders)
+    .values({
+      orderNumber: input.orderNumber,
+      paymentProvider: input.paymentProvider,
+      paymentId: input.paymentId ?? null,
+      status: input.status ?? "pending",
+      currency: input.currency,
+      amount: Math.max(0, Math.round(input.amount)),
+      customer: input.customer,
+      items: input.items,
+      metadata: input.metadata ?? {}
+    })
+    .returning();
+
+  return mapOrderRow(row);
+}
+
+export async function attachOrderPaymentId(orderNumber: string, paymentId: string): Promise<void> {
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db
+    .update(orders)
+    .set({ paymentId, updatedAt: new Date() })
+    .where(eq(orders.orderNumber, orderNumber));
+}
+
+export async function findOrderByPaymentId(paymentId: string): Promise<StoredOrder | null> {
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const row = await db.query.orders.findFirst({ where: eq(orders.paymentId, paymentId) });
+  return row ? mapOrderRow(row) : null;
+}
+
+export async function markOrderPaid(paymentId: string): Promise<StoredOrder | null> {
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const [row] = await db
+    .update(orders)
+    .set({ status: "paid", paidAt: new Date(), updatedAt: new Date() })
+    .where(eq(orders.paymentId, paymentId))
+    .returning();
+
+  return row ? mapOrderRow(row) : null;
+}
+
+export async function markOrderNotified(orderId: string): Promise<void> {
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db
+    .update(orders)
+    .set({ notifiedAt: new Date(), updatedAt: new Date() })
+    .where(eq(orders.id, orderId));
+}
+
 export async function updateEditorMediaAssetCommerceSettings(input: {
   mediaAssetId: string;
   isProduct: boolean;
@@ -658,7 +736,46 @@ function normalizeCommerceSettings(metadata: Record<string, unknown> | null | un
   return {
     cartEnabled: metadata?.cartEnabled === false ? false : true,
     printFormats: hasPrintFormats ? printFormats : base.printFormats,
-    paymentProviders: paymentProviders as SiteCommerceSettings["paymentProviders"]
+    paymentProviders: paymentProviders as SiteCommerceSettings["paymentProviders"],
+    emailNotifications: normalizeEmailNotificationSettings(metadata?.emailNotifications)
+  };
+}
+
+function normalizeEmailNotificationSettings(value: unknown): SiteCommerceSettings["emailNotifications"] {
+  const base = DEFAULT_SITE_COMMERCE_SETTINGS.emailNotifications;
+  const candidate = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+  return {
+    enabled: candidate.enabled === true,
+    adminEmail: normalizeString(candidate.adminEmail) || base.adminEmail,
+    fromEmail: normalizeString(candidate.fromEmail),
+    fromName: normalizeString(candidate.fromName) || base.fromName,
+    smtpHost: normalizeString(candidate.smtpHost),
+    smtpPort: normalizeString(candidate.smtpPort) || base.smtpPort,
+    smtpSecure: typeof candidate.smtpSecure === "boolean" ? candidate.smtpSecure : base.smtpSecure,
+    smtpUser: normalizeString(candidate.smtpUser),
+    smtpPassword: normalizeString(candidate.smtpPassword)
+  };
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function mapOrderRow(row: typeof orders.$inferSelect): StoredOrder {
+  return {
+    id: row.id,
+    orderNumber: row.orderNumber,
+    paymentProvider: row.paymentProvider,
+    paymentId: row.paymentId,
+    status: row.status,
+    currency: row.currency,
+    amount: row.amount,
+    customer: row.customer ?? {},
+    items: Array.isArray(row.items) ? row.items : [],
+    metadata: row.metadata ?? {},
+    paidAt: row.paidAt,
+    notifiedAt: row.notifiedAt
   };
 }
 
@@ -746,6 +863,12 @@ async function ensureLocalSchemaCompatibility() {
   const db = createDb();
 
   await db.execute(sql.raw(`
+    do $$
+    begin
+      create type order_status as enum ('pending', 'paid', 'failed', 'cancelled');
+    exception
+      when duplicate_object then null;
+    end $$;
     alter table if exists media_assets add column if not exists focal_x integer;
     alter table if exists media_assets add column if not exists focal_y integer;
     alter table if exists media_assets add column if not exists checksum text;
@@ -756,6 +879,22 @@ async function ensureLocalSchemaCompatibility() {
     alter table if exists pages add column if not exists updated_by uuid;
     alter table if exists page_revisions add column if not exists created_by uuid;
     alter table if exists media_assets add column if not exists uploaded_by uuid;
+    create table if not exists orders (
+      id uuid primary key default gen_random_uuid(),
+      order_number text not null unique,
+      payment_provider text not null default 'yoomoney',
+      payment_id text unique,
+      status order_status not null default 'pending',
+      currency text not null default 'RUB',
+      amount integer not null default 0,
+      customer jsonb not null default '{}'::jsonb,
+      items jsonb not null default '[]'::jsonb,
+      metadata jsonb not null default '{}'::jsonb,
+      paid_at timestamptz,
+      notified_at timestamptz,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    );
   `));
 }
 

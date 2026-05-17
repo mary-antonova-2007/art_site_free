@@ -63,6 +63,17 @@ export type SiteCommerceSettings = {
   cartEnabled: boolean;
   printFormats: PrintFormat[];
   paymentProviders: Record<string, PaymentProviderConfig>;
+  emailNotifications: {
+    enabled?: boolean;
+    adminEmail?: string;
+    fromEmail?: string;
+    fromName?: string;
+    smtpHost?: string;
+    smtpPort?: string;
+    smtpSecure?: boolean;
+    smtpUser?: string;
+    smtpPassword?: string;
+  };
 };
 
 export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
@@ -83,6 +94,17 @@ export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
     sbp: { enabled: false, title: "SBP", kind: "sbp", settings: {} },
     paypal: { enabled: false, title: "PayPal", kind: "paypal", settings: {} },
     cards: { enabled: false, title: "Visa / Mastercard", kind: "cards", settings: {} }
+  },
+  emailNotifications: {
+    enabled: false,
+    adminEmail: "schmid.olga@yandex.ru",
+    fromEmail: "",
+    fromName: "Olga Schmid",
+    smtpHost: "",
+    smtpPort: "465",
+    smtpSecure: true,
+    smtpUser: "",
+    smtpPassword: ""
   }
 };
 
@@ -91,6 +113,17 @@ const PUBLIC_PAYMENT_SETTING_KEYS = new Set(["currency", "returnUrl", "descripti
 export function toPublicCommerceSettings(settings: SiteCommerceSettings): SiteCommerceSettings {
   return {
     ...settings,
+    emailNotifications: {
+      enabled: settings.emailNotifications.enabled,
+      adminEmail: settings.emailNotifications.adminEmail,
+      fromEmail: settings.emailNotifications.fromEmail,
+      fromName: settings.emailNotifications.fromName,
+      smtpHost: "",
+      smtpPort: "",
+      smtpSecure: settings.emailNotifications.smtpSecure,
+      smtpUser: "",
+      smtpPassword: ""
+    },
     paymentProviders: Object.fromEntries(
       Object.entries(settings.paymentProviders).map(([key, provider]) => [
         key,

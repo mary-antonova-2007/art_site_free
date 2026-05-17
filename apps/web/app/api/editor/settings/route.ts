@@ -30,7 +30,18 @@ export async function PATCH(request: Request) {
     const settings = await saveCommerceSettings({
       cartEnabled: body.cartEnabled ?? true,
       printFormats: Array.isArray(body.printFormats) ? body.printFormats : [],
-      paymentProviders: body.paymentProviders ?? {}
+      paymentProviders: body.paymentProviders ?? {},
+      emailNotifications: {
+        enabled: body.emailNotifications?.enabled,
+        adminEmail: body.emailNotifications?.adminEmail,
+        fromEmail: body.emailNotifications?.fromEmail,
+        fromName: body.emailNotifications?.fromName,
+        smtpHost: body.emailNotifications?.smtpHost,
+        smtpPort: body.emailNotifications?.smtpPort,
+        smtpSecure: body.emailNotifications?.smtpSecure,
+        smtpUser: body.emailNotifications?.smtpUser,
+        smtpPassword: body.emailNotifications?.smtpPassword
+      }
     });
 
     return NextResponse.json({ settings });

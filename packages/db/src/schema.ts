@@ -27,6 +27,12 @@ export const pageKindEnum = pgEnum("page_kind", [
   "system",
 ]);
 export const mediaKindEnum = pgEnum("media_kind", ["image"]);
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending",
+  "paid",
+  "failed",
+  "cancelled",
+]);
 
 export const appUsers = pgTable(
   "app_users",
@@ -174,6 +180,31 @@ export const mediaAssets = pgTable(
   (table) => ({
     bucketIdx: index("media_assets_storage_bucket_idx").on(table.storageBucket),
     publicIdx: index("media_assets_is_public_idx").on(table.isPublic),
+  }),
+);
+
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderNumber: varchar("order_number", { length: 64 }).notNull().unique(),
+    paymentProvider: varchar("payment_provider", { length: 80 }).notNull().default("yoomoney"),
+    paymentId: varchar("payment_id", { length: 160 }).unique(),
+    status: orderStatusEnum("status").notNull().default("pending"),
+    currency: varchar("currency", { length: 3 }).notNull().default("RUB"),
+    amount: integer("amount").notNull().default(0),
+    customer: jsonb("customer").$type<Record<string, unknown>>().notNull().default({}),
+    items: jsonb("items").$type<Array<Record<string, unknown>>>().notNull().default([]),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    notifiedAt: timestamp("notified_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderNumberIdx: uniqueIndex("orders_order_number_idx").on(table.orderNumber),
+    paymentIdIdx: uniqueIndex("orders_payment_id_idx").on(table.paymentId),
+    statusIdx: index("orders_status_idx").on(table.status),
   }),
 );
 
