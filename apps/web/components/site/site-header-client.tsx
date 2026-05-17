@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import type { Route } from "next";
+import { ShoppingBag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 
 import { useTheme } from "@/components/layout/theme-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
@@ -20,12 +22,14 @@ function measureNavContentWidth(nav: HTMLElement) {
   }, 0);
 }
 
+const EDITOR_CLICK_THRESHOLD = 10;
+const EDITOR_CLICK_WINDOW_MS = 2500;
+
 export function SiteHeaderClient({
   currentSlug,
   pages,
   currentPath,
   editorEnabled,
-  kicker,
   primaryNavLabel,
   blockItems
 }: {
@@ -33,7 +37,6 @@ export function SiteHeaderClient({
   pages: Array<{ id: string; slug: string; title: string }>;
   currentPath: string;
   editorEnabled: boolean;
-  kicker: string;
   primaryNavLabel: string;
   blockItems: Array<{ id: string; label: string }>;
 }) {
@@ -42,6 +45,7 @@ export function SiteHeaderClient({
   const brandRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
   const controlsRef = useRef<HTMLDivElement | null>(null);
+  const editorClickRef = useRef({ count: 0, lastClickAt: 0 });
   const [compactNavigation, setCompactNavigation] = useState(false);
 
   useEffect(() => {
@@ -138,12 +142,31 @@ export function SiteHeaderClient({
     return (editorEnabled ? `${path}?editor=1` : path) as Route;
   };
 
+  const handleBrandClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    const now = window.performance.now();
+    const previous = editorClickRef.current;
+    const count = now - previous.lastClickAt > EDITOR_CLICK_WINDOW_MS ? 1 : previous.count + 1;
+
+    editorClickRef.current = { count, lastClickAt: now };
+
+    if (count >= EDITOR_CLICK_THRESHOLD) {
+      event.preventDefault();
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("editor", "1");
+      window.location.assign(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+    }
+  };
+
   return (
     <header ref={headerRef} className="site-header" data-compact-nav={compactNavigation}>
       <div ref={brandRef} className="site-brand">
-        <span className="site-brand-kicker">{kicker}</span>
-        <Link href={(editorEnabled ? "/?editor=1" : "/") as Route} className="site-brand-title">
-          ArtSite
+        <Link
+          href={(editorEnabled ? "/?editor=1" : "/") as Route}
+          className="site-brand-title"
+          onClick={handleBrandClick}
+        >
+          Olga Schmid
         </Link>
       </div>
       <nav
@@ -182,8 +205,11 @@ export function SiteHeaderClient({
             ))}
           </select>
         </label>
-        {editorEnabled ? <LocaleSwitcher currentPath={currentPath} /> : null}
+        <LocaleSwitcher currentPath={currentPath} />
       </div>
+      <Link href="/cart" className="site-cart-link" aria-label="Open cart">
+        <ShoppingBag size={18} aria-hidden="true" strokeWidth={1.9} />
+      </Link>
       <SitePageMenu
         currentSlug={currentSlug}
         pages={pages}

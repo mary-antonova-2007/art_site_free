@@ -162,57 +162,234 @@ export function toReadableMediaTitle(fileName: string) {
     .trim();
 }
 
+type ArtworkSeed = {
+  fileName: string;
+  size: string;
+  title: string;
+  alt: string;
+  category: MediaCategory;
+  collection: string;
+  caption: string;
+};
+
+const ARTWORKS: ArtworkSeed[] = [
+  {
+    fileName: "001_60x60.jpg",
+    size: "60x60",
+    title: "Solar Fracture",
+    alt: "Geometric crystalline abstraction in blue, gold, coral, and white.",
+    category: "featured",
+    collection: "Crystalline Geometry",
+    caption: "Light gathers a shattered field into a new constellation."
+  },
+  {
+    fileName: "002_60x60.jpg",
+    size: "60x60",
+    title: "Paleontology of a Dream",
+    alt: "Shell, coral, mineral, and botanical forms arranged like an ancient marine map.",
+    category: "works",
+    collection: "Organic Memory",
+    caption: "A shell becomes an archive of water, stone, and time."
+  },
+  {
+    fileName: "003_60x80.jpg",
+    size: "60x80",
+    title: "Tree Among Ice",
+    alt: "A golden tree rises from a deep blue crystalline ice field.",
+    category: "featured",
+    collection: "Blue Silence",
+    caption: "A living axis holds its warmth inside a frozen world."
+  },
+  {
+    fileName: "004_60x80.jpg",
+    size: "60x80",
+    title: "Blue Garden of Shadow",
+    alt: "Layered blue floral and ice-like forms with red accents.",
+    category: "details",
+    collection: "Hidden Flowers",
+    caption: "A flower appears through cold mist, almost refusing to be named."
+  },
+  {
+    fileName: "005_50x80.jpg",
+    size: "50x80",
+    title: "Bird in a Winter Field",
+    alt: "A slender bird stands among pale winter reeds.",
+    category: "works",
+    collection: "Organic Memory",
+    caption: "A small creature keeps its balance inside the quiet of winter."
+  },
+  {
+    fileName: "005_60x80.jpg",
+    size: "60x80",
+    title: "Antique Soul of a Mineral",
+    alt: "An antique face is surrounded by shells, crystals, and deep blue minerals.",
+    category: "featured",
+    collection: "Mythic Figures",
+    caption: "The human face returns as a mineral memory."
+  },
+  {
+    fileName: "006_60x60.jpg",
+    size: "60x60",
+    title: "Blue Rose of the Deep",
+    alt: "A dark blue rose-like form opens inside a nocturnal field.",
+    category: "details",
+    collection: "Blue Silence",
+    caption: "The center of night opens like a cold flower."
+  },
+  {
+    fileName: "007_50x50.jpg",
+    size: "50x50",
+    title: "Stone Split by Light",
+    alt: "A dark stone is cut by a vertical golden-white line of light.",
+    category: "works",
+    collection: "Fire and Transformation",
+    caption: "A closed stone becomes a threshold when light passes through it."
+  },
+  {
+    fileName: "008_52x80.jpg",
+    size: "52x80",
+    title: "White Flower of Ice",
+    alt: "A white flower-like ice form rises from blue mineral depth.",
+    category: "works",
+    collection: "Blue Silence",
+    caption: "Tenderness learns to bloom inside the cold."
+  },
+  {
+    fileName: "009_60x65.jpg",
+    size: "60x65",
+    title: "Crystalline Animal",
+    alt: "A blue geometric animal-like form emerges from a dark textured field.",
+    category: "works",
+    collection: "Crystalline Geometry",
+    caption: "Instinct takes the shape of architecture."
+  },
+  {
+    fileName: "010_60x60.jpg",
+    size: "60x60",
+    title: "Spiral of Water and Sun",
+    alt: "A large blue spiral turns inward toward a warm yellow and red center.",
+    category: "works",
+    collection: "Cycles of Time",
+    caption: "The sea turns toward a small sun at its center."
+  },
+  {
+    fileName: "011_60x80.jpg",
+    size: "60x80",
+    title: "Solar Whirlpool",
+    alt: "A blue and yellow spiral made of many small petal-like shapes.",
+    category: "featured",
+    collection: "Cycles of Time",
+    caption: "Many small currents gather into one luminous motion."
+  },
+  {
+    fileName: "012_60x80.jpg",
+    size: "60x80",
+    title: "Waterfall of Silence",
+    alt: "A white vertical flow descends through blue icy textures.",
+    category: "works",
+    collection: "Blue Silence",
+    caption: "Silence falls through cold matter as a cleansing light."
+  },
+  {
+    fileName: "013_60x80.jpg",
+    size: "60x80",
+    title: "Fire Figure in Blue Water",
+    alt: "A mythic golden-orange figure radiates inside deep blue water.",
+    category: "featured",
+    collection: "Mythic Figures",
+    caption: "Fire does not defeat water; it remembers how to move through it."
+  },
+  {
+    fileName: "014_60x80.jpg",
+    size: "60x80",
+    title: "Cave of the First Fire",
+    alt: "Warm ochre and orange cave-like forms surround a bright central light.",
+    category: "works",
+    collection: "Fire and Transformation",
+    caption: "The first fire turns a cavern into a place of ritual."
+  },
+  {
+    fileName: "015_60x80.jpg",
+    size: "60x80",
+    title: "Sphinx of Blue Crystal",
+    alt: "A stone female figure emerges from an explosion of blue crystalline fragments.",
+    category: "featured",
+    collection: "Mythic Figures",
+    caption: "An ancient figure wakes inside a blue future."
+  },
+  {
+    fileName: "016_50x60.jpg",
+    size: "50x60",
+    title: "Window of the Inner Path",
+    alt: "A small boat faces a warm square spiral inside a blue chamber.",
+    category: "works",
+    collection: "Thresholds",
+    caption: "A solitary traveler approaches the geometry of inner light."
+  },
+  {
+    fileName: "017_55x80.jpg",
+    size: "55x80",
+    title: "Figure at the Entrance of Light",
+    alt: "A small human figure stands before a glowing opening inside dark stone.",
+    category: "works",
+    collection: "Thresholds",
+    caption: "The passage begins before the first step."
+  },
+  {
+    fileName: "018_60x85.jpg",
+    size: "60x85",
+    title: "Green Density of Life",
+    alt: "A dense green botanical and underwater collage fills the picture plane.",
+    category: "works",
+    collection: "Organic Memory",
+    caption: "Life appears as a deep green network without a single center."
+  }
+];
+
+function artworkPath(fileName: string) {
+  return `/works/${fileName}`;
+}
+
+function artworkPrintFormat(artwork: ArtworkSeed): PrintFormat {
+  const [widthCm = 60, heightCm = 80] = artwork.size.split("x").map((value) => Number(value) || 0);
+  const area = widthCm * heightCm;
+  const price = Math.max(4200, Math.round(area * 1.25 / 100) * 100);
+
+  return {
+    id: artwork.size,
+    widthCm,
+    heightCm,
+    label: artwork.size.replace("x", " × "),
+    price
+  };
+}
+
+function imageField(fileName: string, alt: string) {
+  return {
+    mediaAssetId: artworkPath(fileName),
+    alt
+  };
+}
+
+function galleryItem(fileName: string, caption: string, alt: string) {
+  return {
+    mediaAssetId: artworkPath(fileName),
+    caption,
+    alt
+  };
+}
+
 export function createSeedMediaLibrary(): MediaLibraryAsset[] {
-  return [
-    {
-      id: "media-hero",
-      mediaAssetId: "/art-hero.svg",
-      previewUrl: "/art-hero.svg",
-      title: "Главный кадр",
-      alt: "Главное изображение",
-      category: "featured"
-    },
-    {
-      id: "media-gallery-1",
-      mediaAssetId: "/art-01.svg",
-      previewUrl: "/art-01.svg",
-      title: "Этюд инсталляции",
-      alt: "Этюд инсталляции",
-      category: "works"
-    },
-    {
-      id: "media-gallery-2",
-      mediaAssetId: "/art-02.svg",
-      previewUrl: "/art-02.svg",
-      title: "Световая композиция",
-      alt: "Световая композиция",
-      category: "works"
-    },
-    {
-      id: "media-sample",
-      mediaAssetId: "/art-03.svg",
-      previewUrl: "/art-03.svg",
-      title: "Фрагмент серии",
-      alt: "Фрагмент серии",
-      category: "details"
-    },
-    {
-      id: "media-portrait",
-      mediaAssetId: "/portrait.svg",
-      previewUrl: "/portrait.svg",
-      title: "Портрет",
-      alt: "Портрет",
-      category: "portraits"
-    },
-    {
-      id: "media-space",
-      mediaAssetId: "/art-04.svg",
-      previewUrl: "/art-04.svg",
-      title: "Пространство",
-      alt: "Вид пространства",
-      category: "spaces"
-    }
-  ];
+  return ARTWORKS.map((artwork) => ({
+    id: `media-${artwork.fileName.replace(/\.[^.]+$/, "")}`,
+    mediaAssetId: artworkPath(artwork.fileName),
+    previewUrl: artworkPath(artwork.fileName),
+    title: artwork.title,
+    alt: artwork.alt,
+    category: artwork.category,
+    isProduct: true,
+    printFormats: [artworkPrintFormat(artwork)]
+  }));
 }
 
 export function createSeedPages(): SeedPageDefinition[] {
@@ -220,91 +397,102 @@ export function createSeedPages(): SeedPageDefinition[] {
     {
       id: "page-home",
       slug: "home",
-      title: "Главная",
+      title: "Home",
       blocks: [
         {
           ...block("hero", 0),
           data: {
             ...createDefaultBlock("hero"),
-            eyebrow: "Редакционный арт-сайт",
-            title: "Спокойная система для сильных визуальных историй.",
+            eyebrow: "",
+            title: "Inner landscapes made from crystal, water, fire, and silence.",
             subtitle:
-              "Публикуйте и редактируйте страницы прямо на живом сайте без тяжёлой админки и лишней сложности.",
-            buttonText: "Открыть архив",
+              "A body of work where fragments become thresholds: ancient figures, icy gardens, spirals of light, and dense organic worlds.",
+            buttonText: "Read the artist statement",
             buttonLink: "/about",
-            image: {
-              mediaAssetId: "/art-hero.svg",
-              alt: "Главное изображение"
-            }
+            image: imageField("015_60x80.jpg", "Sphinx of Blue Crystal")
           }
         },
         {
           ...block("sectionHeader", 1),
           data: {
             ...createDefaultBlock("sectionHeader"),
-            eyebrow: "Избранное",
-            title: "Управляемая система для визуальной публикации.",
+            eyebrow: "Artist's method",
+            title: "Collage as an archaeology of inner nature.",
             description:
-              "Блоки сохраняют ритм, масштаб и композицию, а редактор меняет только содержимое."
+              "The works combine cut paper, mineral textures, botanical memory, water, ice, and mythic bodies. Each image feels discovered rather than invented, as if a private cosmology had surfaced through fragments."
           }
         },
         {
-          ...block("gallery", 2),
+          ...block("imageText", 2),
+          data: {
+            ...createDefaultBlock("imageText"),
+            title: "The image becomes a place of passage.",
+            text:
+              "These compositions are not illustrations of nature. They are thresholds inside it: a stone opening to light, a figure waking in blue crystal, a small boat moving toward the geometry of consciousness. The surface is tactile and fragmented, yet the emotional movement is precise.",
+            caption: "Fire Figure in Blue Water, 60 × 80 cm",
+            imagePosition: "left",
+            image: imageField("013_60x80.jpg", "Fire Figure in Blue Water")
+          }
+        },
+        {
+          ...block("gallery", 3),
           data: {
             ...createDefaultBlock("gallery"),
-            title: "Избранные работы",
+            title: "Six ways into the work",
+            layout: "grid",
             items: [
-              { mediaAssetId: "/art-01.svg", caption: "Этюд инсталляции", alt: "Этюд инсталляции" },
-              { mediaAssetId: "/art-02.svg", caption: "Световая композиция", alt: "Световая композиция" }
+              galleryItem("001_60x60.jpg", "Crystalline Geometry", "Solar Fracture"),
+              galleryItem("008_52x80.jpg", "Blue Silence", "White Flower of Ice"),
+              galleryItem("005_60x80.jpg", "Mythic Figures", "Antique Soul of a Mineral"),
+              galleryItem("014_60x80.jpg", "Fire and Transformation", "Cave of the First Fire"),
+              galleryItem("002_60x60.jpg", "Organic Memory", "Paleontology of a Dream"),
+              galleryItem("017_55x80.jpg", "Thresholds", "Figure at the Entrance of Light")
             ]
           }
         },
         {
-          ...block("richText", 3),
-          data: {
-            ...createDefaultBlock("richText"),
-            title: "Редактирование прямо на живом сайте.",
-            text:
-              "Владелец меняет тексты и изображения в контексте страницы, а продуманный шаблон удерживает композицию в порядке."
-          }
-        },
-        {
-          ...block("imageText", 4),
-          data: {
-            ...createDefaultBlock("imageText"),
-            title: "Сайт для спокойной и точной работы с контентом.",
-            text:
-              "Шаблоны удерживают баланс, пропорции и типографику, пока редактор меняет историю, изображения и акценты.",
-            caption: "Портрет, 2026",
-            image: {
-              mediaAssetId: "/portrait.svg",
-              alt: "Портрет"
-            }
-          }
-        },
-        {
-          ...block("quote", 5),
+          ...block("quote", 4),
           data: {
             ...createDefaultBlock("quote"),
-            quote: "Рамка не заменяет произведение, но она учит зрителя, как к нему подойти.",
-            author: "Заметка студии"
+            quote:
+              "A fragment is never merely broken. In these works it becomes a witness, a mineral, a wing, a gate.",
+            author: "Studio note"
+          }
+        },
+        {
+          ...block("sectionHeader", 5),
+          data: {
+            ...createDefaultBlock("sectionHeader"),
+            eyebrow: "Selected works",
+            title: "A visual archive of cold light and living matter.",
+            description:
+              "The homepage begins with a focused selection. The full media library is already seeded with all available works and print dimensions."
           }
         },
         {
           ...block("worksGrid", 6),
           data: {
             ...createDefaultBlock("worksGrid"),
-            title: "Подборка работ",
-            itemIds: ["/art-01.svg", "/art-02.svg", "/art-03.svg"]
+            title: "Selected works",
+            itemIds: [
+              artworkPath("015_60x80.jpg"),
+              artworkPath("013_60x80.jpg"),
+              artworkPath("003_60x80.jpg"),
+              artworkPath("011_60x80.jpg"),
+              artworkPath("001_60x60.jpg"),
+              artworkPath("018_60x85.jpg")
+            ],
+            columns: "3",
+            layout: "grid"
           }
         },
         {
           ...block("cta", 7),
           data: {
             ...createDefaultBlock("cta"),
-            title: "Начнем разговор.",
-            text: "Пригласите посетителя к следующему точному шагу без лишнего шума.",
-            buttonText: "Связаться",
+            title: "For commissions, acquisitions, and exhibition conversations.",
+            text: "The works are available as original pieces and print-format entries can be refined in the editor.",
+            buttonText: "Contact the studio",
             buttonLink: "/contact"
           }
         },
@@ -312,10 +500,10 @@ export function createSeedPages(): SeedPageDefinition[] {
           ...block("contact", 8),
           data: {
             ...createDefaultBlock("contact"),
-            title: "Контакты",
-            text: "Для заказов, выставок и визитов в студию.",
+            title: "Studio contact",
+            text: "For available works, commissions, exhibitions, and private viewings.",
             email: "studio@example.com",
-            phone: "+7 000 000 0000",
+            phone: "+1 000 000 0000",
             socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
           }
         }
@@ -324,49 +512,46 @@ export function createSeedPages(): SeedPageDefinition[] {
     {
       id: "page-about",
       slug: "about",
-      title: "О проекте",
+      title: "About",
       blocks: [
         {
           ...block("sectionHeader", 0),
           data: {
             ...createDefaultBlock("sectionHeader"),
-            eyebrow: "О проекте",
-            title: "Продуманная система вместо хаотичного конструктора.",
+            eyebrow: "About the practice",
+            title: "A poetic system of fragments, thresholds, and elemental memory.",
             description:
-              "Редактор меняет данные блоков прямо на странице, а визуальная логика остается под контролем шаблонов."
+              "This page is prepared in English first. The site already keeps its language switcher, so the same structure can later be translated into Russian, Armenian, French, Spanish, or Swiss German."
           }
         },
         {
           ...block("richText", 1),
           data: {
             ...createDefaultBlock("richText"),
-            title: "Редактирование без тяжелой админки.",
+            title: "Artist statement",
             text:
-              "Этот сайт создан для владельца, который хочет просто нажать на текст или изображение, внести изменение и сразу увидеть результат на живой странице."
+              "The work moves between collage, symbolic abstraction, and mythic landscape. It treats nature not as scenery, but as a thinking substance: water remembers, stone opens, flowers hide inside ice, and figures return from mineral depth."
           }
         },
         {
           ...block("imageText", 2),
           data: {
             ...createDefaultBlock("imageText"),
-            title: "Дизайн остается собранным.",
+            title: "Materials become a language.",
             text:
-              "Даже когда контент меняется часто, блоковая система сохраняет ритм, иерархию и характер сайта.",
-            caption: "Студийный портрет, 2026",
-            image: {
-              mediaAssetId: "/portrait.svg",
-              alt: "Портрет"
-            }
+              "Cut forms, crystalline textures, botanical fragments, and saturated color are arranged as if they were geological layers of feeling. The image is built from pieces, but it asks to be read as one continuous inner landscape.",
+            caption: "Paleontology of a Dream, 60 × 60 cm",
+            image: imageField("002_60x60.jpg", "Paleontology of a Dream")
           }
         },
         {
           ...block("linksList", 3),
           data: {
             ...createDefaultBlock("linksList"),
-            title: "Разделы",
+            title: "Explore",
             items: [
-              { label: "Главная", href: "/" },
-              { label: "Контакты", href: "/contact" }
+              { label: "Home", href: "/" },
+              { label: "Contact", href: "/contact" }
             ]
           }
         }
@@ -375,25 +560,25 @@ export function createSeedPages(): SeedPageDefinition[] {
     {
       id: "page-contact",
       slug: "contact",
-      title: "Контакты",
+      title: "Contact",
       blocks: [
         {
           ...block("sectionHeader", 0),
           data: {
             ...createDefaultBlock("sectionHeader"),
-            eyebrow: "Контакты",
-            title: "Свяжитесь со студией.",
-            description: "Для заказов, выставок, публикаций и личных визитов."
+            eyebrow: "Contact",
+            title: "Speak with the studio.",
+            description: "For acquisitions, commissions, exhibitions, publications, and private viewings."
           }
         },
         {
           ...block("contact", 1),
           data: {
             ...createDefaultBlock("contact"),
-            title: "Контакты",
-            text: "Напишите, если хотите обсудить проект, выставку или сотрудничество.",
+            title: "Studio contact",
+            text: "Write to discuss an artwork, a commission, or a future collaboration.",
             email: "studio@example.com",
-            phone: "+7 000 000 0000",
+            phone: "+1 000 000 0000",
             socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
           }
         }

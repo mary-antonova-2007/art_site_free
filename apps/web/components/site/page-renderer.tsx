@@ -494,7 +494,7 @@ function RenderedBlock<TType extends BlockType>({
       return (
         <section className="site-section poster-hero">
           <div className="hero-copy">
-            <span className="eyebrow">{heroData.eyebrow ?? ""}</span>
+            {heroData.eyebrow ? <span className="eyebrow">{heroData.eyebrow}</span> : null}
             <h1 className="hero-title">{heroData.title ?? ""}</h1>
             <p className="hero-subtitle">{heroData.subtitle ?? ""}</p>
             <div className="hero-block__actions">

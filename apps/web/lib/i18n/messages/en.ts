@@ -1,14 +1,14 @@
 export const enMessages = {
   app: {
-    title: "ArtSite",
-    description: "Editorial art website with inline visual editing."
+    title: "Inner Landscapes",
+    description: "Collage works shaped by mineral memory, myth, water, fire, and silence."
   },
   locale: {
     label: "Language",
     switchTo: "Switch language to {language}"
   },
   header: {
-    kicker: "Raw editorial / live publishing",
+    kicker: "",
     primaryNav: "Primary"
   },
   auth: {

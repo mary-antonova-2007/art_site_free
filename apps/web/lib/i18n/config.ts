@@ -2,7 +2,7 @@ export const locales = ["en", "ru", "hy", "de-CH", "fr", "es"] as const;
 
 export type Locale = (typeof locales)[number];
 
-export const defaultLocale: Locale = "ru";
+export const defaultLocale: Locale = "en";
 export const localeCookieName = "artsite_locale";
 
 export const localeLabels: Record<Locale, string> = {

@@ -1,14 +1,14 @@
 export const ruMessages = {
   app: {
-    title: "ArtSite",
-    description: "Редакционный арт-сайт со встроенным визуальным редактированием."
+    title: "Inner Landscapes",
+    description: "Сайт художницы с коллекциями работ и медиатекой."
   },
   locale: {
     label: "Язык",
     switchTo: "Переключить язык на {language}"
   },
   header: {
-    kicker: "Редакционный арт-сайт / живая публикация",
+    kicker: "",
     primaryNav: "Основная навигация"
   },
   auth: {

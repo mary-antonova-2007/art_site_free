@@ -30,7 +30,6 @@ export async function SiteHeader({
       pages={pages}
       currentPath={currentPath}
       editorEnabled={editorEnabled}
-      kicker={t("header.kicker")}
       primaryNavLabel={t("header.primaryNav")}
       blockItems={blockItems}
     />

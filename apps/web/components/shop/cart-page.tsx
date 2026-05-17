@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import { clearCart, readCart, writeCart, type CartItem } from "@/lib/cart";
 import type { PrintFormat, SiteCommerceSettings } from "@/lib/content";
@@ -76,9 +76,15 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
           <span className="eyebrow">Оформление заказа</span>
           <h1 className="hero-title">Корзина</h1>
         </div>
-        <div className="cart-page__summary">
-          <ShoppingBag size={18} />
-          <span>{totalItems} шт. · {formatPrice(subtotal)}</span>
+        <div className="cart-page__header-actions">
+          <a className="cart-return-link" href="/">
+            <ArrowLeft size={17} />
+            <span>Продолжить покупки</span>
+          </a>
+          <div className="cart-page__summary">
+            <ShoppingBag size={18} />
+            <span>{totalItems} шт. · {formatPrice(subtotal)}</span>
+          </div>
         </div>
       </div>
 
@@ -187,6 +193,10 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
               setSubmitted(true);
             }}
           >
+            <div className="cart-checkout__header">
+              <h2>Контакты и доставка</h2>
+              <p>Заполните данные для оформления заказа.</p>
+            </div>
             <label className="editor-field">
               <span>Имя</span>
               <input required name="name" />
@@ -215,9 +225,9 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
               </div>
               {enabledPaymentProviders.length ? (
                 <div className="cart-payment-list">
-                  {enabledPaymentProviders.map(([key, provider]) => (
+                  {enabledPaymentProviders.map(([key, provider], index) => (
                     <label key={key} className="cart-payment-option">
-                      <input type="radio" name="paymentProvider" value={key} required />
+                      <input type="radio" name="paymentProvider" value={key} required defaultChecked={index === 0} />
                       <span>{provider.title ?? key}</span>
                     </label>
                   ))}

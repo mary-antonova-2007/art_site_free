@@ -505,6 +505,8 @@ async function ensureLocalDatabaseReady() {
         alt: asset.alt,
         caption: asset.title,
         category: asset.category,
+        isProduct: asset.isProduct ?? false,
+        printFormats: asset.printFormats ?? [],
         isPublic: true
       }))
     );
@@ -559,8 +561,8 @@ async function ensureLocalDatabaseReady() {
   });
 
   await db.insert(siteSettings).values({
-    siteName: "Art Site",
-    defaultLocale: "ru",
+    siteName: "Inner Landscapes",
+    defaultLocale: "en",
     homepagePageId: homepage?.id ?? null,
     metadata: {
       ...DEFAULT_SITE_COMMERCE_SETTINGS
