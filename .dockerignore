@@ -2,6 +2,7 @@
 .github
 .next
 .turbo
+.pnpm-store
 coverage
 dist
 build
@@ -9,9 +10,12 @@ node_modules
 **/node_modules
 **/.next
 **/.turbo
+**/*.tsbuildinfo
 **/coverage
 **/dist
 **/build
+data/uploads
+images
 playwright-report
 test-results
 .env
