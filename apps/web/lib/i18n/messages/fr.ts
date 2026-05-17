@@ -45,6 +45,7 @@ export const frMessages = {
     choosePage: "Choisir la page",
     signOut: "Se déconnecter",
     leaveEditor: "Quitter l’éditeur",
+    settings: "Réglages",
     pageLabel: "Page : {title}",
     savedAt: "Enregistré à {time}",
     creatingPage: "Création de la page...",

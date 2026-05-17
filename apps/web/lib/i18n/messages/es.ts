@@ -45,6 +45,7 @@ export const esMessages = {
     choosePage: "Elegir página",
     signOut: "Cerrar sesión",
     leaveEditor: "Salir del editor",
+    settings: "Ajustes",
     pageLabel: "Página: {title}",
     savedAt: "Guardado a las {time}",
     creatingPage: "Creando página...",

@@ -52,6 +52,7 @@ export const enMessages = {
     choosePage: "Choose page",
     signOut: "Sign out",
     leaveEditor: "Leave editor",
+    settings: "Settings",
     pageLabel: "Page: {title}",
     savedAt: "Saved at {time}",
     creatingPage: "Creating page...",

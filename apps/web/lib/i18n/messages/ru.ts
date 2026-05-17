@@ -52,6 +52,7 @@ export const ruMessages = {
     choosePage: "Выбрать страницу",
     signOut: "Выйти",
     leaveEditor: "Выйти из редактора",
+    settings: "Настройки",
     pageLabel: "Страница: {title}",
     savedAt: "Сохранено в {time}",
     creatingPage: "Создаем страницу...",

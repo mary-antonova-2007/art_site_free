@@ -44,6 +44,7 @@ export const deCHMessages = {
     choosePage: "Site wähle",
     signOut: "Abmälde",
     leaveEditor: "Editor verlasse",
+    settings: "Iistellige",
     pageLabel: "Site: {title}",
     savedAt: "Gspeichert am {time}",
     creatingPage: "Site wird erstellt...",

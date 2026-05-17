@@ -44,6 +44,7 @@ export const hyMessages = {
     choosePage: "Ընտրել էջը",
     signOut: "Դուրս գալ",
     leaveEditor: "Դուրս գալ խմբագրից",
+    settings: "Կարգավորումներ",
     pageLabel: "Էջ՝ {title}",
     savedAt: "Պահված է {time}",
     creatingPage: "Էջը ստեղծվում է...",
