@@ -794,6 +794,8 @@ function RenderedBlock<TType extends BlockType>({
     }
     case "contact": {
       const contactData = data as BlockDataMap["contact"];
+      const email = contactData.email?.trim();
+      const phone = contactData.phone?.trim();
       return (
         <section className="site-section contact-grid">
           <div className="section-stack contact-copy">
@@ -801,14 +803,18 @@ function RenderedBlock<TType extends BlockType>({
             <p className="contact-text">{contactData.text ?? ""}</p>
           </div>
           <div className="links-grid contact-links">
-            <a className="page-chip contact-chip" href={`mailto:${contactData.email ?? ""}`}>
-              <Mail size={18} />
-              {contactData.email ?? ""}
-            </a>
-            <a className="page-chip contact-chip" href={`tel:${contactData.phone ?? ""}`}>
-              <Phone size={18} />
-              {contactData.phone ?? ""}
-            </a>
+            {email ? (
+              <a className="page-chip contact-chip" href={`mailto:${email}`}>
+                <Mail size={18} />
+                {email}
+              </a>
+            ) : null}
+            {phone ? (
+              <a className="page-chip contact-chip" href={`tel:${phone}`}>
+                <Phone size={18} />
+                {phone}
+              </a>
+            ) : null}
             {(contactData.socialLinks ?? []).map((item: { href: string; label: string; external?: boolean }) => (
               <a className="page-chip contact-chip" key={item.href} href={item.href}>
                 <Instagram size={18} />

@@ -511,9 +511,15 @@ export function createSeedPages(): SeedPageDefinition[] {
             ...createDefaultBlock("contact"),
             title: "Studio contact",
             text: "For available works, commissions, exhibitions, and private viewings.",
-            email: "studio@example.com",
-            phone: "+1 000 000 0000",
-            socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
+            email: "schmid.olga@yandex.ru",
+            phone: "",
+            socialLinks: [
+              {
+                label: "Instagram",
+                href: "https://www.instagram.com/olgaschmid3?igsh=MTJ1ejU2emFwM2xlMw==",
+                external: true
+              }
+            ]
           }
         }
       ]
@@ -586,9 +592,15 @@ export function createSeedPages(): SeedPageDefinition[] {
             ...createDefaultBlock("contact"),
             title: "Studio contact",
             text: "Write to discuss an artwork, a commission, or a future collaboration.",
-            email: "studio@example.com",
-            phone: "+1 000 000 0000",
-            socialLinks: [{ label: "Instagram", href: "https://instagram.com", external: true }]
+            email: "schmid.olga@yandex.ru",
+            phone: "",
+            socialLinks: [
+              {
+                label: "Instagram",
+                href: "https://www.instagram.com/olgaschmid3?igsh=MTJ1ejU2emFwM2xlMw==",
+                external: true
+              }
+            ]
           }
         }
       ]
