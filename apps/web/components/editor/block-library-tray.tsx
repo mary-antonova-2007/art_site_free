@@ -117,7 +117,7 @@ function BlockLibraryCard({
             className="block-library-card__add"
             type="button"
             onClick={() => insertBlockAt(blocks.length, type)}
-            aria-label={`Добавить блок ${title}`}
+            aria-label={`Add block ${title}`}
           >
             <Plus size={14} />
           </button>

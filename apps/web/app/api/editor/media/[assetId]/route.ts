@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { updateEditorMediaAssetCommerceSettings } from "@/lib/content-service";
+import { deleteEditorMediaAsset, updateEditorMediaAssetCommerceSettings } from "@/lib/content-service";
 
 export async function PATCH(
   request: Request,
@@ -22,6 +22,21 @@ export async function PATCH(
     return NextResponse.json({ asset: result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to update media asset";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ assetId: string }> }
+) {
+  try {
+    const { assetId } = await context.params;
+    const result = await deleteEditorMediaAsset(assetId);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete media asset";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

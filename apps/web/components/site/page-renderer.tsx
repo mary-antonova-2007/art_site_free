@@ -256,7 +256,7 @@ export function PageRenderer({
               className="image-lightbox"
               role="dialog"
               aria-modal="true"
-              aria-label="Image preview"
+              aria-label={t("header.imagePreview")}
               onClick={() => setPreviewImage(null)}
             >
               <div
@@ -276,22 +276,22 @@ export function PageRenderer({
                   <div className="product-modal__panel image-lightbox__product-panel">
                     <div className="product-modal__content">
                       <h3>{previewImage.title}</h3>
-                      <p className="product-modal__note">Выберите формат печати и количество перед добавлением в корзину.</p>
+                      <p className="product-modal__note">{t("commerce.productModalNote")}</p>
                       <label className="editor-field">
-                        <span>Формат печати</span>
+                        <span>{t("commerce.printFormat")}</span>
                         <select
                           value={selectedFormatId}
                           onChange={(event) => setSelectedFormatId(event.currentTarget.value)}
                         >
                           {previewImage.formats.map((format) => (
                             <option key={format.id} value={format.id}>
-                              {getFormatName(format, t)} · {formatPrice(getEffectivePrice(format))}
+                              {getFormatName(format, t)} · {formatPrice(getEffectivePrice(format), t)}
                             </option>
                           ))}
                         </select>
                       </label>
                       <label className="editor-field">
-                        <span>Количество</span>
+                        <span>{t("commerce.quantity")}</span>
                         <input
                           type="number"
                           min={1}
@@ -315,14 +315,14 @@ export function PageRenderer({
                               <span>
                                 {selectedFormat.widthCm} × {selectedFormat.heightCm} {t("commerce.unitCm")}
                               </span>
-                              <span>{formatPrice(getEffectivePrice(selectedFormat))}</span>
+                              <span>{formatPrice(getEffectivePrice(selectedFormat), t)}</span>
                             </div>
                           </div>
                         ) : null;
                       })()}
                       <div className="product-modal__actions">
                         <button className="editor-button" type="button" onClick={addProductToCart}>
-                          Добавить в корзину
+                          {t("commerce.addToCart")}
                         </button>
                         <button
                           className="editor-button editor-button-primary"
@@ -332,7 +332,7 @@ export function PageRenderer({
                             window.location.assign("/cart");
                           }}
                         >
-                          Купить
+                          {t("commerce.buy")}
                         </button>
                       </div>
                     </div>
@@ -1085,13 +1085,13 @@ function getMediaAssetPrintFormats(asset: MediaLibraryAsset | undefined, commerc
   return asset.printFormats?.length ? asset.printFormats : commerceSettings.printFormats;
 }
 
-function formatPrice(value: unknown) {
+function formatPrice(value: unknown, t: ReturnType<typeof useTranslations>) {
   if (value == null || value === "") {
-    return "Цена не задана";
+    return t("commerce.priceNotSet");
   }
 
   const price = Number(value);
-  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("en-US")} ₽` : t("commerce.priceNotSet");
 }
 
 function getEffectivePrice(format: PrintFormat) {

@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getBlockAnchorId, getBlockNavigationLabel } from "@/lib/block-navigation";
+import { useTranslations } from "@/lib/i18n/client";
 
 import { useEditor } from "./editor-provider";
 
 export function EditorBlockNav() {
+  const t = useTranslations();
   const { blocks, compactNavigation } = useEditor();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isStuck, setIsStuck] = useState(false);
@@ -72,7 +74,7 @@ export function EditorBlockNav() {
   return (
     <nav
       className="block-jump-nav"
-      aria-label="Block navigation"
+      aria-label={t("editor.blockNavigation")}
       data-stuck={isStuck}
       data-hidden={compactNavigation}
     >

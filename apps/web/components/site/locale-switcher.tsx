@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 
-import { localeCookieName, localeLabels, locales, type Locale } from "@/lib/i18n/config";
+import { localeLabels, locales, type Locale } from "@/lib/i18n/config";
 import { useLocale, useTranslations } from "@/lib/i18n/client";
 
 export function LocaleSwitcher({ currentPath }: { currentPath: string }) {
@@ -19,9 +19,7 @@ export function LocaleSwitcher({ currentPath }: { currentPath: string }) {
         aria-label={t("locale.label")}
         onChange={(event) => {
           const nextLocale = event.currentTarget.value as Locale;
-          document.cookie = `${localeCookieName}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-          router.replace(currentPath as Route);
-          router.refresh();
+          router.push(`/api/locale?locale=${encodeURIComponent(nextLocale)}&next=${encodeURIComponent(currentPath)}` as Route);
         }}
       >
         {locales.map((option) => (

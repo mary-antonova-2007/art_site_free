@@ -327,13 +327,22 @@ export async function getCommerceSettings(): Promise<SiteCommerceSettings> {
   if (hasSupabaseEnv()) {
     const admin = createAdminSupabaseClient();
     const { data } = await admin.from("site_settings").select("metadata").limit(1).maybeSingle();
-    return normalizeCommerceSettings(data?.metadata ?? null);
+    const normalized = normalizeCommerceSettings(data?.metadata ?? null);
+
+    return {
+      ...normalized,
+      printFormats: mergePrintFormats(await listSupabaseMediaPrintFormats(admin), normalized.printFormats)
+    };
   }
 
   await ensureLocalDatabaseReady();
   const db = createDb();
   const settings = await db.query.siteSettings.findFirst();
-  return normalizeCommerceSettings(settings?.metadata ?? null);
+  const normalized = normalizeCommerceSettings(settings?.metadata ?? null);
+  return {
+    ...normalized,
+    printFormats: mergePrintFormats(await listLocalMediaPrintFormats(db), normalized.printFormats)
+  };
 }
 
 export async function saveCommerceSettings(input: SiteCommerceSettings) {
@@ -423,6 +432,24 @@ export async function updateEditorMediaAssetCommerceSettings(input: {
 export async function getEditorCommerceFormats() {
   const settings = await getCommerceSettings();
   return settings.printFormats;
+}
+
+export async function deleteEditorMediaAsset(mediaAssetId: string) {
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { error } = await admin.from("media_assets").delete().eq("id", mediaAssetId);
+
+    if (error) {
+      throw error;
+    }
+
+    return { deleted: true };
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  await db.delete(mediaAssets).where(eq(mediaAssets.id, mediaAssetId));
+  return { deleted: true };
 }
 
 export async function createEditorMediaCategory(name: string) {
@@ -561,7 +588,7 @@ async function ensureLocalDatabaseReady() {
   });
 
   await db.insert(siteSettings).values({
-    siteName: "Inner Landscapes",
+    siteName: "Olga Schmid",
     defaultLocale: "en",
     homepagePageId: homepage?.id ?? null,
     metadata: {
@@ -661,6 +688,53 @@ function normalizePrintFormats(value: Array<{ id: string; widthCm: number; heigh
   });
 
   return normalized;
+}
+
+function mergePrintFormats(...groups: Array<Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }>>) {
+  const merged = new Map<string, { id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }>();
+
+  groups.flat().forEach((format) => {
+    const [normalized] = normalizePrintFormats([format]);
+
+    if (!normalized) {
+      return;
+    }
+
+    const key = `${normalized.widthCm}x${normalized.heightCm}`;
+    const existing = merged.get(key);
+
+    merged.set(key, {
+      ...existing,
+      ...normalized,
+      id: existing?.id ?? normalized.id,
+      label: normalized.label ?? existing?.label,
+      price: normalized.price ?? existing?.price,
+      priceOverride: normalized.priceOverride ?? existing?.priceOverride
+    });
+  });
+
+  return Array.from(merged.values()).sort((left, right) => left.widthCm - right.widthCm || left.heightCm - right.heightCm);
+}
+
+async function listLocalMediaPrintFormats(db: ReturnType<typeof createDb>) {
+  const rows = await db.select({ printFormats: mediaAssets.printFormats }).from(mediaAssets);
+  return rows.flatMap((row) => normalizePrintFormats(Array.isArray(row.printFormats) ? row.printFormats : []));
+}
+
+async function listSupabaseMediaPrintFormats(admin: ReturnType<typeof createAdminSupabaseClient>) {
+  const { data, error } = await admin.from("media_assets").select("print_formats").limit(500);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).flatMap((row) =>
+    normalizePrintFormats(
+      Array.isArray((row as { print_formats?: unknown }).print_formats)
+        ? ((row as { print_formats?: Array<{ id: string; widthCm: number; heightCm: number; label?: string; price?: number; priceOverride?: number }> }).print_formats ?? [])
+        : []
+    )
+  );
 }
 
 function normalizePrice(value: unknown) {

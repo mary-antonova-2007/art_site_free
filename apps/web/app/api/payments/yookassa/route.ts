@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const provider = commerceSettings.paymentProviders.yoomoney;
 
     if (!provider?.enabled) {
-      return NextResponse.json({ error: "ЮKassa is not enabled." }, { status: 400 });
+      return NextResponse.json({ error: "YooKassa is not enabled." }, { status: 400 });
     }
 
     const settings = provider.settings ?? {};
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const secretKey = settings.secretKey?.trim();
 
     if (!shopId || !secretKey) {
-      return NextResponse.json({ error: "ЮKassa Shop ID and secret key are required." }, { status: 400 });
+      return NextResponse.json({ error: "YooKassa Shop ID and secret key are required." }, { status: 400 });
     }
 
     const amount = calculateCartAmount(payload.items);
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     if (!response.ok || !confirmationUrl) {
       return NextResponse.json(
-        { error: "Не удалось создать платеж в ЮKassa.", details: payment },
+        { error: "Could not create the YooKassa payment.", details: payment },
         { status: response.ok ? 502 : response.status }
       );
     }
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       confirmationUrl
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create ЮKassa payment.";
+    const message = error instanceof Error ? error.message : "Failed to create YooKassa payment.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -144,7 +144,7 @@ function normalizeReturnUrl(value: string | undefined, origin: string) {
 }
 
 function buildDescription(template: string | undefined, orderId: string) {
-  const base = template?.trim() || "Заказ на печать";
+  const base = template?.trim() || "Print order";
   return `${base} ${orderId.slice(0, 8)}`.slice(0, 128);
 }
 

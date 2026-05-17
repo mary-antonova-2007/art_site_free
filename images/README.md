@@ -1,77 +1,77 @@
-# Каталог работ
+# Artwork Catalog
 
-Этот каталог создан как рабочая искусствоведческая база для сайта. Описания основаны на визуальном анализе файлов из папки `images`; названия можно уточнить, если у художницы есть авторские названия.
+This catalog is a working art-historical base for the site. The descriptions are based on visual analysis of the files in `images`; titles can be refined later if the artist has final authorial titles.
 
-## Коллекции
+## Collections
 
-### Кристаллическая геометрия
+### Crystalline Geometry
 
-Работы, где мир собирается через осколки, треугольники, витражную структуру и жесткую внутреннюю архитектуру.
+Works where the world is assembled through shards, triangles, stained-glass structure, and firm inner architecture.
 
-- `001_60x60` — солнечный геометрический разлом.
-- `009_60x65` — синий кристаллический зверь.
-- `010_60x60` — спиральная геометрия воды и солнца.
-- `016_50x60` — квадрат как окно внутреннего пути.
+- `001_60x60` - solar geometric fracture.
+- `009_60x65` - blue crystalline animal.
+- `010_60x60` - spiral geometry of water and sun.
+- `016_50x60` - square as a window of inner passage.
 
-### Лед и синяя тишина
+### Blue Silence
 
-Холодные, синие, медитативные работы о льде, воде, молчании, глубине и внутреннем очищении.
+Cold, blue, meditative works about ice, water, quiet, depth, and inner purification.
 
-- `003_60x80` — золотое дерево среди ледяной среды.
-- `004_60x80` — синий сад скрытого цветка.
-- `006_60x60` — темная синяя роза.
-- `008_52x80` — белый цветок льда.
-- `012_60x80` — вертикальный водопад тишины.
-- `015_60x80` — древняя фигура в голубом кристалле.
+- `003_60x80` - golden tree inside an icy field.
+- `004_60x80` - blue garden of the hidden flower.
+- `006_60x60` - dark blue rose.
+- `008_52x80` - white flower of ice.
+- `012_60x80` - vertical waterfall of silence.
+- `015_60x80` - ancient figure in blue crystal.
 
-### Мифологические фигуры
+### Mythic Figures
 
-Фигуративные работы, где человеческий или антропоморфный образ становится носителем мифа, памяти и стихии.
+Figurative works where a human or anthropomorphic image becomes a carrier of myth, memory, and element.
 
-- `005_60x80` — античная душа среди минералов.
-- `013_60x80` — огненная фигура в синей воде.
-- `015_60x80` — сфинкс, пробуждающийся в кристалле.
+- `005_60x80` - antique soul among minerals.
+- `013_60x80` - fire figure in blue water.
+- `015_60x80` - sphinx awakening inside crystal.
 
-### Огонь и трансформация
+### Fire and Transformation
 
-Композиции о вспышке, разломе, очаге, внутреннем свете и превращении материи.
+Compositions about flare, fracture, hearth, inner light, and the transformation of matter.
 
-- `001_60x60` — свет собирает мир из осколков.
-- `007_50x50` — камень рассечен светом.
-- `013_60x80` — огонь существует внутри воды.
-- `014_60x80` — пещера первого огня.
+- `001_60x60` - light assembling the world from shards.
+- `007_50x50` - stone split by light.
+- `013_60x80` - fire living inside water.
+- `014_60x80` - cave of the first fire.
 
-### Органическая память
+### Organic Memory
 
-Работы, где природа выглядит как архив: раковины, листья, птицы, деревья, подводные сады и древние биоморфные следы.
+Works where nature appears as archive: shells, leaves, birds, trees, underwater gardens, and ancient biomorphic traces.
 
-- `002_60x60` — раковина и карта древней воды.
-- `003_60x80` — дерево как ось выживания.
-- `005_50x80` — птица в зимнем поле.
-- `011_60x80` — солнечный водоворот живых частиц.
-- `018_60x85` — зеленая толща жизни.
+- `002_60x60` - shell and map of ancient water.
+- `003_60x80` - tree as axis of survival.
+- `005_50x80` - bird in a winter field.
+- `011_60x80` - solar whirlpool of living particles.
+- `018_60x85` - green density of life.
 
-### Порог и путь
+### Thresholds
 
-Работы о переходе, одиночестве перед светом, внутренней навигации и возможности очищения.
+Works about transition, solitude before light, inner navigation, and the possibility of purification.
 
-- `007_50x50` — разлом как начало пути.
-- `012_60x80` — очищающий вертикальный поток.
-- `016_50x60` — лодка перед внутренним окном.
-- `017_55x80` — человек у входа света.
+- `007_50x50` - fracture as the beginning of a path.
+- `012_60x80` - purifying vertical flow.
+- `016_50x60` - boat before the inner window.
+- `017_55x80` - figure at the entrance of light.
 
-## Стилистические линии
+## Stylistic Lines
 
-- Геометрическая линия: `001_60x60`, `007_50x50`, `009_60x65`, `010_60x60`, `016_50x60`.
-- Ледяно-водная линия: `003_60x80`, `004_60x80`, `006_60x60`, `008_52x80`, `012_60x80`, `015_60x80`.
-- Мифологическая линия: `005_60x80`, `013_60x80`, `015_60x80`, `017_55x80`.
-- Органическая линия: `002_60x60`, `005_50x80`, `011_60x80`, `018_60x85`.
-- Огненная линия: `001_60x60`, `007_50x50`, `013_60x80`, `014_60x80`.
+- Geometric line: `001_60x60`, `007_50x50`, `009_60x65`, `010_60x60`, `016_50x60`.
+- Ice-water line: `003_60x80`, `004_60x80`, `006_60x60`, `008_52x80`, `012_60x80`, `015_60x80`.
+- Mythological line: `005_60x80`, `013_60x80`, `015_60x80`, `017_55x80`.
+- Organic line: `002_60x60`, `005_50x80`, `011_60x80`, `018_60x85`.
+- Fire line: `001_60x60`, `007_50x50`, `013_60x80`, `014_60x80`.
 
-## Возможная логика главной страницы
+## Homepage Logic
 
-1. Герой: одна сильная работа из ледяно-мифологической линии, например `015_60x80` или `013_60x80`.
-2. Короткий текст о методе: коллаж как археология внутренней природы.
-3. Блок коллекций: шесть смысловых входов вместо сухой галереи.
-4. Избранные работы: 6-8 изображений с краткими философскими подписями.
-5. Финальный контактный или покупательский блок.
+1. Hero: one strong work from the ice-mythic line, for example `015_60x80` or `013_60x80`.
+2. Method statement: collage as archaeology of inner nature.
+3. Collection block: six semantic entrances instead of a dry gallery.
+4. Selected works: 6-8 images with brief philosophical captions.
+5. Final contact or purchasing block.

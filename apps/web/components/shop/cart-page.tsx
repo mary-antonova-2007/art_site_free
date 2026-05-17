@@ -73,29 +73,29 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
     <main className="site-section section-stack width-wide cart-page">
       <div className="cart-page__header">
         <div>
-          <span className="eyebrow">Оформление заказа</span>
-          <h1 className="hero-title">Корзина</h1>
+          <span className="eyebrow">{t("commerce.checkout")}</span>
+          <h1 className="hero-title">{t("commerce.cart")}</h1>
         </div>
         <div className="cart-page__header-actions">
           <a className="cart-return-link" href="/">
             <ArrowLeft size={17} />
-            <span>Продолжить покупки</span>
+            <span>{t("commerce.continueShopping")}</span>
           </a>
           <div className="cart-page__summary">
             <ShoppingBag size={18} />
-            <span>{totalItems} шт. · {formatPrice(subtotal)}</span>
+            <span>{t("commerce.itemsCount", { count: totalItems })} · {formatPrice(subtotal, t)}</span>
           </div>
         </div>
       </div>
 
-      {!commerceSettings.cartEnabled ? <p className="mini-note">Корзина отключена в настройках магазина.</p> : null}
+      {!commerceSettings.cartEnabled ? <p className="mini-note">{t("commerce.cartDisabled")}</p> : null}
       {items.length ? (
         <div className="cart-layout">
           <section className="cart-panel">
             <div className="cart-panel__header">
-              <h2>Товары</h2>
+              <h2>{t("commerce.items")}</h2>
               <button className="cart-link-button" type="button" onClick={() => persistItems([])}>
-                Очистить
+                {t("commerce.clear")}
               </button>
             </div>
             <div className="cart-list">
@@ -111,7 +111,7 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
                         <button
                           className="cart-icon-button"
                           type="button"
-                          aria-label="Удалить товар"
+                          aria-label={t("commerce.removeItem")}
                           onClick={() => removeItem(item.id)}
                         >
                           <Trash2 size={16} />
@@ -120,21 +120,21 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
 
                       <div className="cart-item__controls">
                         <label className="cart-compact-field">
-                          <span>Размер</span>
+                          <span>{t("commerce.size")}</span>
                           <select value={item.format.id} onChange={(event) => updateFormat(item.id, event.currentTarget.value)}>
                             {formatOptions.map((format) => (
                               <option key={format.id} value={format.id}>
-                                {getFormatName(format, t)} · {formatPrice(getEffectivePrice(format))}
+                                {getFormatName(format, t)} · {formatPrice(getEffectivePrice(format), t)}
                               </option>
                             ))}
                           </select>
                         </label>
 
-                        <div className="cart-quantity" aria-label="Количество">
+                        <div className="cart-quantity" aria-label={t("commerce.quantity")}>
                           <button
                             className="cart-icon-button"
                             type="button"
-                            aria-label="Уменьшить количество"
+                            aria-label={t("commerce.decreaseQuantity")}
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
                             <Minus size={15} />
@@ -148,7 +148,7 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
                           <button
                             className="cart-icon-button"
                             type="button"
-                            aria-label="Увеличить количество"
+                            aria-label={t("commerce.increaseQuantity")}
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
                             <Plus size={15} />
@@ -156,8 +156,8 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
                         </div>
                       </div>
                       <div className="cart-item__price-row">
-                        <span>{formatPrice(getEffectivePrice(item.format))} за шт.</span>
-                        <strong>{formatPrice(getEffectivePriceValue(item.format) * item.quantity)}</strong>
+                        <span>{formatPrice(getEffectivePrice(item.format), t)} {t("commerce.each")}</span>
+                        <strong>{formatPrice(getEffectivePriceValue(item.format) * item.quantity, t)}</strong>
                       </div>
                     </div>
                   </article>
@@ -183,7 +183,8 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
                     city: String(formData.get("city") ?? ""),
                     address: String(formData.get("address") ?? "")
                   },
-                  setCheckoutStatus
+                  setCheckoutStatus,
+                  t
                 });
                 return;
               }
@@ -194,34 +195,34 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
             }}
           >
             <div className="cart-checkout__header">
-              <h2>Контакты и доставка</h2>
-              <p>Заполните данные для оформления заказа.</p>
+              <h2>{t("commerce.contactDelivery")}</h2>
+              <p>{t("commerce.contactDeliveryHint")}</p>
             </div>
             <label className="editor-field">
-              <span>Имя</span>
+              <span>{t("commerce.name")}</span>
               <input required name="name" />
             </label>
             <label className="editor-field">
-              <span>Телефон</span>
+              <span>{t("commerce.phone")}</span>
               <input required name="phone" />
             </label>
             <label className="editor-field">
-              <span>Email</span>
+              <span>{t("commerce.email")}</span>
               <input required type="email" name="email" />
             </label>
             <label className="editor-field">
-              <span>Страна / город</span>
+              <span>{t("commerce.countryCity")}</span>
               <input required name="city" />
             </label>
             <label className="editor-field">
-              <span>Адрес доставки</span>
+              <span>{t("commerce.deliveryAddress")}</span>
               <textarea required name="address" />
             </label>
             <section className="cart-payment-panel">
-              <h2>Оплата</h2>
+              <h2>{t("commerce.payment")}</h2>
               <div className="cart-total-line">
-                <span>Итого</span>
-                <strong>{formatPrice(subtotal)}</strong>
+                <span>{t("commerce.total")}</span>
+                <strong>{formatPrice(subtotal, t)}</strong>
               </div>
               {enabledPaymentProviders.length ? (
                 <div className="cart-payment-list">
@@ -233,12 +234,12 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
                   ))}
                 </div>
               ) : (
-                <p className="mini-note">Платежные сервисы пока не включены.</p>
+                <p className="mini-note">{t("commerce.noPaymentProviders")}</p>
               )}
             </section>
             <div className="cart-checkout__actions">
               <button className="editor-button editor-button-primary" type="submit">
-                Оформить заказ
+                {t("commerce.placeOrder")}
               </button>
             </div>
             {checkoutStatus ? <p className="mini-note">{checkoutStatus}</p> : null}
@@ -247,7 +248,7 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
       ) : (
         <section className="cart-empty">
           <ShoppingBag size={28} />
-          <p>{submitted ? "Заказ оформлен, корзина очищена." : "Корзина пуста."}</p>
+          <p>{submitted ? t("commerce.orderPlaced") : t("commerce.cartEmpty")}</p>
         </section>
       )}
     </main>
@@ -264,8 +265,9 @@ async function startYooKassaCheckout(input: {
     address: string;
   };
   setCheckoutStatus: (message: string) => void;
+  t: ReturnType<typeof useTranslations>;
 }) {
-  input.setCheckoutStatus("Создаём платеж в ЮKassa...");
+  input.setCheckoutStatus(input.t("commerce.creatingYooKassaPayment"));
 
   const response = await fetch("/api/payments/yookassa", {
     method: "POST",
@@ -286,7 +288,7 @@ async function startYooKassaCheckout(input: {
     const details = payload.details?.description
       ? `${payload.details.description}${payload.details.parameter ? ` (${payload.details.parameter})` : ""}`
       : "";
-    input.setCheckoutStatus(details || payload.error || "Не удалось перейти к оплате.");
+    input.setCheckoutStatus(details || payload.error || input.t("commerce.paymentRedirectFailed"));
     return;
   }
 
@@ -315,13 +317,13 @@ function getEffectivePriceValue(format: PrintFormat) {
   return Number.isFinite(price) && price >= 0 ? price : 0;
 }
 
-function formatPrice(value: unknown) {
+function formatPrice(value: unknown, t: ReturnType<typeof useTranslations>) {
   if (value == null || value === "") {
-    return "Цена не задана";
+    return t("commerce.priceNotSet");
   }
 
   const price = Number(value);
-  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("en-US")} ₽` : t("commerce.priceNotSet");
 }
 
 function getFormatName(format: PrintFormat, t: (key: "commerce.unitCm") => string) {

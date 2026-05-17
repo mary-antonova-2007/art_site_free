@@ -192,7 +192,7 @@ export function EditorSheet() {
       </div>
       <p className="mini-note">{t("editorPanel.dataOnly")}</p>
       <label className="editor-field editor-field-checkbox" data-testid={testIds.blockField}>
-        <span>{getFieldLabel(localeMessages, "showInNavigation", "Показывать в навигации")}</span>
+        <span>{getFieldLabel(localeMessages, "showInNavigation", "Show in navigation")}</span>
         <input
           id="showInNavigation"
           type="checkbox"
@@ -203,7 +203,7 @@ export function EditorSheet() {
         />
       </label>
       <label className="editor-field" data-testid={testIds.blockField}>
-        <span>Цветовая схема блока</span>
+        <span>{t("editorPanel.blockColorScheme")}</span>
         <select
           value={themeOverride}
           onChange={(event) =>
@@ -214,7 +214,7 @@ export function EditorSheet() {
             )
           }
         >
-          <option value="">По умолчанию</option>
+          <option value="">{t("editorPanel.defaultTheme")}</option>
           {Object.entries(themesByGroup).map(([group, themes]) => (
             <optgroup key={group} label={group}>
               {themes.map((theme) => (
@@ -227,7 +227,7 @@ export function EditorSheet() {
         </select>
       </label>
       <label className="editor-field editor-field-checkbox" data-testid={testIds.blockField}>
-        <span>Свои цвета</span>
+        <span>{t("editorPanel.customColors")}</span>
         <input
           type="checkbox"
           checked={useCustomThemeColors}
@@ -257,12 +257,12 @@ export function EditorSheet() {
               type="button"
               onClick={applyResolvedThemeColors}
             >
-              Сбросить цвета
+              {t("editorPanel.resetColors")}
             </button>
             <div className="editor-theme-save">
               <input
                 value={paletteName}
-                placeholder="Имя палитры"
+                placeholder={t("editorPanel.paletteName")}
                 onChange={(event) => setPaletteName(event.currentTarget.value)}
               />
               <button
@@ -271,7 +271,7 @@ export function EditorSheet() {
                 onClick={saveCurrentPalette}
                 disabled={!paletteName.trim()}
               >
-                Сохранить палитру
+                {t("editorPanel.savePalette")}
               </button>
             </div>
           </div>
@@ -293,10 +293,10 @@ export function EditorSheet() {
                   </div>
                   <div className="editor-theme-library__actions">
                     <button className="editor-button" type="button" onClick={() => applySavedPalette(palette)}>
-                      Применить
+                      {t("editorPanel.apply")}
                     </button>
                     <button className="editor-button" type="button" onClick={() => removeSavedPalette(palette.id)}>
-                      Удалить
+                      {t("editorPanel.delete")}
                     </button>
                   </div>
                 </div>
@@ -394,7 +394,7 @@ export function EditorSheet() {
                       {typeof mediaItem.caption === "string" ? (
                         <input
                           value={mediaItem.caption}
-                          placeholder="Подпись"
+                          placeholder={t("fieldLabels.caption")}
                           onChange={(event) =>
                             updateBlockMediaItemMeta(activeBlock.id, index, {
                               caption: event.currentTarget.value
@@ -405,7 +405,7 @@ export function EditorSheet() {
                       {typeof mediaItem.alt === "string" ? (
                         <input
                           value={mediaItem.alt}
-                          placeholder="Alt-текст"
+                          placeholder={t("fieldLabels.alt")}
                           onChange={(event) =>
                             updateBlockMediaItemMeta(activeBlock.id, index, {
                               alt: event.currentTarget.value
@@ -434,7 +434,7 @@ export function EditorSheet() {
       ) : null}
       {activeBlock.blockType === "image" ? (
         <section className="section-stack">
-          <span className="eyebrow">Форматы печати</span>
+          <span className="eyebrow">{t("editorPanel.printFormats")}</span>
           {printFormats.map((format, index) => (
             <div key={`${index}-${String(format.id ?? index)}`} className="editor-media-item">
               <div className="editor-media-item__body">
@@ -462,7 +462,7 @@ export function EditorSheet() {
                   />
                   <input
                     value={String(format.label ?? "")}
-                    placeholder="Подпись"
+                    placeholder={t("editorPanel.label")}
                     onChange={(event) =>
                       updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
                         itemIndex === index ? { ...item, label: event.currentTarget.value } : item
@@ -473,7 +473,7 @@ export function EditorSheet() {
                     type="number"
                     min={0}
                     value={Number(format.price ?? 0)}
-                    placeholder="Цена"
+                    placeholder={t("editorPanel.price")}
                     onChange={(event) =>
                       updateBlockField(activeBlock.id, "printFormats", printFormats.map((item, itemIndex) => (
                         itemIndex === index ? { ...item, price: Number(event.currentTarget.value) } : item
@@ -509,7 +509,7 @@ export function EditorSheet() {
               ])
             }
           >
-            Добавить формат
+            {t("shop.addFormat")}
           </button>
         </section>
       ) : null}
@@ -576,7 +576,7 @@ export function EditorSheet() {
                   updateBlockField(activeBlock.id, field.name, event.currentTarget.value)
                 }
               >
-                <option value="">Выберите ссылку</option>
+                <option value="">{t("editorPanel.selectLink")}</option>
                 {options.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -645,7 +645,7 @@ function getMediaCollectionItems(block: SiteBlockRecord) {
       previewUrl: string;
     } => ({
       id: item.mediaAssetId ?? `item-${index}`,
-      label: item.caption || item.alt || `Изображение ${index + 1}`,
+      label: item.caption || item.alt || `Image ${index + 1}`,
       caption: item.caption ?? "",
       alt: item.alt ?? "",
       previewUrl:

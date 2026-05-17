@@ -68,13 +68,19 @@ export type SiteCommerceSettings = {
 export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
   cartEnabled: true,
   printFormats: [
-    { id: "30x40", widthCm: 30, heightCm: 40, label: "30 × 40", price: 2500 },
-    { id: "40x50", widthCm: 40, heightCm: 50, label: "40 × 50", price: 3500 },
-    { id: "50x70", widthCm: 50, heightCm: 70, label: "50 × 70", price: 5200 }
+    { id: "50x50", widthCm: 50, heightCm: 50, label: "50 × 50", price: 4200 },
+    { id: "50x60", widthCm: 50, heightCm: 60, label: "50 × 60", price: 4200 },
+    { id: "50x80", widthCm: 50, heightCm: 80, label: "50 × 80", price: 5000 },
+    { id: "52x80", widthCm: 52, heightCm: 80, label: "52 × 80", price: 5200 },
+    { id: "55x80", widthCm: 55, heightCm: 80, label: "55 × 80", price: 5500 },
+    { id: "60x60", widthCm: 60, heightCm: 60, label: "60 × 60", price: 4500 },
+    { id: "60x65", widthCm: 60, heightCm: 65, label: "60 × 65", price: 4900 },
+    { id: "60x80", widthCm: 60, heightCm: 80, label: "60 × 80", price: 6000 },
+    { id: "60x85", widthCm: 60, heightCm: 85, label: "60 × 85", price: 6400 }
   ],
   paymentProviders: {
-    yoomoney: { enabled: false, title: "ЮKassa", kind: "yoomoney", settings: { currency: "RUB" } },
-    sbp: { enabled: false, title: "СБП", kind: "sbp", settings: {} },
+    yoomoney: { enabled: false, title: "YooKassa", kind: "yoomoney", settings: { currency: "RUB" } },
+    sbp: { enabled: false, title: "SBP", kind: "sbp", settings: {} },
     paypal: { enabled: false, title: "PayPal", kind: "paypal", settings: {} },
     cards: { enabled: false, title: "Visa / Mastercard", kind: "cards", settings: {} }
   }
@@ -404,7 +410,7 @@ export function createSeedPages(): SeedPageDefinition[] {
           data: {
             ...createDefaultBlock("hero"),
             eyebrow: "",
-            title: "Inner landscapes made from crystal, water, fire, and silence.",
+            title: "Olga Schmid",
             subtitle:
               "A body of work where fragments become thresholds: ancient figures, icy gardens, spirals of light, and dense organic worlds.",
             buttonText: "Read the artist statement",

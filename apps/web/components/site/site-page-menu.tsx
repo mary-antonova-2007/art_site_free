@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getBlockAnchorId } from "@/lib/block-navigation";
+import { useTranslations } from "@/lib/i18n/client";
 
 export function SitePageMenu({
   currentSlug,
@@ -20,6 +21,7 @@ export function SitePageMenu({
   compactNavigation: boolean;
   editorEnabled: boolean;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -73,7 +75,7 @@ export function SitePageMenu({
         type="button"
         className="site-page-menu__button"
         aria-expanded={open}
-        aria-label={open ? "Закрыть меню страниц" : "Открыть меню страниц"}
+        aria-label={open ? t("header.closePageMenu") : t("header.openPageMenu")}
         onClick={() => setOpen((current) => !current)}
       >
         {open ? <X size={18} /> : <Menu size={18} />}
@@ -83,7 +85,7 @@ export function SitePageMenu({
           <div className="site-page-menu__popover" onClick={(event) => event.stopPropagation()}>
             <div className="site-page-menu__list">
               <div className="site-page-menu__splitter" />
-              <div className="site-page-menu__label">Страницы</div>
+              <div className="site-page-menu__label">{t("header.pages")}</div>
               <div className="site-page-menu__splitter" />
               {pages.map((page) => (
                 <Link
@@ -97,7 +99,7 @@ export function SitePageMenu({
                 </Link>
               ))}
               {blockItems.length ? <div className="site-page-menu__splitter" /> : null}
-              {blockItems.length ? <div className="site-page-menu__label">Разделы</div> : null}
+              {blockItems.length ? <div className="site-page-menu__label">{t("header.sections")}</div> : null}
               {blockItems.length ? <div className="site-page-menu__splitter" /> : null}
               {blockItems.map((item) => (
                 <button

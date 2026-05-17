@@ -78,7 +78,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
   const formatCards = useMemo(() => settings.printFormats, [settings.printFormats]);
 
   const persistSettings = async (nextSettings: SiteCommerceSettings) => {
-    setStatus("Сохранение...");
+    setStatus(t("shop.saving"));
     const response = await fetch("/api/editor/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -88,11 +88,11 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
 
     if (response.ok && payload.settings) {
       setSettings(payload.settings);
-      setStatus("Сохранено");
+      setStatus(t("shop.saved"));
       return;
     }
 
-    setStatus(payload.error ?? "Ошибка");
+    setStatus(payload.error ?? t("shop.error"));
   };
 
   const removeFormat = (index: number) => {
@@ -133,23 +133,22 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
   return (
     <main className="site-section section-stack width-wide">
       <div className="shop-settings-hero">
-        <span className="eyebrow">Editor mode</span>
-        <h1 className="hero-title">Настройки магазина</h1>
+        <span className="eyebrow">{t("shop.editorMode")}</span>
+        <h1 className="hero-title">{t("shop.settingsTitle")}</h1>
         <p className="section-description">
-          Здесь создаются общие форматы печати и стандартные цены. На странице медиа можно включить изображение
-          как товар, выбрать доступные форматы и при необходимости поставить свою цену для конкретного изображения.
+          {t("shop.settingsDescription")}
         </p>
         <div className="shop-settings-hero__actions">
           <a className="editor-button" href="/media?editor=1">
-            Назначить форматы изображениям
+            {t("shop.assignFormats")}
           </a>
           <a className="editor-button" href="/?editor=1">
-            Вернуться на главную
+            {t("shop.returnHome")}
           </a>
         </div>
       </div>
       <label className="editor-field editor-field-checkbox">
-        <span>Корзина включена</span>
+        <span>{t("shop.cartEnabled")}</span>
         <input
           type="checkbox"
           checked={settings.cartEnabled}
@@ -158,7 +157,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
       </label>
 
       <section className="section-stack">
-        <h2>Форматы печати</h2>
+        <h2>{t("shop.printFormats")}</h2>
         <div className="shop-format-grid">
           {formatCards.map((format, index) => (
             <article key={format.id} className="shop-format-card">
@@ -175,18 +174,20 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                     {format.widthCm} × {format.heightCm} {t("commerce.unitCm")}
                   </span>
                 </div>
-                <p className="shop-format-card__price">{formatPrice(format.price)}</p>
-                <p className="shop-format-card__description">Пропорции: {formatRatio(format.widthCm, format.heightCm)}</p>
+                <p className="shop-format-card__price">{formatPrice(format.price, t)}</p>
+                <p className="shop-format-card__description">
+                  {t("shop.ratio", { ratio: formatRatio(format.widthCm, format.heightCm) })}
+                </p>
                 <div className="shop-format-card__actions">
                   <button type="button" className="editor-button" onClick={() => openEditFormatModal(index)}>
-                    Редактировать
+                    {t("shop.edit")}
                   </button>
                   <button
                     type="button"
                     className="editor-button"
                     onClick={() => removeFormat(index)}
                   >
-                    Удалить
+                    {t("shop.delete")}
                   </button>
                 </div>
               </div>
@@ -194,14 +195,14 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
           ))}
         </div>
         <button type="button" className="editor-button" onClick={openCreateFormatModal}>
-          Добавить формат
+          {t("shop.addFormat")}
         </button>
       </section>
 
       <section className="section-stack">
-        <h2>Платежи</h2>
+        <h2>{t("shop.payments")}</h2>
         <div className="shop-payment-grid">
-          {paymentProviderDescriptors.map((descriptor) => {
+          {getPaymentProviderDescriptors(t).map((descriptor) => {
             const provider = getProviderSettings(settings.paymentProviders, descriptor.key);
 
             return (
@@ -212,7 +213,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                     <span>{descriptor.description}</span>
                   </div>
                   <label className="editor-field editor-field-checkbox">
-                    <span>Включить</span>
+                    <span>{t("shop.enable")}</span>
                     <input
                       type="checkbox"
                       checked={Boolean(provider.enabled)}
@@ -223,14 +224,14 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
 
                 <div className="shop-payment-card__grid">
                   <label className="editor-field">
-                    <span>Название</span>
+                    <span>{t("shop.title")}</span>
                     <input
                       value={provider.title ?? descriptor.label}
                       onChange={(event) => updateProvider(descriptor.key, { title: event.currentTarget.value })}
                     />
                   </label>
                   <label className="editor-field">
-                    <span>Описание</span>
+                    <span>{t("shop.description")}</span>
                     <input
                       value={provider.description ?? ""}
                       onChange={(event) => updateProvider(descriptor.key, { description: event.currentTarget.value })}
@@ -303,7 +304,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
         type="button"
         onClick={() => void persistSettings(settings)}
       >
-        Сохранить
+        {t("shop.save")}
       </button>
       <p>{status}</p>
 
@@ -311,19 +312,21 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
         <div className="shop-format-modal" role="presentation">
           <div className="shop-format-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="shop-format-modal-title" onClick={(event) => event.stopPropagation()}>
             <div className="shop-format-modal__header">
-              <h3 id="shop-format-modal-title">{editingFormatIndex === null ? "Создать формат" : "Редактировать формат"}</h3>
+              <h3 id="shop-format-modal-title">
+                {editingFormatIndex === null ? t("shop.createFormat") : t("shop.editFormat")}
+              </h3>
               <button type="button" className="editor-button" onClick={() => setIsFormatModalOpen(false)}>
-                Закрыть
+                {t("shop.close")}
               </button>
             </div>
             <div className="shop-format-modal__body">
               <label className="editor-field">
-                <span>Название</span>
+                <span>{t("shop.title")}</span>
                 <input value={formatAutoName(draftFormat.widthCm, draftFormat.heightCm, t)} readOnly />
               </label>
               <div className="shop-format-modal__grid">
                 <label className="editor-field">
-                  <span>Ширина, {t("commerce.unitCm")}</span>
+                  <span>{t("shop.width", { unit: t("commerce.unitCm") })}</span>
                   <input
                     type="number"
                     min={1}
@@ -335,7 +338,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                   />
                 </label>
                 <label className="editor-field">
-                  <span>Высота, {t("commerce.unitCm")}</span>
+                  <span>{t("shop.height", { unit: t("commerce.unitCm") })}</span>
                   <input
                     type="number"
                     min={1}
@@ -347,7 +350,7 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                   />
                 </label>
                 <label className="editor-field">
-                  <span>Цена, ₽</span>
+                  <span>{t("shop.priceRub")}</span>
                   <input
                     type="number"
                     min={0}
@@ -363,15 +366,15 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
                 <div className="shop-format-card__preview" aria-hidden="true">
                   <div className="shop-format-card__preview-inner" style={getPreviewStyle(draftFormat.widthCm, draftFormat.heightCm)} />
                 </div>
-                <p className="shop-format-card__description">Пример пропорций для выбранного размера</p>
+                <p className="shop-format-card__description">{t("shop.previewRatio")}</p>
               </div>
             </div>
             <div className="shop-format-modal__footer">
               <button type="button" className="editor-button" onClick={() => setIsFormatModalOpen(false)}>
-                Отмена
+                {t("shop.cancel")}
               </button>
               <button type="button" className="editor-button editor-button-primary" onClick={saveDraftFormat}>
-                {editingFormatIndex === null ? "Создать формат" : "Сохранить изменения"}
+                {editingFormatIndex === null ? t("shop.createFormat") : t("shop.saveChanges")}
               </button>
             </div>
           </div>
@@ -418,13 +421,13 @@ function normalizePrice(value: unknown) {
   return Number.isFinite(price) && price >= 0 ? price : undefined;
 }
 
-function formatPrice(value: unknown) {
+function formatPrice(value: unknown, t: ReturnType<typeof useTranslations>) {
   if (value == null || value === "") {
-    return "Цена не задана";
+    return t("commerce.priceNotSet");
   }
 
   const price = Number(value);
-  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("en-US")} ₽` : t("commerce.priceNotSet");
 }
 
 type PaymentProviderDescriptor = {
@@ -438,68 +441,70 @@ type PaymentProviderDescriptor = {
   >;
 };
 
-const paymentProviderDescriptors: PaymentProviderDescriptor[] = [
+function getPaymentProviderDescriptors(t: ReturnType<typeof useTranslations>): PaymentProviderDescriptor[] {
+  return [
   {
     key: "yoomoney",
-    label: "ЮKassa",
-    description: "Готовая страница оплаты: карты, СБП и другие способы из личного кабинета",
+    label: "YooKassa",
+    description: t("shop.providerYooKassaDescription"),
     fields: [
-      { key: "shopId", label: "Shop ID", kind: "text", placeholder: "123456" },
-      { key: "secretKey", label: "Секретный ключ", kind: "text", placeholder: "live_secret..." },
-      { key: "returnUrl", label: "URL возврата", kind: "url", placeholder: "https://site.ru/cart?paid=1" },
-      { key: "currency", label: "Валюта", kind: "text", placeholder: "RUB" },
+      { key: "shopId", label: t("shop.fieldShopId"), kind: "text", placeholder: "123456" },
+      { key: "secretKey", label: t("shop.fieldSecretKey"), kind: "text", placeholder: "live_secret..." },
+      { key: "returnUrl", label: t("shop.fieldReturnUrl"), kind: "url", placeholder: "https://site.com/cart?paid=1" },
+      { key: "currency", label: t("shop.fieldCurrency"), kind: "text", placeholder: "RUB" },
       {
         key: "descriptionTemplate",
-        label: "Описание платежа",
+        label: t("shop.fieldPaymentDescription"),
         kind: "text",
-        placeholder: "Заказ на печать"
+        placeholder: "Print order"
       }
     ]
   },
   {
     key: "sbp",
-    label: "СБП",
-    description: "QR или deeplink для быстрых платежей",
+    label: "SBP",
+    description: t("shop.providerSbpDescription"),
     fields: [
-      { key: "merchantId", label: "Merchant ID", kind: "text", placeholder: "merchant-..." },
-      { key: "terminalId", label: "Terminal ID", kind: "text", placeholder: "terminal-..." },
-      { key: "bankName", label: "Банк", kind: "text", placeholder: "Точка, Сбербанк, Т-Банк..." },
-      { key: "qrProviderUrl", label: "QR provider URL", kind: "url", placeholder: "https://..." },
-      { key: "returnUrl", label: "URL возврата", kind: "url", placeholder: "https://site.ru/cart/success" },
-      { key: "webhookSecret", label: "Webhook secret", kind: "text", placeholder: "secret" },
-      { key: "currency", label: "Валюта", kind: "text", placeholder: "RUB" }
+      { key: "merchantId", label: t("shop.fieldMerchantId"), kind: "text", placeholder: "merchant-..." },
+      { key: "terminalId", label: t("shop.fieldTerminalId"), kind: "text", placeholder: "terminal-..." },
+      { key: "bankName", label: t("shop.fieldBank"), kind: "text", placeholder: "Bank name" },
+      { key: "qrProviderUrl", label: t("shop.fieldQrProviderUrl"), kind: "url", placeholder: "https://..." },
+      { key: "returnUrl", label: t("shop.fieldReturnUrl"), kind: "url", placeholder: "https://site.com/cart/success" },
+      { key: "webhookSecret", label: t("shop.fieldWebhookSecret"), kind: "text", placeholder: "secret" },
+      { key: "currency", label: t("shop.fieldCurrency"), kind: "text", placeholder: "RUB" }
     ]
   },
   {
     key: "paypal",
     label: "PayPal",
-    description: "Платежи для зарубежных клиентов",
+    description: t("shop.providerPayPalDescription"),
     fields: [
-      { key: "clientId", label: "Client ID", kind: "text", placeholder: "client id" },
-      { key: "clientSecret", label: "Client Secret", kind: "text", placeholder: "secret" },
-      { key: "merchantId", label: "Merchant ID", kind: "text", placeholder: "merchant id" },
-      { key: "returnUrl", label: "Return URL", kind: "url", placeholder: "https://site.ru/cart/success" },
-      { key: "webhookId", label: "Webhook ID", kind: "text", placeholder: "webhook id" },
-      { key: "currency", label: "Валюта", kind: "text", placeholder: "USD" },
-      { key: "environment", label: "Окружение", kind: "select", options: ["sandbox", "live"] }
+      { key: "clientId", label: t("shop.fieldClientId"), kind: "text", placeholder: "client id" },
+      { key: "clientSecret", label: t("shop.fieldClientSecret"), kind: "text", placeholder: "secret" },
+      { key: "merchantId", label: t("shop.fieldMerchantId"), kind: "text", placeholder: "merchant id" },
+      { key: "returnUrl", label: t("shop.fieldReturnUrl"), kind: "url", placeholder: "https://site.com/cart/success" },
+      { key: "webhookId", label: t("shop.fieldWebhookId"), kind: "text", placeholder: "webhook id" },
+      { key: "currency", label: t("shop.fieldCurrency"), kind: "text", placeholder: "USD" },
+      { key: "environment", label: t("shop.fieldEnvironment"), kind: "select", options: ["sandbox", "live"] }
     ]
   },
   {
     key: "cards",
     label: "Visa / Mastercard",
-    description: "Эквайринг для международных банковских карт",
+    description: t("shop.providerCardsDescription"),
     fields: [
-      { key: "gateway", label: "Gateway", kind: "text", placeholder: "stripe / cloudpayments / adyen ..." },
-      { key: "publicKey", label: "Public key", kind: "text", placeholder: "pk_..." },
-      { key: "secretKey", label: "Secret key", kind: "text", placeholder: "sk_..." },
-      { key: "merchantId", label: "Merchant ID", kind: "text", placeholder: "merchant id" },
-      { key: "returnUrl", label: "Return URL", kind: "url", placeholder: "https://site.ru/cart/success" },
-      { key: "webhookSecret", label: "Webhook secret", kind: "text", placeholder: "secret" },
-      { key: "currency", label: "Валюта", kind: "text", placeholder: "USD" },
-      { key: "testMode", label: "Тестовый режим", kind: "select", options: ["true", "false"] }
+      { key: "gateway", label: t("shop.fieldGateway"), kind: "text", placeholder: "stripe / cloudpayments / adyen ..." },
+      { key: "publicKey", label: t("shop.fieldPublicKey"), kind: "text", placeholder: "pk_..." },
+      { key: "secretKey", label: t("shop.fieldSecretKey"), kind: "text", placeholder: "sk_..." },
+      { key: "merchantId", label: t("shop.fieldMerchantId"), kind: "text", placeholder: "merchant id" },
+      { key: "returnUrl", label: t("shop.fieldReturnUrl"), kind: "url", placeholder: "https://site.com/cart/success" },
+      { key: "webhookSecret", label: t("shop.fieldWebhookSecret"), kind: "text", placeholder: "secret" },
+      { key: "currency", label: t("shop.fieldCurrency"), kind: "text", placeholder: "USD" },
+      { key: "testMode", label: t("shop.fieldTestMode"), kind: "select", options: ["true", "false"] }
     ]
   }
-];
+  ];
+}
 
 function getProviderSettings(
   providers: SiteCommerceSettings["paymentProviders"],

@@ -24,7 +24,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
 
   useEffect(() => {
     void (async () => {
-      setStatus("Загрузка медиатеки...");
+      setStatus(t("media.libraryLoading"));
       const response = await fetch("/api/editor/media");
       const payload = (await response.json()) as {
         assets?: MediaLibraryAsset[];
@@ -33,7 +33,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
       };
 
       if (!response.ok) {
-        setStatus(payload.error ?? "Не удалось загрузить медиатеку.");
+        setStatus(payload.error ?? t("media.loadFailed"));
         return;
       }
 
@@ -73,16 +73,15 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
       <span className="eyebrow">{t("media.libraryEyebrow")}</span>
       <h1 className="section-title">{t("media.libraryTitle")}</h1>
       <p className="section-description">
-        {t("media.libraryHint")} Форматы и стандартные цены создаются в настройках магазина, а здесь для каждого
-        изображения включается продажа, выбираются доступные форматы и задаётся индивидуальная цена.
+        {t("media.libraryHint")} {t("media.extendedLibraryHint")}
       </p>
 
       <div className="media-manager-toolbar">
         <a className="editor-button" href="/?editor=1">
-          На главную
+          {t("media.home")}
         </a>
         <a className="editor-button" href="/settings?editor=1">
-          Форматы и цены
+          {t("media.formatsAndPrices")}
         </a>
         <label className="media-search">
           <Search size={16} />
@@ -169,7 +168,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
               className="action-button"
               type="button"
               onClick={() => void renameCategory(item)}
-              aria-label={`Переименовать категорию ${item}`}
+              aria-label={t("media.renameCategory", { name: item })}
             >
               <Pencil size={14} />
             </button>
@@ -177,7 +176,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
               className="action-button"
               type="button"
               onClick={() => void deleteCategory(item)}
-              aria-label={`Удалить категорию ${item}`}
+              aria-label={t("media.deleteCategory", { name: item })}
             >
               <Trash2 size={14} />
             </button>
@@ -185,7 +184,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
         ))}
         <button className="editor-button" type="button" onClick={() => void createCategory()}>
           <Plus size={14} />
-          Категория
+          {t("media.category")}
         </button>
       </div>
 
@@ -206,8 +205,18 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                 <span>{asset.alt}</span>
               </div>
               <div className="media-asset-commerce">
+                <div className="editor-media-item__actions">
+                  <button
+                    className="action-button"
+                    type="button"
+                    aria-label={t("media.deleteImage", { name: asset.title })}
+                    onClick={() => void deleteAsset(asset)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
                 <label className="editor-field editor-field-checkbox">
-                  <span>Доступно для покупки</span>
+                  <span>{t("media.availableForPurchase")}</span>
                   <input
                     type="checkbox"
                     checked={draft.isProduct}
@@ -222,13 +231,14 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                 </label>
                 {draft.isProduct ? (
                   <div className="section-stack">
-                    <span className="eyebrow">Форматы</span>
+                    <span className="eyebrow">{t("media.formats")}</span>
                     {draft.printFormats.map((format, index) => (
                       <div className="editor-media-item" key={`${asset.id}-${format.id}-${index}`}>
                         <div className="editor-media-item__body">
                           <strong>{getFormatName(format, t)}</strong>
                           <span>
-                            Стандарт: {formatPrice(format.price)} · Для изображения: {formatPrice(getEffectivePrice(format))}
+                            {t("media.standard")}: {formatPrice(format.price, t)} · {t("media.imagePrice")}:{" "}
+                            {formatPrice(getEffectivePrice(format), t)}
                           </span>
                           <div className="editor-media-item__meta">
                             <select
@@ -241,7 +251,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                             >
                               {printFormats.map((option) => (
                                 <option key={option.id} value={option.id}>
-                                  {getFormatName(option, t)} · {formatPrice(option.price)}
+                                  {getFormatName(option, t)} · {formatPrice(option.price, t)}
                                 </option>
                               ))}
                             </select>
@@ -257,15 +267,15 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                                 });
                               }}
                             >
-                              <option value="standard">Стандартная цена</option>
-                              <option value="override">Своя цена</option>
+                              <option value="standard">{t("media.standardPrice")}</option>
+                              <option value="override">{t("media.customPrice")}</option>
                             </select>
                             {format.priceOverride == null ? null : (
                               <input
                                 type="number"
                                 min={0}
                                 value={format.priceOverride}
-                                placeholder="Своя цена"
+                                placeholder={t("media.customPrice")}
                                 onChange={(event) => {
                                   const value = Number(event.currentTarget.value);
                                   updateDraftFormat(asset.id, index, { priceOverride: value });
@@ -290,7 +300,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                       type="button"
                       onClick={() => addDraftFormat(asset.id, printFormats)}
                     >
-                      Добавить формат
+                      {t("shop.addFormat")}
                     </button>
                   </div>
                 ) : null}
@@ -299,7 +309,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
                   type="button"
                   onClick={() => void saveAssetCommerce(asset.id)}
                 >
-                  Сохранить
+                  {t("shop.save")}
                 </button>
               </div>
             </article>
@@ -315,7 +325,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
       return;
     }
 
-    setStatus("Сохранение...");
+    setStatus(t("media.saving"));
     const response = await fetch(`/api/editor/media/${assetId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -330,7 +340,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
     };
 
     if (!response.ok || !payload.asset) {
-      setStatus(payload.error ?? "Не удалось сохранить настройки изображения.");
+      setStatus(payload.error ?? t("media.saveFailed"));
       return;
     }
 
@@ -348,18 +358,18 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
         printFormats: payload.asset?.printFormats ?? []
       }
     }));
-    setStatus("Сохранено");
+    setStatus(t("media.saved"));
   }
 
   async function createCategory() {
-    const value = typeof window !== "undefined" ? window.prompt("Название категории") : null;
+    const value = typeof window !== "undefined" ? window.prompt(t("media.categoryNamePrompt")) : null;
     const nextName = normalizeMediaCategoryName(value ?? "");
 
     if (!nextName) {
       return;
     }
 
-    setStatus("Создание категории...");
+    setStatus(t("media.creatingCategory"));
     const response = await fetch("/api/editor/media/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -368,7 +378,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
     const payload = (await response.json()) as { categories?: MediaCategory[]; error?: string };
 
     if (!response.ok || !payload.categories) {
-      setStatus(payload.error ?? "Не удалось создать категорию.");
+      setStatus(payload.error ?? t("media.categoryCreateFailed"));
       return;
     }
 
@@ -378,14 +388,14 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
   }
 
   async function renameCategory(currentName: string) {
-    const value = typeof window !== "undefined" ? window.prompt("Новое имя категории", currentName) : null;
+    const value = typeof window !== "undefined" ? window.prompt(t("media.newCategoryNamePrompt"), currentName) : null;
     const nextName = normalizeMediaCategoryName(value ?? "");
 
     if (!nextName || nextName === currentName) {
       return;
     }
 
-    setStatus("Переименование категории...");
+    setStatus(t("media.renamingCategory"));
     const response = await fetch("/api/editor/media/categories", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -394,7 +404,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
     const payload = (await response.json()) as { categories?: MediaCategory[]; error?: string };
 
     if (!response.ok || !payload.categories) {
-      setStatus(payload.error ?? "Не удалось переименовать категорию.");
+      setStatus(payload.error ?? t("media.categoryRenameFailed"));
       return;
     }
 
@@ -409,11 +419,11 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
   }
 
   async function deleteCategory(currentName: string) {
-    if (typeof window !== "undefined" && !window.confirm(`Удалить категорию "${currentName}"?`)) {
+    if (typeof window !== "undefined" && !window.confirm(t("media.deleteCategoryConfirm", { name: currentName }))) {
       return;
     }
 
-    setStatus("Удаление категории...");
+    setStatus(t("media.deletingCategory"));
     const response = await fetch("/api/editor/media/categories", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -422,7 +432,7 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
     const payload = (await response.json()) as { categories?: MediaCategory[]; error?: string };
 
     if (!response.ok || !payload.categories) {
-      setStatus(payload.error ?? "Не удалось удалить категорию.");
+      setStatus(payload.error ?? t("media.categoryDeleteFailed"));
       return;
     }
 
@@ -433,6 +443,31 @@ export function MediaManager({ printFormats }: { printFormats: PrintFormat[] }) 
     if (category === currentName) {
       setCategory("all");
     }
+    setStatus(null);
+  }
+
+  async function deleteAsset(asset: MediaLibraryAsset) {
+    if (typeof window !== "undefined" && !window.confirm(t("media.deleteImageConfirm", { name: asset.title }))) {
+      return;
+    }
+
+    setStatus(t("media.deletingImage"));
+    const response = await fetch(`/api/editor/media/${asset.id}`, {
+      method: "DELETE"
+    });
+    const payload = (await response.json()) as { deleted?: boolean; error?: string };
+
+    if (!response.ok || !payload.deleted) {
+      setStatus(payload.error ?? t("media.imageDeleteFailed"));
+      return;
+    }
+
+    setAssets((current) => current.filter((item) => item.id !== asset.id));
+    setDrafts((current) => {
+      const next = { ...current };
+      delete next[asset.id];
+      return next;
+    });
     setStatus(null);
   }
 
@@ -543,13 +578,13 @@ function formatFromOptions(id: string, options: PrintFormat[]): Partial<PrintFor
   };
 }
 
-function formatPrice(value: unknown) {
+function formatPrice(value: unknown, t: ReturnType<typeof useTranslations>) {
   if (value == null || value === "") {
-    return "Не задана";
+    return t("media.notSet");
   }
 
   const price = Number(value);
-  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Не задана";
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("en-US")} ₽` : t("media.notSet");
 }
 
 function getEffectivePrice(format: PrintFormat) {

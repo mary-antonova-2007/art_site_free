@@ -8,8 +8,18 @@ type DeepStringShape<T> = {
       : T[K];
 };
 
-export type Messages = DeepStringShape<typeof enMessages>;
-export type MessageKey = NestedKeyOf<Messages>;
+type DeepPartialStringShape<T> = {
+  [K in keyof T]?: T[K] extends string
+    ? string
+    : T[K] extends Record<string, unknown>
+      ? DeepPartialStringShape<T[K]>
+      : T[K];
+};
+
+type CompleteMessages = DeepStringShape<typeof enMessages>;
+
+export type Messages = DeepPartialStringShape<CompleteMessages>;
+export type MessageKey = NestedKeyOf<CompleteMessages>;
 
 type NestedKeyOf<T> = {
   [K in keyof T & string]: T[K] extends Record<string, unknown>

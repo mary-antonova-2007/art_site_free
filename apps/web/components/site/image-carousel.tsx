@@ -414,7 +414,7 @@ export function ImageCarousel({
                     className="image-lightbox"
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Image preview"
+                    aria-label={t("header.imagePreview")}
                     onClick={() => setLightboxIndex(null)}
                   >
                     <div
@@ -433,24 +433,24 @@ export function ImageCarousel({
                           <div className="product-modal__content">
                             <h3>{item.caption ?? item.alt}</h3>
                             <p className="product-modal__note">
-                              Выберите формат печати и количество перед добавлением в корзину.
+                              {t("commerce.productModalNote")}
                             </p>
                             <label className="editor-field">
-                              <span>Формат печати</span>
+                              <span>{t("commerce.printFormat")}</span>
                               <select
                                 value={selectedFormatId}
                                 onChange={(event) => setSelectedFormatId(event.currentTarget.value)}
                               >
                                 {(item.formats ?? []).map((format) => (
                                   <option key={format.id} value={format.id}>
-                                    {getFormatName(format)} ·{" "}
-                                    {formatPrice(getEffectivePrice(format))}
+                                    {getFormatName(format, t)} ·{" "}
+                                    {formatPrice(getEffectivePrice(format), t)}
                                   </option>
                                 ))}
                               </select>
                             </label>
                             <label className="editor-field">
-                              <span>Количество</span>
+                              <span>{t("commerce.quantity")}</span>
                               <input
                                 type="number"
                                 min={1}
@@ -468,18 +468,18 @@ export function ImageCarousel({
                                 </div>
                                 <div className="product-modal__format-info">
                                   <strong>
-                                    {getFormatName(selectedFormat)}
+                                    {getFormatName(selectedFormat, t)}
                                   </strong>
                                   <span>
                                     {selectedFormat.widthCm} × {selectedFormat.heightCm} {t("commerce.unitCm")}
                                   </span>
-                                  <span>{formatPrice(getEffectivePrice(selectedFormat))}</span>
+                                  <span>{formatPrice(getEffectivePrice(selectedFormat), t)}</span>
                                 </div>
                               </div>
                             ) : null}
                             <div className="product-modal__actions">
                               <button className="editor-button" type="button" onClick={() => addProductToCart(item)}>
-                                Добавить в корзину
+                                {t("commerce.addToCart")}
                               </button>
                               <button
                                 className="editor-button editor-button-primary"
@@ -489,7 +489,7 @@ export function ImageCarousel({
                                   window.location.assign("/cart");
                                 }}
                               >
-                                Купить
+                                {t("commerce.buy")}
                               </button>
                             </div>
                           </div>
@@ -520,17 +520,17 @@ function getEffectivePrice(format: PrintFormat) {
   return format.priceOverride ?? format.price;
 }
 
-function formatPrice(value: unknown) {
+function formatPrice(value: unknown, t: ReturnType<typeof useTranslations>) {
   if (value == null || value === "") {
-    return "Цена не задана";
+    return t("commerce.priceNotSet");
   }
 
   const price = Number(value);
-  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("ru-RU")} ₽` : "Цена не задана";
+  return Number.isFinite(price) && price >= 0 ? `${price.toLocaleString("en-US")} ₽` : t("commerce.priceNotSet");
 }
 
-function getFormatName(format: PrintFormat) {
+function getFormatName(format: PrintFormat, t: ReturnType<typeof useTranslations>) {
   const width = Math.max(1, Number(format.widthCm) || 1);
   const height = Math.max(1, Number(format.heightCm) || 1);
-  return `${width} × ${height} cm`;
+  return `${width} × ${height} ${t("commerce.unitCm")}`;
 }

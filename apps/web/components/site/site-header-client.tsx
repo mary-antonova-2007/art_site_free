@@ -9,6 +9,7 @@ import type { MouseEvent } from "react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SitePageMenu } from "@/components/site/site-page-menu";
+import { useTranslations } from "@/lib/i18n/client";
 import { themePresets } from "@/lib/theme-presets";
 
 function measureNavContentWidth(nav: HTMLElement) {
@@ -40,6 +41,7 @@ export function SiteHeaderClient({
   primaryNavLabel: string;
   blockItems: Array<{ id: string; label: string }>;
 }) {
+  const t = useTranslations();
   const { themeId, setThemeId } = useTheme();
   const headerRef = useRef<HTMLElement | null>(null);
   const brandRef = useRef<HTMLDivElement | null>(null);
@@ -188,10 +190,10 @@ export function SiteHeaderClient({
       </nav>
       <div ref={controlsRef} className="site-header__controls">
         <label className="theme-switcher">
-          <span className="sr-only">Color scheme</span>
+          <span className="sr-only">{t("header.colorScheme")}</span>
           <select
             value={themeId}
-            aria-label="Color scheme"
+            aria-label={t("header.colorScheme")}
             onChange={(event) => setThemeId(event.currentTarget.value)}
           >
             {Object.entries(themesByGroup).map(([group, themes]) => (
@@ -207,7 +209,7 @@ export function SiteHeaderClient({
         </label>
         <LocaleSwitcher currentPath={currentPath} />
       </div>
-      <Link href="/cart" className="site-cart-link" aria-label="Open cart">
+      <Link href="/cart" className="site-cart-link" aria-label={t("header.openCart")}>
         <ShoppingBag size={18} aria-hidden="true" strokeWidth={1.9} />
       </Link>
       <SitePageMenu
