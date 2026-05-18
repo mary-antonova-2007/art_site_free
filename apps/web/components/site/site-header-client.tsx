@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 
@@ -210,7 +210,7 @@ export function SiteHeaderClient({
         <LocaleSwitcher currentPath={currentPath} />
       </div>
       <Link href="/cart" className="site-cart-link" aria-label={t("header.openCart")}>
-        <ShoppingBag size={18} aria-hidden="true" strokeWidth={1.9} />
+        <ShoppingCart size={19} aria-hidden="true" strokeWidth={1.8} />
       </Link>
       <SitePageMenu
         currentSlug={currentSlug}

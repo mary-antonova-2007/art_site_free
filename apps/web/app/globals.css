@@ -502,7 +502,8 @@ img {
   justify-content: space-between;
   align-items: center;
   gap: 28px;
-  padding: 28px 0 20px;
+  padding: 28px 136px 20px 0;
+  min-width: 0;
 }
 
 .site-header__controls {
@@ -511,6 +512,7 @@ img {
   justify-content: flex-end;
   gap: 10px;
   flex: 0 0 auto;
+  min-width: 0;
 }
 
 .theme-switcher,
@@ -523,6 +525,7 @@ img {
 .locale-switcher select,
 .editor-page-picker select {
   min-height: 42px;
+  max-width: 100%;
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -824,16 +827,18 @@ img {
 
 .poster-hero {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  min-height: calc(100svh - 120px);
-  gap: 32px;
-  align-items: end;
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1.08fr);
+  min-height: min(760px, calc(100svh - 120px));
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
 }
 
 .hero-copy {
   display: grid;
-  gap: 18px;
-  padding: 60px 0;
+  align-content: center;
+  gap: 20px;
+  padding: clamp(36px, 6vw, 72px) 0;
+  min-width: 0;
 }
 
 .eyebrow {
@@ -855,8 +860,9 @@ img {
 }
 
 .hero-title {
-  font-size: clamp(3.8rem, 8vw, 8rem);
-  max-width: 8ch;
+  font-size: clamp(4.1rem, 6.25vw, 6.5rem);
+  line-height: 0.94;
+  max-width: 16ch;
 }
 
 .hero-subtitle,
@@ -873,7 +879,7 @@ img {
 .hero-media,
 .image-panel {
   position: relative;
-  min-height: 65vh;
+  min-height: clamp(420px, 58vh, 640px);
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -978,7 +984,7 @@ img {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .gallery-grid,
@@ -1428,7 +1434,7 @@ img {
   display: grid;
   grid-template-columns: minmax(0, 676px) minmax(360px, 464px);
   gap: clamp(20px, 2.4vw, 28px);
-  align-items: start;
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -1884,7 +1890,7 @@ img {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .shop-payment-card__title {
@@ -2031,7 +2037,7 @@ img {
 
   .cart-page__header {
     display: grid;
-    align-items: start;
+    align-items: flex-start;
   }
 
   .cart-page .hero-title {
@@ -2233,7 +2239,7 @@ img {
 
 .editor-modal__header {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
@@ -3184,7 +3190,40 @@ img {
 
 @media (max-width: 920px) {
   .site-header {
-    padding-right: 70px;
+    display: grid;
+    grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+    gap: 14px 16px;
+    align-items: center;
+    padding: 22px 116px 18px 0;
+  }
+
+  .site-brand-title {
+    font-size: clamp(1.75rem, 6.8vw, 2.55rem);
+  }
+
+  .site-header__controls {
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .theme-switcher,
+  .locale-switcher {
+    min-width: 0;
+  }
+
+  .theme-switcher {
+    flex: 1 1 150px;
+  }
+
+  .locale-switcher {
+    flex: 0 1 112px;
+  }
+
+  .theme-switcher select,
+  .locale-switcher select {
+    width: 100%;
+    min-height: 40px;
+    padding-inline: 12px;
   }
 
   .site-nav {
@@ -3195,6 +3234,22 @@ img {
   .image-text-grid,
   .contact-grid {
     grid-template-columns: 1fr;
+  }
+
+  .poster-hero {
+    min-height: auto;
+    gap: 34px;
+    align-items: flex-start;
+  }
+
+  .hero-copy {
+    padding: clamp(64px, 15vw, 96px) 0 20px;
+  }
+
+  .hero-title {
+    font-size: clamp(3.2rem, 12.5vw, 4.65rem);
+    line-height: 0.95;
+    max-width: 12ch;
   }
 
   .hero-media,
@@ -3273,7 +3328,7 @@ img {
   }
 
   .block-library__header {
-    align-items: start;
+    align-items: flex-start;
     flex-direction: column;
   }
 
@@ -3289,5 +3344,34 @@ img {
 
   .media-library__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .site-header {
+    grid-template-columns: 1fr;
+    padding-right: 112px;
+  }
+
+  .site-header__controls {
+    justify-content: start;
+    width: min(100%, calc(100vw - 136px));
+  }
+
+  .theme-switcher {
+    flex-basis: 136px;
+  }
+
+  .locale-switcher {
+    flex-basis: 96px;
+  }
+
+  .hero-copy {
+    padding-top: clamp(56px, 14vw, 82px);
+  }
+
+  .hero-title {
+    font-size: clamp(2.85rem, 11.2vw, 3.85rem);
+    max-width: 13ch;
   }
 }
