@@ -13,6 +13,13 @@ export type EditorIdentity = {
 };
 
 const ADMIN_COOKIE_NAME = "artsite_admin_session";
+const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
+
+type AdminCookiePayload = {
+  role: "admin";
+  iat: number;
+  exp: number;
+};
 
 function hasAdminPasswordEnv() {
   const password = process.env.ADMIN_PASSWORD;
@@ -23,16 +30,24 @@ function getSessionSecret() {
   return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "artsite-dev-secret";
 }
 
-function signAdminPayload(payload: string) {
+export function signAdminPayload(payload: string) {
   return createHmac("sha256", getSessionSecret()).update(payload).digest("hex");
 }
 
-function buildAdminCookieValue() {
-  const payload = "admin";
+function encodeAdminPayload(payload: AdminCookiePayload) {
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+}
+
+export function buildAdminCookieValue(nowSeconds = Math.floor(Date.now() / 1000)) {
+  const payload = encodeAdminPayload({
+    role: "admin",
+    iat: nowSeconds,
+    exp: nowSeconds + ADMIN_SESSION_TTL_SECONDS
+  });
   return `${payload}.${signAdminPayload(payload)}`;
 }
 
-function verifyAdminCookieValue(value: string | undefined) {
+export function verifyAdminCookieValue(value: string | undefined, nowSeconds = Math.floor(Date.now() / 1000)) {
   if (!value) {
     return false;
   }
@@ -46,7 +61,12 @@ function verifyAdminCookieValue(value: string | undefined) {
   const expected = signAdminPayload(payload);
 
   try {
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+      return false;
+    }
+
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Partial<AdminCookiePayload>;
+    return decoded.role === "admin" && typeof decoded.exp === "number" && decoded.exp > nowSeconds;
   } catch {
     return false;
   }
@@ -59,7 +79,7 @@ export async function createAdminSession() {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 12
+    maxAge: ADMIN_SESSION_TTL_SECONDS
   });
 }
 

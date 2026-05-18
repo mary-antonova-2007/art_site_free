@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api-auth";
 import { createPageRecord } from "@/lib/content-service";
 
 export async function POST(request: Request) {
@@ -17,8 +18,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ page });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create page";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Failed to create page");
   }
 }
-

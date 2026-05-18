@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { getEditorIdentity } from "@/lib/auth";
+import { apiErrorResponse, requireEditorApi } from "@/lib/api-auth";
 import { getCommerceSettings } from "@/lib/content-service";
 import { sendTestOrderEmail } from "@/lib/order-email";
 import type { SiteCommerceSettings } from "@/lib/content";
 
 export async function POST(request: Request) {
   try {
-    const editor = await getEditorIdentity();
-    if (!editor) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireEditorApi();
+    if (auth.response) return auth.response;
 
     const body = (await request.json().catch(() => ({}))) as {
       recipient?: unknown;
@@ -18,7 +16,12 @@ export async function POST(request: Request) {
     };
     const settings = await getCommerceSettings();
     const emailNotifications = body.emailNotifications && typeof body.emailNotifications === "object"
-      ? { ...settings.emailNotifications, ...body.emailNotifications }
+      ? {
+          ...settings.emailNotifications,
+          ...body.emailNotifications,
+          resendApiKey: body.emailNotifications.resendApiKey || settings.emailNotifications.resendApiKey,
+          smtpPassword: body.emailNotifications.smtpPassword || settings.emailNotifications.smtpPassword
+        }
       : settings.emailNotifications;
     const testSettings = { ...settings, emailNotifications };
     const recipient =
@@ -30,7 +33,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send test email.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Failed to send test email.");
   }
 }

@@ -48,7 +48,7 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
       return;
     }
 
-    const nextId = `${currentItem.imageSrc}:${nextFormat.id}`;
+    const nextId = `${currentItem.mediaAssetId}:${nextFormat.id}`;
     const existingItem = items.find((item) => item.id === nextId && item.id !== itemId);
 
     if (existingItem) {
@@ -62,7 +62,7 @@ export function CartPage({ commerceSettings }: { commerceSettings: SiteCommerceS
       return;
     }
 
-    persistItems(items.map((item) => (item.id === itemId ? { ...item, format: nextFormat, id: nextId } : item)));
+    persistItems(items.map((item) => (item.id === itemId ? { ...item, format: nextFormat, formatId: nextFormat.id, id: nextId } : item)));
   }
 
   function removeItem(itemId: string) {
@@ -273,7 +273,13 @@ async function startYooKassaCheckout(input: {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      items: input.items,
+      items: input.items
+        .filter((item) => !item.unavailable)
+        .map((item) => ({
+          mediaAssetId: item.mediaAssetId,
+          formatId: item.formatId,
+          quantity: item.quantity
+        })),
       customer: input.customer
     })
   });

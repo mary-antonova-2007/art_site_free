@@ -1,22 +1,28 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse, requireEditorApi } from "@/lib/api-auth";
 import { listEditorMediaCategories, listEditorMediaLibrary, uploadEditorImage } from "@/lib/content-service";
 
 export async function GET() {
   try {
+    const auth = await requireEditorApi();
+    if (auth.response) return auth.response;
+
     const [assets, categories] = await Promise.all([
       listEditorMediaLibrary(),
       listEditorMediaCategories()
     ]);
     return NextResponse.json({ assets, categories });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to load media library";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Failed to load media library");
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireEditorApi();
+    if (auth.response) return auth.response;
+
     const formData = await request.formData();
     const file = formData.get("file");
     const pageId = String(formData.get("pageId") ?? "");
@@ -36,7 +42,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(uploaded);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Upload failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Upload failed");
   }
 }

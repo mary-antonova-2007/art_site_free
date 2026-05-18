@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api-auth";
 import { deleteEditorMediaAsset, updateEditorMediaAssetCommerceSettings } from "@/lib/content-service";
 
 export async function PATCH(
@@ -21,8 +22,7 @@ export async function PATCH(
 
     return NextResponse.json({ asset: result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update media asset";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Failed to update media asset");
   }
 }
 
@@ -36,7 +36,6 @@ export async function DELETE(
 
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to delete media asset";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Failed to delete media asset");
   }
 }

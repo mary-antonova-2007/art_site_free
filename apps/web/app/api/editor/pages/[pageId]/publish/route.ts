@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api-auth";
 import { publishPageChanges } from "@/lib/content-service";
 import type { SiteBlockRecord } from "@/lib/content";
 
@@ -26,8 +27,6 @@ export async function POST(
       publishedAt: new Date().toISOString()
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Publish failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Publish failed");
   }
 }
-

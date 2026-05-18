@@ -2,20 +2,12 @@ import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { getCheckoutAmount, priceCheckoutItems, type CheckoutLineInput } from "@/lib/checkout-pricing";
 import { attachOrderPaymentId, createPendingOrder, getCommerceSettings } from "@/lib/content-service";
 import { getRequestOrigin } from "@/lib/request-origin";
 
 type CheckoutPayload = {
-  items?: Array<{
-    title?: unknown;
-    quantity?: unknown;
-    format?: {
-      widthCm?: unknown;
-      heightCm?: unknown;
-      price?: unknown;
-      priceOverride?: unknown;
-    };
-  }>;
+  items?: CheckoutLineInput[];
   customer?: {
     name?: unknown;
     email?: unknown;
@@ -53,7 +45,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "YooKassa Shop ID and secret key are required." }, { status: 400 });
     }
 
-    const amount = calculateCartAmount(payload.items);
+    const normalizedItems = await priceCheckoutItems(payload.items, commerceSettings);
+    const amount = getCheckoutAmount(normalizedItems);
     if (amount <= 0) {
       return NextResponse.json({ error: "Cart amount must be greater than zero." }, { status: 400 });
     }
@@ -65,7 +58,6 @@ export async function POST(request: Request) {
     const orderNumber = `OS-${orderId.slice(0, 8).toUpperCase()}`;
     const description = buildDescription(settings.descriptionTemplate, orderId);
     const sanitizedCustomer = sanitizeCustomerMetadata(payload.customer);
-    const normalizedItems = normalizeOrderItems(payload.items);
 
     await createPendingOrder({
       orderNumber,
@@ -73,7 +65,14 @@ export async function POST(request: Request) {
       currency,
       amount: Math.round(amount * 100),
       customer: sanitizedCustomer,
-      items: normalizedItems,
+      items: normalizedItems.map((item) => ({
+        mediaAssetId: item.mediaAssetId,
+        title: item.title,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        lineTotal: item.lineTotal,
+        format: item.format
+      })),
       metadata: { orderId }
     });
 
@@ -128,20 +127,6 @@ export async function POST(request: Request) {
   }
 }
 
-function calculateCartAmount(items: CheckoutPayload["items"]) {
-  if (!Array.isArray(items)) {
-    return 0;
-  }
-
-  return items.reduce((sum, item) => {
-    const quantity = Math.max(1, Number(item.quantity) || 1);
-    const format = item.format;
-    const price = Number(format?.priceOverride ?? format?.price);
-
-    return Number.isFinite(price) && price > 0 ? sum + price * quantity : sum;
-  }, 0);
-}
-
 function normalizeCurrency(value: string | undefined) {
   const currency = value?.trim().toUpperCase();
   return currency && /^[A-Z]{3}$/.test(currency) ? currency : "RUB";
@@ -179,23 +164,6 @@ function sanitizeCustomerMetadata(customer: CheckoutPayload["customer"]) {
     customerCity: stringifyMetadataValue(customer.city),
     customerAddress: stringifyMetadataValue(customer.address)
   };
-}
-
-function normalizeOrderItems(items: CheckoutPayload["items"]) {
-  if (!Array.isArray(items)) {
-    return [];
-  }
-
-  return items.map((item) => ({
-    title: stringifyMetadataValue(item.title),
-    quantity: Math.max(1, Number(item.quantity) || 1),
-    format: {
-      widthCm: Number(item.format?.widthCm) || undefined,
-      heightCm: Number(item.format?.heightCm) || undefined,
-      price: Number(item.format?.price) || undefined,
-      priceOverride: Number(item.format?.priceOverride) || undefined
-    }
-  }));
 }
 
 function stringifyMetadataValue(value: unknown) {

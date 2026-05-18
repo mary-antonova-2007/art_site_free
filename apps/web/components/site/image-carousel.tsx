@@ -336,11 +336,11 @@ export function ImageCarousel({
     const format = item.formats?.find((candidate) => candidate.id === selectedFormatId) ?? item.formats?.[0];
     const imageSrc = item.fullSrc ?? item.src;
 
-    if (!format) {
+    if (!format || !item.mediaAssetId) {
       return;
     }
 
-    const key = `${imageSrc}:${format.id}`;
+    const key = `${item.mediaAssetId}:${format.id}`;
     const current = readCart();
     const next = current.find((cartItem) => cartItem.id === key)
       ? current.map((cartItem) =>
@@ -349,6 +349,8 @@ export function ImageCarousel({
       : [
           {
             id: key,
+            mediaAssetId: item.mediaAssetId,
+            formatId: format.id,
             imageSrc,
             title: item.caption ?? item.alt,
             alt: item.alt,

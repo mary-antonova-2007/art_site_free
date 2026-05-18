@@ -29,6 +29,11 @@ import {
   type MediaVariantName,
   type MediaVariants
 } from "./media";
+import {
+  assertUploadLooksSafe,
+  resolveSafeLocalMediaPath,
+  validateRasterImageBuffer
+} from "./media-safety";
 import { canUseEditor, getEditorIdentity } from "./auth";
 import { normalizeMediaCategoryName } from "./media-categories";
 import { createAdminSupabaseClient, hasSupabaseEnv } from "./supabase/admin";
@@ -346,7 +351,7 @@ export async function getCommerceSettings(): Promise<SiteCommerceSettings> {
 }
 
 export async function saveCommerceSettings(input: SiteCommerceSettings) {
-  const normalized = normalizeCommerceSettings(input);
+  const normalizedInput = normalizeCommerceSettings(input);
 
   if (hasSupabaseEnv()) {
     const admin = createAdminSupabaseClient();
@@ -354,6 +359,7 @@ export async function saveCommerceSettings(input: SiteCommerceSettings) {
     if (!settings) {
       throw new Error("Site settings not found.");
     }
+    const normalized = preserveStoredSecrets(normalizedInput, normalizeCommerceSettings(settings.metadata ?? null));
 
     await admin
       .from("site_settings")
@@ -375,6 +381,7 @@ export async function saveCommerceSettings(input: SiteCommerceSettings) {
   if (!settings) {
     throw new Error("Site settings not found.");
   }
+  const normalized = preserveStoredSecrets(normalizedInput, normalizeCommerceSettings(settings.metadata ?? null));
 
   await db
     .update(siteSettings)
@@ -388,6 +395,35 @@ export async function saveCommerceSettings(input: SiteCommerceSettings) {
     .where(eq(siteSettings.id, settings.id));
 
   return normalized;
+}
+
+function preserveStoredSecrets(next: SiteCommerceSettings, current: SiteCommerceSettings): SiteCommerceSettings {
+  return {
+    ...next,
+    emailNotifications: {
+      ...next.emailNotifications,
+      resendApiKey: next.emailNotifications.resendApiKey || current.emailNotifications.resendApiKey,
+      smtpPassword: next.emailNotifications.smtpPassword || current.emailNotifications.smtpPassword
+    },
+    paymentProviders: Object.fromEntries(
+      Object.entries(next.paymentProviders).map(([key, provider]) => {
+        const currentProvider = current.paymentProviders[key];
+        const nextSettings = provider.settings ?? {};
+        const currentSettings = currentProvider?.settings ?? {};
+
+        return [
+          key,
+          {
+            ...provider,
+            settings: {
+              ...nextSettings,
+              ...(nextSettings.secretKey ? {} : currentSettings.secretKey ? { secretKey: currentSettings.secretKey } : {})
+            }
+          }
+        ];
+      })
+    )
+  };
 }
 
 export type StoredOrderInput = {
@@ -1220,12 +1256,18 @@ async function uploadLocalEditorImage(input: {
   category?: MediaCategory;
 }) {
   const db = createDb();
+  assertUploadLooksSafe({
+    fileName: input.fileName,
+    fileType: input.fileType,
+    sizeBytes: input.data.byteLength
+  });
   const safeName = `${Date.now()}-${input.fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-")}`;
   const pageDir = path.join(LOCAL_UPLOADS_DIR, input.pageId);
   const filePath = path.join(pageDir, safeName);
   const publicUrl = `/media-files/${input.pageId}/${safeName}`;
   const readableTitle = toReadableMediaTitle(input.fileName);
   const fileBuffer = Buffer.from(input.data);
+  await validateRasterImageBuffer(fileBuffer, input.fileType);
   const generated = await generateImageVariants(fileBuffer, safeName, input.fileType, publicUrl);
 
   await mkdir(pageDir, { recursive: true });
@@ -1306,7 +1348,7 @@ async function listLocalMediaLibrary(): Promise<MediaLibraryAsset[]> {
 }
 
 export async function readLocalMediaFile(pathSegments: string[]) {
-  const filePath = path.join(LOCAL_UPLOADS_DIR, ...pathSegments);
+  const filePath = resolveSafeLocalMediaPath(LOCAL_UPLOADS_DIR, pathSegments);
 
   try {
     return {
@@ -1327,10 +1369,10 @@ export async function readLocalMediaFile(pathSegments: string[]) {
     for (const extension of candidateExtensions) {
       const fallbackFileName = `${baseName}${extension}`;
       const fallbackPath = path.join(
-        LOCAL_UPLOADS_DIR,
-        ...pathSegments.slice(0, -1),
+        path.dirname(filePath),
         fallbackFileName
       );
+      resolveSafeLocalMediaPath(LOCAL_UPLOADS_DIR, [...pathSegments.slice(0, -1), fallbackFileName]);
 
       try {
         return {
@@ -1648,9 +1690,16 @@ async function uploadSupabaseEditorImage(input: {
   }
 
   const admin = createAdminSupabaseClient();
+  assertUploadLooksSafe({
+    fileName: input.fileName,
+    fileType: input.fileType,
+    sizeBytes: input.data.byteLength
+  });
   const safeName = `${Date.now()}-${input.fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-")}`;
   const filePath = `${input.pageId}/${safeName}`;
   const readableTitle = toReadableMediaTitle(input.fileName);
+  const fileBuffer = Buffer.from(input.data);
+  await validateRasterImageBuffer(fileBuffer, input.fileType);
 
   const { error: uploadError } = await admin.storage
     .from(PUBLIC_BUCKET)
@@ -1666,7 +1715,6 @@ async function uploadSupabaseEditorImage(input: {
   const {
     data: { publicUrl }
   } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(filePath);
-  const fileBuffer = Buffer.from(input.data);
   const generated = await generateImageVariants(fileBuffer, safeName, input.fileType, publicUrl);
 
   await Promise.all(

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ShopSettingsPage } from "@/components/editor/shop-settings-page";
 import { SiteHeader } from "@/components/site/site-header";
 import { getEditorIdentity } from "@/lib/auth";
+import { toEditorCommerceSettings } from "@/lib/content";
 import { getCommerceSettings, listEditorPages } from "@/lib/content-service";
 
 export default async function SettingsRoutePage() {
@@ -11,7 +12,7 @@ export default async function SettingsRoutePage() {
     redirect("/auth/sign-in?next=%2Fsettings%3Feditor%3D1");
   }
 
-  const initialSettings = await getCommerceSettings();
+  const initialSettings = toEditorCommerceSettings(await getCommerceSettings());
   const pages = await listEditorPages();
 
   return (

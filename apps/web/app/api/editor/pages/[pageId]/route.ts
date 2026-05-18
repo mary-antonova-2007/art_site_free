@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api-auth";
 import { deletePageRecord, renamePageRecord } from "@/lib/content-service";
 
 export async function PATCH(
@@ -21,8 +22,7 @@ export async function PATCH(
 
     return NextResponse.json({ pages });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Rename failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Rename failed");
   }
 }
 
@@ -35,7 +35,6 @@ export async function DELETE(
     const pages = await deletePageRecord({ pageId });
     return NextResponse.json({ pages });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Delete failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Delete failed");
   }
 }

@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { readLocalMediaFile } from "@/lib/content-service";
+import { getSafeMediaMimeType } from "@/lib/media-safety";
 
 function guessMimeType(filePath: string) {
-  if (filePath.endsWith(".svg")) return "image/svg+xml";
-  if (filePath.endsWith(".png")) return "image/png";
-  if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) return "image/jpeg";
-  if (filePath.endsWith(".webp")) return "image/webp";
-  if (filePath.endsWith(".avif")) return "image/avif";
-  return "application/octet-stream";
+  return getSafeMediaMimeType(filePath) ?? "application/octet-stream";
 }
 
 export async function GET(

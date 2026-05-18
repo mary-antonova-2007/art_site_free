@@ -190,17 +190,19 @@ export function PageRenderer({
     }
 
     const format = previewImage.formats.find((item) => item.id === selectedFormatId) ?? previewImage.formats[0];
-    if (!format) {
+    if (!format || !previewImage.mediaAssetId) {
       return;
     }
 
     const current = readCart();
-    const key = `${previewImage.src}:${format.id}`;
+    const key = `${previewImage.mediaAssetId}:${format.id}`;
     const next = current.find((item) => item.id === key)
       ? current.map((item) => (item.id === key ? { ...item, quantity: item.quantity + quantity } : item))
       : [
           {
             id: key,
+            mediaAssetId: previewImage.mediaAssetId,
+            formatId: format.id,
             imageSrc: previewImage.src,
             title: previewImage.title,
             alt: previewImage.alt,

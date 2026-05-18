@@ -4,12 +4,15 @@ import type { PrintFormat } from "./content";
 
 export type CartItem = {
   id: string;
+  mediaAssetId: string;
+  formatId: string;
   imageSrc: string;
   title: string;
   alt: string;
   format: PrintFormat;
   availableFormats?: PrintFormat[];
   quantity: number;
+  unavailable?: boolean;
 };
 
 const CART_STORAGE_KEY = "artsite-cart";
@@ -25,8 +28,8 @@ export function readCart(): CartItem[] {
   }
 
   try {
-    const parsed = JSON.parse(stored) as CartItem[];
-    return Array.isArray(parsed) ? parsed.filter(isCartItem) : [];
+    const parsed = JSON.parse(stored) as unknown[];
+    return Array.isArray(parsed) ? parsed.map(normalizeCartItem).filter((item): item is CartItem => Boolean(item)) : [];
   } catch {
     return [];
   }
@@ -58,6 +61,8 @@ function isCartItem(value: unknown): value is CartItem {
   const candidate = value as Record<string, unknown>;
   return (
     typeof candidate.id === "string" &&
+    typeof candidate.mediaAssetId === "string" &&
+    typeof candidate.formatId === "string" &&
     typeof candidate.imageSrc === "string" &&
     typeof candidate.title === "string" &&
     typeof candidate.alt === "string" &&
@@ -68,4 +73,42 @@ function isCartItem(value: unknown): value is CartItem {
     (candidate.availableFormats === undefined || Array.isArray(candidate.availableFormats)) &&
     typeof candidate.quantity === "number"
   );
+}
+
+function normalizeCartItem(value: unknown): CartItem | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const format = candidate.format as Record<string, unknown> | undefined;
+  const mediaAssetId =
+    typeof candidate.mediaAssetId === "string" && candidate.mediaAssetId.trim()
+      ? candidate.mediaAssetId
+      : typeof candidate.imageSrc === "string"
+        ? stripVariantSuffix(candidate.imageSrc)
+        : "";
+  const formatId =
+    typeof candidate.formatId === "string" && candidate.formatId.trim()
+      ? candidate.formatId
+      : typeof format?.id === "string"
+        ? format.id
+        : "";
+
+  const migrated = {
+    ...candidate,
+    id: typeof candidate.id === "string" ? candidate.id : `${mediaAssetId}:${formatId}`,
+    mediaAssetId,
+    formatId,
+    unavailable: !mediaAssetId || !formatId,
+    quantity: Math.max(1, Number(candidate.quantity) || 1)
+  };
+
+  return isCartItem(migrated) ? migrated : null;
+}
+
+function stripVariantSuffix(value: string) {
+  return value.replace(/--(thumb|card|panel|hero)\.webp($|[?#])/i, (match, _variant: string, suffix: string) => {
+    return `.webp${suffix}`;
+  });
 }

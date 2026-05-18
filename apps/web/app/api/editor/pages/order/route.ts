@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api-auth";
 import { reorderPageRecords } from "@/lib/content-service";
 
 export async function POST(request: Request) {
@@ -13,7 +14,6 @@ export async function POST(request: Request) {
     const pages = await reorderPageRecords({ pageIds: body.pageIds });
     return NextResponse.json({ pages });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Reorder failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiErrorResponse(error, "Reorder failed");
   }
 }

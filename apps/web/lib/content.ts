@@ -79,6 +79,14 @@ export type SiteCommerceSettings = {
   };
 };
 
+export type CommerceSecretStatus = {
+  emailNotifications: {
+    resendApiKey: boolean;
+    smtpPassword: boolean;
+  };
+  paymentProviders: Record<string, Record<string, boolean>>;
+};
+
 export const DEFAULT_SITE_COMMERCE_SETTINGS: SiteCommerceSettings = {
   cartEnabled: true,
   printFormats: [
@@ -144,6 +152,43 @@ export function toPublicCommerceSettings(settings: SiteCommerceSettings): SiteCo
         }
       ])
     )
+  };
+}
+
+export function toEditorCommerceSettings(settings: SiteCommerceSettings): SiteCommerceSettings & { secretStatus: CommerceSecretStatus } {
+  return {
+    ...settings,
+    emailNotifications: {
+      ...settings.emailNotifications,
+      resendApiKey: "",
+      smtpPassword: ""
+    },
+    paymentProviders: Object.fromEntries(
+      Object.entries(settings.paymentProviders).map(([key, provider]) => [
+        key,
+        {
+          ...provider,
+          settings: {
+            ...(provider.settings ?? {}),
+            ...(provider.settings?.secretKey ? { secretKey: "" } : {})
+          }
+        }
+      ])
+    ),
+    secretStatus: {
+      emailNotifications: {
+        resendApiKey: Boolean(settings.emailNotifications.resendApiKey),
+        smtpPassword: Boolean(settings.emailNotifications.smtpPassword)
+      },
+      paymentProviders: Object.fromEntries(
+        Object.entries(settings.paymentProviders).map(([key, provider]) => [
+          key,
+          {
+            secretKey: Boolean(provider.settings?.secretKey)
+          }
+        ])
+      )
+    }
   };
 }
 
