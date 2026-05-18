@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@artsite/ui";
@@ -38,8 +38,9 @@ export function ImageCarousel({
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [selectedFormatId, setSelectedFormatId] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [isLoopEnabled, setIsLoopEnabled] = useState(false);
   const repeatedItems =
-    items.length > 1
+    isLoopEnabled
       ? Array.from({ length: repeatCount }, () => items).flat()
       : items;
 
@@ -147,10 +148,45 @@ export function ImageCarousel({
     viewport.scrollLeft = targetLeft;
   }
 
-  useEffect(() => {
+  function getSingleSetWidth(viewport: HTMLDivElement) {
+    const cards = getCarouselCards(viewport).slice(0, items.length);
+    const firstCard = cards[0];
+    const lastCard = cards[cards.length - 1];
+
+    if (!firstCard || !lastCard) {
+      return 0;
+    }
+
+    return lastCard.offsetLeft + lastCard.offsetWidth - firstCard.offsetLeft;
+  }
+
+  useLayoutEffect(() => {
     const viewportElement = viewportRef.current;
 
     if (!viewportElement || items.length <= 1) {
+      setIsLoopEnabled(false);
+      return;
+    }
+
+    const viewport = viewportElement;
+
+    function updateLoopMode() {
+      const singleSetWidth = getSingleSetWidth(viewport);
+      setIsLoopEnabled(singleSetWidth > viewport.clientWidth + 4);
+    }
+
+    updateLoopMode();
+    window.addEventListener("resize", updateLoopMode);
+
+    return () => {
+      window.removeEventListener("resize", updateLoopMode);
+    };
+  }, [items]);
+
+  useEffect(() => {
+    const viewportElement = viewportRef.current;
+
+    if (!viewportElement || !isLoopEnabled) {
       return;
     }
 
@@ -179,7 +215,7 @@ export function ImageCarousel({
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("resize", handleResize);
     };
-  }, [items.length]);
+  }, [items.length, isLoopEnabled]);
 
   useEffect(() => {
     const viewportElement = viewportRef.current;
@@ -191,7 +227,7 @@ export function ImageCarousel({
     const viewport = viewportElement;
 
     function normalizeLoopPosition() {
-      if (items.length <= 1) {
+      if (!isLoopEnabled) {
         return;
       }
 
@@ -231,19 +267,21 @@ export function ImageCarousel({
       centerCardAtIndex(viewport, targetIndex, "smooth");
     }
 
-    viewport.addEventListener("scroll", normalizeLoopPosition);
+    if (isLoopEnabled) {
+      viewport.addEventListener("scroll", normalizeLoopPosition);
+    }
     viewport.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
       viewport.removeEventListener("scroll", normalizeLoopPosition);
       viewport.removeEventListener("wheel", handleWheel);
     };
-  }, [items.length]);
+  }, [items.length, isLoopEnabled]);
 
   useEffect(() => {
     const viewportElement = viewportRef.current;
 
-    if (!viewportElement || items.length <= 1) {
+    if (!viewportElement || !isLoopEnabled) {
       return;
     }
 
@@ -302,7 +340,7 @@ export function ImageCarousel({
       viewport.removeEventListener("pointerup", handleInteractionEnd);
       viewport.removeEventListener("touchend", handleInteractionEnd);
     };
-  }, [items.length, lightboxIndex]);
+  }, [items.length, isLoopEnabled, lightboxIndex]);
 
   useEffect(() => {
     if (lightboxIndex == null || typeof document === "undefined") {
@@ -369,7 +407,11 @@ export function ImageCarousel({
     <>
       <div
         ref={viewportRef}
-        className={cn("image-carousel", variant === "gallery" ? "image-carousel--gallery" : "image-carousel--collection")}
+        className={cn(
+          "image-carousel",
+          variant === "gallery" ? "image-carousel--gallery" : "image-carousel--collection",
+          !isLoopEnabled && "image-carousel--static"
+        )}
       >
         <div className="image-carousel__track">
           {repeatedItems.map((item, index) => {

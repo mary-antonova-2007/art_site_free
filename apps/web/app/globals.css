@@ -1038,10 +1038,20 @@ img {
   display: none;
 }
 
+.image-carousel--static {
+  cursor: default;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 .image-carousel__track {
   display: flex;
   align-items: stretch;
   gap: 18px;
+}
+
+.image-carousel--static .image-carousel__track {
+  justify-content: center;
 }
 
 .image-carousel__card {
