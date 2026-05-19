@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
 import { getSeoSettings, listPublishedPagesForSeo } from "@/lib/content-service";
-import { getSiteUrl, normalizeCanonicalPath, pageShouldBeInSitemap } from "@/lib/seo";
+import { locales } from "@/lib/i18n/config";
+import { getLocalizedCanonicalPath, getSiteUrl, pageShouldBeInSitemap } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return pages
     .filter((page) => pageShouldBeInSitemap(page, settings))
-    .map((page) => ({
-      url: new URL(normalizeCanonicalPath(page.slug, page.seo.canonicalPath), siteUrl).toString(),
-      lastModified: new Date()
-    }));
+    .flatMap((page) =>
+      locales.map((locale) => ({
+        url: new URL(getLocalizedCanonicalPath(page.slug, locale), siteUrl).toString(),
+        lastModified: new Date()
+      }))
+    );
 }

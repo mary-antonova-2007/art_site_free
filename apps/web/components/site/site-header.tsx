@@ -16,11 +16,11 @@ export async function SiteHeader({
   editorEnabled: boolean;
   blocks: SiteBlockRecord[];
 }) {
-  const { t } = await getServerI18n();
+  const { t, locale } = await getServerI18n();
   const blockItems = blocks
     .map((block) => ({
       id: block.id,
-      label: getBlockNavigationLabel(block)
+      label: getBlockNavigationLabel(block, locale)
     }))
     .filter((item): item is { id: string; label: string } => Boolean(item.label));
 
@@ -28,6 +28,7 @@ export async function SiteHeader({
     <SiteHeaderClient
       currentSlug={currentSlug}
       pages={pages}
+      locale={locale}
       currentPath={currentPath}
       editorEnabled={editorEnabled}
       primaryNavLabel={t("header.primaryNav")}

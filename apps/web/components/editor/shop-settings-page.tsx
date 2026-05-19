@@ -2,19 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import type { MediaLibraryAsset, PrintFormat, SiteCommerceSettings, SiteSeoSettings } from "@/lib/content";
+import type { MediaLibraryAsset, PrintFormat, SiteCommerceSettings, SiteLocalizationSettings, SiteSeoSettings } from "@/lib/content";
 import { useTranslations } from "@/lib/i18n/client";
 
 export function ShopSettingsPage({
   initialSettings,
-  initialSeoSettings
+  initialSeoSettings,
+  initialLocalizationSettings
 }: {
   initialSettings: SiteCommerceSettings;
   initialSeoSettings: SiteSeoSettings;
+  initialLocalizationSettings: SiteLocalizationSettings;
 }) {
   const t = useTranslations();
   const [settings, setSettings] = useState(initialSettings);
   const [seoSettings, setSeoSettings] = useState(initialSeoSettings);
+  const [localizationSettings, setLocalizationSettings] = useState(initialLocalizationSettings);
   const [mediaAssets, setMediaAssets] = useState<MediaLibraryAsset[]>([]);
   const [status, setStatus] = useState("");
   const [testEmailStatus, setTestEmailStatus] = useState("");
@@ -35,6 +38,10 @@ export function ShopSettingsPage({
   useEffect(() => {
     setSeoSettings(initialSeoSettings);
   }, [initialSeoSettings]);
+
+  useEffect(() => {
+    setLocalizationSettings(initialLocalizationSettings);
+  }, [initialLocalizationSettings]);
 
   useEffect(() => {
     void fetch("/api/editor/media")
@@ -102,13 +109,19 @@ export function ShopSettingsPage({
     const response = await fetch("/api/editor/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...nextSettings, seoSettings })
+      body: JSON.stringify({ ...nextSettings, seoSettings, localizationSettings })
     });
-    const payload = (await response.json()) as { error?: string; settings?: SiteCommerceSettings; seoSettings?: SiteSeoSettings };
+    const payload = (await response.json()) as {
+      error?: string;
+      settings?: SiteCommerceSettings;
+      seoSettings?: SiteSeoSettings;
+      localizationSettings?: SiteLocalizationSettings;
+    };
 
     if (response.ok && payload.settings) {
       setSettings(payload.settings);
       if (payload.seoSettings) setSeoSettings(payload.seoSettings);
+      if (payload.localizationSettings) setLocalizationSettings(payload.localizationSettings);
       setStatus(t("shop.saved"));
       return;
     }
@@ -122,13 +135,45 @@ export function ShopSettingsPage({
     const response = await fetch("/api/editor/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...settings, seoSettings: nextSeoSettings })
+      body: JSON.stringify({ ...settings, seoSettings: nextSeoSettings, localizationSettings })
     });
-    const payload = (await response.json()) as { error?: string; settings?: SiteCommerceSettings; seoSettings?: SiteSeoSettings };
+    const payload = (await response.json()) as {
+      error?: string;
+      settings?: SiteCommerceSettings;
+      seoSettings?: SiteSeoSettings;
+      localizationSettings?: SiteLocalizationSettings;
+    };
 
     if (response.ok && payload.seoSettings) {
       setSeoSettings(payload.seoSettings);
       if (payload.settings) setSettings(payload.settings);
+      if (payload.localizationSettings) setLocalizationSettings(payload.localizationSettings);
+      setStatus(t("shop.saved"));
+      return;
+    }
+
+    setStatus(payload.error ?? t("shop.error"));
+  };
+
+  const persistLocalizationSettings = async (nextLocalizationSettings: SiteLocalizationSettings) => {
+    setStatus(t("shop.saving"));
+    setLocalizationSettings(nextLocalizationSettings);
+    const response = await fetch("/api/editor/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...settings, seoSettings, localizationSettings: nextLocalizationSettings })
+    });
+    const payload = (await response.json()) as {
+      error?: string;
+      settings?: SiteCommerceSettings;
+      seoSettings?: SiteSeoSettings;
+      localizationSettings?: SiteLocalizationSettings;
+    };
+
+    if (response.ok && payload.localizationSettings) {
+      setLocalizationSettings(payload.localizationSettings);
+      if (payload.settings) setSettings(payload.settings);
+      if (payload.seoSettings) setSeoSettings(payload.seoSettings);
       setStatus(t("shop.saved"));
       return;
     }
@@ -226,6 +271,36 @@ export function ShopSettingsPage({
 
       <section className="section-stack seo-settings-section">
         <h2>{t("seo.globalTitle")}</h2>
+        <label className="editor-field">
+          <span>{t("localization.defaultLocale")}</span>
+          <select
+            value={localizationSettings.defaultLocale}
+            onChange={(event) =>
+              void persistLocalizationSettings({
+                ...localizationSettings,
+                defaultLocale: event.currentTarget.value === "ru" ? "ru" : "en"
+              })
+            }
+          >
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+          </select>
+        </label>
+        <label className="editor-field">
+          <span>{t("localization.detectionMode")}</span>
+          <select
+            value={localizationSettings.detectionMode}
+            onChange={(event) =>
+              void persistLocalizationSettings({
+                ...localizationSettings,
+                detectionMode: event.currentTarget.value === "auto" ? "auto" : "default"
+              })
+            }
+          >
+            <option value="default">{t("localization.defaultOnly")}</option>
+            <option value="auto">{t("localization.autoRegion")}</option>
+          </select>
+        </label>
         <label className="editor-field">
           <span>{t("seo.siteName")}</span>
           <input

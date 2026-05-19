@@ -39,6 +39,11 @@ export type SiteSeoSettings = {
   defaultRobots: "index" | "noindex";
 };
 
+export type SiteLocalizationSettings = {
+  defaultLocale: SeoLocale;
+  detectionMode: "default" | "auto";
+};
+
 export const DEFAULT_PAGE_SEO: PageSeo = {
   title: {},
   description: {},
@@ -52,6 +57,11 @@ export const DEFAULT_SITE_SEO_SETTINGS: SiteSeoSettings = {
   defaultOgImageAssetId: "",
   socialProfileUrls: [],
   defaultRobots: "index"
+};
+
+export const DEFAULT_SITE_LOCALIZATION_SETTINGS: SiteLocalizationSettings = {
+  defaultLocale: "en",
+  detectionMode: "default"
 };
 
 export type MediaCategory = string;

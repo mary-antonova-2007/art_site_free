@@ -7,6 +7,12 @@ export const enMessages = {
     label: "Language",
     switchTo: "Switch language to {language}"
   },
+  localization: {
+    defaultLocale: "Default language",
+    detectionMode: "Language detection",
+    defaultOnly: "Always use default language",
+    autoRegion: "Auto by region"
+  },
   header: {
     kicker: "",
     primaryNav: "Primary",

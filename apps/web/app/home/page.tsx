@@ -1,4 +1,5 @@
-import { PageScreen } from "@/components/site/page-screen";
+import { redirect } from "next/navigation";
+import type { Route } from "next";
 
 type HomeAliasPageProps = {
   searchParams: Promise<{ edit?: string; editor?: string }>;
@@ -6,11 +7,6 @@ type HomeAliasPageProps = {
 
 export default async function HomeAliasPage({ searchParams }: HomeAliasPageProps) {
   const resolvedSearch = await searchParams;
-  return (
-    <PageScreen
-      slug="home"
-      edit={resolvedSearch.edit ?? resolvedSearch.editor}
-      currentPath="/home"
-    />
-  );
+  const editorParam = resolvedSearch.edit ?? resolvedSearch.editor;
+  redirect((editorParam ? `/en?editor=${encodeURIComponent(editorParam)}` : "/en") as Route);
 }

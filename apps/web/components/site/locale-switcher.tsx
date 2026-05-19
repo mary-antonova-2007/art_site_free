@@ -1,6 +1,6 @@
 "use client";
 
-import { localeLabels, locales, type Locale } from "@/lib/i18n/config";
+import { localizePath, localeLabels, locales, type Locale } from "@/lib/i18n/config";
 import { useLocale, useTranslations } from "@/lib/i18n/client";
 
 export function LocaleSwitcher({ currentPath }: { currentPath: string }) {
@@ -16,7 +16,7 @@ export function LocaleSwitcher({ currentPath }: { currentPath: string }) {
         onChange={(event) => {
           const nextLocale = event.currentTarget.value as Locale;
           window.location.assign(
-            `/api/locale?locale=${encodeURIComponent(nextLocale)}&next=${encodeURIComponent(currentPath)}`
+            `/api/locale?locale=${encodeURIComponent(nextLocale)}&next=${encodeURIComponent(localizePath(currentPath, nextLocale))}`
           );
         }}
       >

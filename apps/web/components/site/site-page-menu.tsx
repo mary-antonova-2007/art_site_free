@@ -7,19 +7,22 @@ import { useEffect, useState } from "react";
 
 import { getBlockAnchorId } from "@/lib/block-navigation";
 import { useTranslations } from "@/lib/i18n/client";
+import type { Locale } from "@/lib/i18n/config";
 
 export function SitePageMenu({
   currentSlug,
   pages,
   blockItems,
   compactNavigation,
-  editorEnabled
+  editorEnabled,
+  locale
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
   blockItems: Array<{ id: string; label: string }>;
   compactNavigation: boolean;
   editorEnabled: boolean;
+  locale: Locale;
 }) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
@@ -61,7 +64,7 @@ export function SitePageMenu({
 
   const visible = isCompact || isScrolled || compactNavigation;
   const getEditorAwarePath = (slug: string): Route => {
-    const path = slug === "home" ? "/" : `/${slug}`;
+    const path = slug === "home" ? `/${locale}` : `/${locale}/${slug}`;
     return (editorEnabled ? `${path}?editor=1` : path) as Route;
   };
 
@@ -95,7 +98,7 @@ export function SitePageMenu({
                   data-current={page.slug === currentSlug}
                   onClick={() => setOpen(false)}
                 >
-                  {page.title}
+                  {getLocalizedPageTitle(page.slug, page.title, locale)}
                 </Link>
               ))}
               {blockItems.length ? <div className="site-page-menu__splitter" /> : null}
@@ -122,4 +125,12 @@ export function SitePageMenu({
       ) : null}
     </>
   );
+}
+
+function getLocalizedPageTitle(slug: string, fallback: string, locale: Locale) {
+  if (locale !== "ru") return fallback;
+  if (slug === "home") return "Главная";
+  if (slug === "about") return "Об авторе";
+  if (slug === "contact") return "Контакты";
+  return fallback;
 }

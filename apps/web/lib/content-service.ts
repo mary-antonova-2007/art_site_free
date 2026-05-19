@@ -9,6 +9,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
   DEFAULT_PAGE_SEO,
+  DEFAULT_SITE_LOCALIZATION_SETTINGS,
   DEFAULT_SITE_COMMERCE_SETTINGS,
   DEFAULT_MEDIA_CATEGORIES,
   DEFAULT_SITE_SEO_SETTINGS,
@@ -22,6 +23,7 @@ import {
   type SiteBlockRecord,
   type SitePageRecord,
   type SiteCommerceSettings,
+  type SiteLocalizationSettings,
   type SiteSeoSettings
 } from "./content";
 import {
@@ -407,6 +409,66 @@ export async function getSeoSettings(): Promise<SiteSeoSettings> {
   return normalizeSeoSettings(settings?.metadata ?? null, settings?.siteName);
 }
 
+export async function getLocalizationSettings(): Promise<SiteLocalizationSettings> {
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { data } = await admin.from("site_settings").select("default_locale, metadata").limit(1).maybeSingle();
+    return normalizeLocalizationSettings(data?.metadata ?? null, data?.default_locale);
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+  return normalizeLocalizationSettings(settings?.metadata ?? null, settings?.defaultLocale);
+}
+
+export async function saveLocalizationSettings(input: SiteLocalizationSettings): Promise<SiteLocalizationSettings> {
+  const normalized = normalizeLocalizationSettings({ localization: input }, input.defaultLocale);
+
+  if (hasSupabaseEnv()) {
+    const admin = createAdminSupabaseClient();
+    const { data: settings } = await admin.from("site_settings").select("id, metadata").limit(1).maybeSingle();
+    if (!settings) {
+      throw new Error("Site settings not found.");
+    }
+
+    await admin
+      .from("site_settings")
+      .update({
+        default_locale: normalized.defaultLocale,
+        metadata: {
+          ...(settings.metadata ?? {}),
+          localization: normalized
+        },
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", settings.id);
+
+    return normalized;
+  }
+
+  await ensureLocalDatabaseReady();
+  const db = createDb();
+  const settings = await db.query.siteSettings.findFirst();
+  if (!settings) {
+    throw new Error("Site settings not found.");
+  }
+
+  await db
+    .update(siteSettings)
+    .set({
+      defaultLocale: normalized.defaultLocale,
+      metadata: {
+        ...(settings.metadata ?? {}),
+        localization: normalized
+      },
+      updatedAt: new Date()
+    })
+    .where(eq(siteSettings.id, settings.id));
+
+  return normalized;
+}
+
 export async function saveSeoSettings(input: SiteSeoSettings): Promise<SiteSeoSettings> {
   const normalized = normalizeSeoSettings({ seo: input });
 
@@ -575,6 +637,25 @@ function normalizeSeoSettings(metadata: Record<string, unknown> | null | undefin
     defaultOgImageAssetId: typeof seo.defaultOgImageAssetId === "string" ? seo.defaultOgImageAssetId : "",
     socialProfileUrls,
     defaultRobots: seo.defaultRobots === "noindex" ? "noindex" : "index"
+  };
+}
+
+function normalizeLocalizationSettings(
+  metadata: Record<string, unknown> | null | undefined,
+  defaultLocale?: string | null
+): SiteLocalizationSettings {
+  const localization = metadata?.localization && typeof metadata.localization === "object"
+    ? (metadata.localization as Record<string, unknown>)
+    : {};
+  const candidateLocale = localization.defaultLocale === "ru" || localization.defaultLocale === "en"
+    ? localization.defaultLocale
+    : defaultLocale === "ru" || defaultLocale === "en"
+      ? defaultLocale
+      : DEFAULT_SITE_LOCALIZATION_SETTINGS.defaultLocale;
+
+  return {
+    defaultLocale: candidateLocale,
+    detectionMode: localization.detectionMode === "auto" ? "auto" : "default"
   };
 }
 

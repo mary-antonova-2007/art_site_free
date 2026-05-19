@@ -10,6 +10,7 @@ import { useTheme } from "@/components/layout/theme-provider";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SitePageMenu } from "@/components/site/site-page-menu";
 import { useTranslations } from "@/lib/i18n/client";
+import type { Locale } from "@/lib/i18n/config";
 import { themePresets } from "@/lib/theme-presets";
 
 function measureNavContentWidth(nav: HTMLElement) {
@@ -29,6 +30,7 @@ const EDITOR_CLICK_WINDOW_MS = 2500;
 export function SiteHeaderClient({
   currentSlug,
   pages,
+  locale,
   currentPath,
   editorEnabled,
   primaryNavLabel,
@@ -36,6 +38,7 @@ export function SiteHeaderClient({
 }: {
   currentSlug: string;
   pages: Array<{ id: string; slug: string; title: string }>;
+  locale: Locale;
   currentPath: string;
   editorEnabled: boolean;
   primaryNavLabel: string;
@@ -140,7 +143,7 @@ export function SiteHeaderClient({
     return groups;
   }, {});
   const getEditorAwarePath = (slug: string): Route => {
-    const path = slug === "home" ? "/" : `/${slug}`;
+    const path = slug === "home" ? `/${locale}` : `/${locale}/${slug}`;
     return (editorEnabled ? `${path}?editor=1` : path) as Route;
   };
 
@@ -164,7 +167,7 @@ export function SiteHeaderClient({
     <header ref={headerRef} className="site-header" data-compact-nav={compactNavigation}>
       <div ref={brandRef} className="site-brand">
         <Link
-          href={(editorEnabled ? "/?editor=1" : "/") as Route}
+          href={(editorEnabled ? `/${locale}?editor=1` : `/${locale}`) as Route}
           className="site-brand-title"
           onClick={handleBrandClick}
         >
@@ -184,7 +187,7 @@ export function SiteHeaderClient({
             href={getEditorAwarePath(page.slug)}
             data-current={page.slug === currentSlug}
           >
-            {page.title}
+            {getLocalizedPageTitle(page.slug, page.title, locale)}
           </Link>
         ))}
       </nav>
@@ -218,7 +221,16 @@ export function SiteHeaderClient({
         blockItems={blockItems}
         compactNavigation={compactNavigation}
         editorEnabled={editorEnabled}
+        locale={locale}
       />
     </header>
   );
+}
+
+function getLocalizedPageTitle(slug: string, fallback: string, locale: Locale) {
+  if (locale !== "ru") return fallback;
+  if (slug === "home") return "Главная";
+  if (slug === "about") return "Об авторе";
+  if (slug === "contact") return "Контакты";
+  return fallback;
 }

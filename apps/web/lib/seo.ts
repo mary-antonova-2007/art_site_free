@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import type { Locale } from "@/lib/i18n/config";
+import { locales, type Locale } from "@/lib/i18n/config";
 import type { MediaLibraryAsset, PageSeo, SiteBlockRecord, SitePageRecord, SiteSeoSettings } from "./content";
 
 type SeoLanguage = "ru" | "en";
@@ -35,7 +35,7 @@ export function buildPageMetadata(input: {
   const language = resolveSeoLanguage(input.locale);
   const title = pickSeoTitle(input.page, language, input.settings);
   const description = pickSeoDescription(input.page, language);
-  const canonicalPath = normalizeCanonicalPath(input.page.slug, input.page.seo.canonicalPath);
+  const canonicalPath = getLocalizedCanonicalPath(input.page.slug, language);
   const canonicalUrl = new URL(canonicalPath, siteUrl).toString();
   const image = resolveOgImage(input.page, input.settings, input.mediaAssets ?? [], siteUrl);
   const noIndex = input.page.seo.noIndex === true || input.settings.defaultRobots === "noindex";
@@ -45,7 +45,10 @@ export function buildPageMetadata(input: {
     title,
     description,
     alternates: {
-      canonical: canonicalPath
+      canonical: canonicalPath,
+      languages: Object.fromEntries(
+        locales.map((locale) => [locale, getLocalizedCanonicalPath(input.page.slug, locale)])
+      )
     },
     robots: {
       index: !noIndex,
@@ -66,6 +69,11 @@ export function buildPageMetadata(input: {
       images: image ? [image] : undefined
     }
   };
+}
+
+export function getLocalizedCanonicalPath(slug: string, locale: Locale | SeoLanguage) {
+  const normalizedSlug = slug === "home" ? "" : `/${slug.replace(/^\/+/, "")}`;
+  return `/${locale}${normalizedSlug}`;
 }
 
 export function pageShouldBeInSitemap(page: SitePageRecord, settings: SiteSeoSettings) {

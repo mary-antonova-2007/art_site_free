@@ -11,15 +11,19 @@ import { SiteHeader } from "@/components/site/site-header";
 import { getCommerceSettings, getPageForRequest, listPublicMediaLibrary } from "@/lib/content-service";
 import { toPublicCommerceSettings } from "@/lib/content";
 import { isEditorModeEnabled } from "@/lib/editor-mode";
+import type { Locale } from "@/lib/i18n/config";
+import { localizePage } from "@/lib/localized-content";
 
 export async function PageScreen({
   slug,
   edit,
-  currentPath
+  currentPath,
+  locale
 }: {
   slug: string;
   edit?: string;
   currentPath: string;
+  locale: Locale;
 }) {
   const requestedEdit = isEditorModeEnabled(edit);
   const { page, editorEnabled } = await getPageForRequest(slug, requestedEdit);
@@ -37,19 +41,21 @@ export async function PageScreen({
     redirect(`/auth/sign-in?next=${encodeURIComponent(next)}`);
   }
 
+  const renderedPage = requestedEdit ? page : localizePage(page, locale);
+
   return (
-    <EditorProvider page={page} enabled={editorEnabled}>
+    <EditorProvider page={renderedPage} enabled={editorEnabled}>
       <div className="site-frame">
         <SiteHeader
-          currentSlug={page.slug}
-          pages={page.availablePages}
+          currentSlug={renderedPage.slug}
+          pages={renderedPage.availablePages}
           currentPath={currentViewPath}
           editorEnabled={editorEnabled}
-          blocks={page.blocks}
+          blocks={renderedPage.blocks}
         />
         <EditorBlockNav />
         {editorEnabled ? <EditorBar /> : null}
-        <PageRenderer page={page} commerceSettings={toPublicCommerceSettings(commerceSettings)} mediaAssetsById={mediaAssetsById} />
+        <PageRenderer page={renderedPage} commerceSettings={toPublicCommerceSettings(commerceSettings)} mediaAssetsById={mediaAssetsById} />
         {editorEnabled ? <EditorSheet /> : null}
         {editorEnabled ? <SeoEditorPanel /> : null}
         {editorEnabled ? <MediaLibraryDialog /> : null}

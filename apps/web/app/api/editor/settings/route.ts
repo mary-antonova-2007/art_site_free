@@ -2,16 +2,27 @@ import { NextResponse } from "next/server";
 
 import { apiErrorResponse, requireEditorApi } from "@/lib/api-auth";
 import { toEditorCommerceSettings } from "@/lib/content";
-import { getCommerceSettings, getSeoSettings, saveCommerceSettings, saveSeoSettings } from "@/lib/content-service";
-import type { SiteCommerceSettings, SiteSeoSettings } from "@/lib/content";
+import {
+  getCommerceSettings,
+  getLocalizationSettings,
+  getSeoSettings,
+  saveCommerceSettings,
+  saveLocalizationSettings,
+  saveSeoSettings
+} from "@/lib/content-service";
+import type { SiteCommerceSettings, SiteLocalizationSettings, SiteSeoSettings } from "@/lib/content";
 
 export async function GET() {
   try {
     const auth = await requireEditorApi();
     if (auth.response) return auth.response;
 
-    const [settings, seoSettings] = await Promise.all([getCommerceSettings(), getSeoSettings()]);
-    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings });
+    const [settings, seoSettings, localizationSettings] = await Promise.all([
+      getCommerceSettings(),
+      getSeoSettings(),
+      getLocalizationSettings()
+    ]);
+    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings, localizationSettings });
   } catch (error) {
     return apiErrorResponse(error, "Failed to load settings");
   }
@@ -22,7 +33,10 @@ export async function PATCH(request: Request) {
     const auth = await requireEditorApi();
     if (auth.response) return auth.response;
 
-    const body = (await request.json()) as Partial<SiteCommerceSettings> & { seoSettings?: SiteSeoSettings };
+    const body = (await request.json()) as Partial<SiteCommerceSettings> & {
+      seoSettings?: SiteSeoSettings;
+      localizationSettings?: SiteLocalizationSettings;
+    };
     const settings = await saveCommerceSettings({
       cartEnabled: body.cartEnabled ?? true,
       printFormats: Array.isArray(body.printFormats) ? body.printFormats : [],
@@ -44,8 +58,11 @@ export async function PATCH(request: Request) {
     });
 
     const seoSettings = body.seoSettings ? await saveSeoSettings(body.seoSettings) : await getSeoSettings();
+    const localizationSettings = body.localizationSettings
+      ? await saveLocalizationSettings(body.localizationSettings)
+      : await getLocalizationSettings();
 
-    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings });
+    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings, localizationSettings });
   } catch (error) {
     return apiErrorResponse(error, "Failed to save settings");
   }

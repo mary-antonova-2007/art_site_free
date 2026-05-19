@@ -7,6 +7,12 @@ export const ruMessages = {
     label: "Язык",
     switchTo: "Переключить язык на {language}"
   },
+  localization: {
+    defaultLocale: "Язык по умолчанию",
+    detectionMode: "Определение языка",
+    defaultOnly: "Всегда язык по умолчанию",
+    autoRegion: "Авто по региону"
+  },
   header: {
     kicker: "",
     primaryNav: "Основная навигация",
