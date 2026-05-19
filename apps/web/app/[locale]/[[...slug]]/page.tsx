@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Route } from "next";
+import { redirect } from "next/navigation";
 
 import { PageScreen } from "@/components/site/page-screen";
 import { getPageForRequest, getSeoSettings, listPublicMediaLibrary } from "@/lib/content-service";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { getEntryLocale } from "@/lib/locale-routing";
 import { buildPageMetadata } from "@/lib/seo";
 
 type LocalizedSitePageProps = {
@@ -39,7 +41,9 @@ export async function generateMetadata({ params }: Pick<LocalizedSitePageProps, 
 export default async function LocalizedSitePage({ params, searchParams }: LocalizedSitePageProps) {
   const resolvedParams = await params;
   if (!isLocale(resolvedParams.locale)) {
-    notFound();
+    const locale = await getEntryLocale();
+    const legacyPath = [resolvedParams.locale, ...(resolvedParams.slug ?? [])].join("/");
+    redirect(`/${locale}/${legacyPath}` as Route);
   }
 
   const locale = resolvedParams.locale as Locale;
