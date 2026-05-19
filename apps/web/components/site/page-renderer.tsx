@@ -60,6 +60,8 @@ export function PageRenderer({
   const [selectedFormatId, setSelectedFormatId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const pageHeadingBlockId =
+    page.slug === "home" ? null : blocks.find((block) => block.blockType === "sectionHeader")?.id ?? null;
 
   useEffect(() => {
     if (!previewImage || typeof document === "undefined") {
@@ -238,6 +240,7 @@ export function PageRenderer({
                   blockId={block.id}
                   type={block.blockType}
                   data={block.data}
+                  isPageHeading={block.id === pageHeadingBlockId}
                   onOpenImagePreview={setPreviewImage}
                   commerceSettings={commerceSettings}
                   mediaAssetsById={mediaAssetsById}
@@ -461,6 +464,7 @@ function RenderedBlock<TType extends BlockType>({
   blockId,
   type,
   data,
+  isPageHeading,
   onOpenImagePreview,
   commerceSettings,
   mediaAssetsById
@@ -468,6 +472,7 @@ function RenderedBlock<TType extends BlockType>({
   blockId: string;
   type: TType;
   data: BlockDataMap[TType];
+  isPageHeading: boolean;
   onOpenImagePreview: (input: {
     src: string;
     alt: string;
@@ -769,10 +774,11 @@ function RenderedBlock<TType extends BlockType>({
     }
     case "sectionHeader": {
       const sectionHeaderData = data as BlockDataMap["sectionHeader"];
+      const HeadingTag = isPageHeading ? "h1" : "h2";
       return (
         <section className="site-section section-stack width-medium">
           <span className="eyebrow">{sectionHeaderData.eyebrow ?? ""}</span>
-          <h2 className="section-title">{sectionHeaderData.title ?? ""}</h2>
+          <HeadingTag className="section-title">{sectionHeaderData.title ?? ""}</HeadingTag>
           <p className="section-description">{sectionHeaderData.description ?? ""}</p>
         </section>
       );
