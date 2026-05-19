@@ -356,5 +356,24 @@ export const ruMessages = {
     fieldGateway: "Gateway",
     fieldPublicKey: "Публичный ключ",
     fieldTestMode: "Тестовый режим"
+  },
+  seo: {
+    shortLabel: "SEO",
+    panelTitle: "SEO страницы",
+    languageTabs: "Языки SEO",
+    metaTitle: "Meta title",
+    metaDescription: "Meta description",
+    canonicalPath: "Canonical path",
+    noindex: "Noindex",
+    ogImage: "Изображение для соцсетей",
+    noImage: "Без изображения",
+    previewDescriptionFallback: "Описание для поиска будет собрано из контента страницы.",
+    globalTitle: "SEO-настройки",
+    siteName: "Название сайта",
+    defaultOgImage: "Изображение для соцсетей по умолчанию",
+    socialProfiles: "Соцпрофили, по одному URL в строке",
+    defaultRobots: "Robots по умолчанию",
+    index: "Index",
+    noindexLabel: "Noindex"
   }
 } as const;

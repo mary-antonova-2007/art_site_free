@@ -2,12 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import type { PrintFormat, SiteCommerceSettings } from "@/lib/content";
+import type { MediaLibraryAsset, PrintFormat, SiteCommerceSettings, SiteSeoSettings } from "@/lib/content";
 import { useTranslations } from "@/lib/i18n/client";
 
-export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCommerceSettings }) {
+export function ShopSettingsPage({
+  initialSettings,
+  initialSeoSettings
+}: {
+  initialSettings: SiteCommerceSettings;
+  initialSeoSettings: SiteSeoSettings;
+}) {
   const t = useTranslations();
   const [settings, setSettings] = useState(initialSettings);
+  const [seoSettings, setSeoSettings] = useState(initialSeoSettings);
+  const [mediaAssets, setMediaAssets] = useState<MediaLibraryAsset[]>([]);
   const [status, setStatus] = useState("");
   const [testEmailStatus, setTestEmailStatus] = useState("");
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
@@ -23,6 +31,17 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
   useEffect(() => {
     setSettings(initialSettings);
   }, [initialSettings]);
+
+  useEffect(() => {
+    setSeoSettings(initialSeoSettings);
+  }, [initialSeoSettings]);
+
+  useEffect(() => {
+    void fetch("/api/editor/media")
+      .then((response) => response.json())
+      .then((payload: { assets?: MediaLibraryAsset[] }) => setMediaAssets(payload.assets ?? []))
+      .catch(() => setMediaAssets([]));
+  }, []);
 
   const openCreateFormatModal = () => {
     setEditingFormatIndex(null);
@@ -83,12 +102,33 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
     const response = await fetch("/api/editor/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nextSettings)
+      body: JSON.stringify({ ...nextSettings, seoSettings })
     });
-    const payload = (await response.json()) as { error?: string; settings?: SiteCommerceSettings };
+    const payload = (await response.json()) as { error?: string; settings?: SiteCommerceSettings; seoSettings?: SiteSeoSettings };
 
     if (response.ok && payload.settings) {
       setSettings(payload.settings);
+      if (payload.seoSettings) setSeoSettings(payload.seoSettings);
+      setStatus(t("shop.saved"));
+      return;
+    }
+
+    setStatus(payload.error ?? t("shop.error"));
+  };
+
+  const persistSeoSettings = async (nextSeoSettings: SiteSeoSettings) => {
+    setStatus(t("shop.saving"));
+    setSeoSettings(nextSeoSettings);
+    const response = await fetch("/api/editor/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...settings, seoSettings: nextSeoSettings })
+    });
+    const payload = (await response.json()) as { error?: string; settings?: SiteCommerceSettings; seoSettings?: SiteSeoSettings };
+
+    if (response.ok && payload.seoSettings) {
+      setSeoSettings(payload.seoSettings);
+      if (payload.settings) setSettings(payload.settings);
       setStatus(t("shop.saved"));
       return;
     }
@@ -183,6 +223,59 @@ export function ShopSettingsPage({ initialSettings }: { initialSettings: SiteCom
           onChange={(event) => setSettings((current) => ({ ...current, cartEnabled: event.currentTarget.checked }))}
         />
       </label>
+
+      <section className="section-stack seo-settings-section">
+        <h2>{t("seo.globalTitle")}</h2>
+        <label className="editor-field">
+          <span>{t("seo.siteName")}</span>
+          <input
+            value={seoSettings.siteName}
+            onChange={(event) => setSeoSettings((current) => ({ ...current, siteName: event.currentTarget.value }))}
+            onBlur={() => void persistSeoSettings(seoSettings)}
+          />
+        </label>
+        <label className="editor-field">
+          <span>{t("seo.defaultOgImage")}</span>
+          <select
+            value={seoSettings.defaultOgImageAssetId ?? ""}
+            onChange={(event) => void persistSeoSettings({ ...seoSettings, defaultOgImageAssetId: event.currentTarget.value })}
+          >
+            <option value="">{t("seo.noImage")}</option>
+            {mediaAssets.map((asset) => (
+              <option key={asset.mediaAssetId} value={asset.mediaAssetId}>{asset.title}</option>
+            ))}
+          </select>
+        </label>
+        <label className="editor-field">
+          <span>{t("seo.socialProfiles")}</span>
+          <textarea
+            value={seoSettings.socialProfileUrls.join("\n")}
+            onChange={(event) =>
+              setSeoSettings((current) => ({
+                ...current,
+                socialProfileUrls: event.currentTarget.value.split("\n").map((item) => item.trim()).filter(Boolean)
+              }))
+            }
+            onBlur={() => void persistSeoSettings(seoSettings)}
+            rows={3}
+          />
+        </label>
+        <label className="editor-field">
+          <span>{t("seo.defaultRobots")}</span>
+          <select
+            value={seoSettings.defaultRobots}
+            onChange={(event) =>
+              void persistSeoSettings({
+                ...seoSettings,
+                defaultRobots: event.currentTarget.value === "noindex" ? "noindex" : "index"
+              })
+            }
+          >
+            <option value="index">{t("seo.index")}</option>
+            <option value="noindex">{t("seo.noindex")}</option>
+          </select>
+        </label>
+      </section>
 
       <section className="section-stack">
         <h2>{t("shop.printFormats")}</h2>

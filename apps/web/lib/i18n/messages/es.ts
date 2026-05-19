@@ -220,5 +220,24 @@ export const esMessages = {
   },
   commerce: {
     unitCm: "cm"
+  },
+  seo: {
+    shortLabel: "SEO",
+    panelTitle: "Page SEO",
+    languageTabs: "SEO languages",
+    metaTitle: "Meta title",
+    metaDescription: "Meta description",
+    canonicalPath: "Canonical path",
+    noindex: "Noindex",
+    ogImage: "Social image",
+    noImage: "No image",
+    previewDescriptionFallback: "Search description will be generated from the page content.",
+    globalTitle: "SEO settings",
+    siteName: "Site name",
+    defaultOgImage: "Default social image",
+    socialProfiles: "Social profiles, one URL per line",
+    defaultRobots: "Default robots",
+    index: "Index",
+    noindexLabel: "Noindex"
   }
 } as const;

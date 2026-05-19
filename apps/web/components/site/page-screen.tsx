@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { EditorBar } from "@/components/editor/editor-bar";
 import { EditorBlockNav } from "@/components/editor/editor-block-nav";
 import { EditorProvider } from "@/components/editor/editor-provider";
+import { SeoEditorPanel } from "@/components/editor/seo-editor-panel";
 import { EditorSheet } from "@/components/editor/editor-sheet";
 import { MediaLibraryDialog } from "@/components/editor/media-library-dialog";
 import { PageRenderer } from "@/components/site/page-renderer";
@@ -50,6 +51,7 @@ export async function PageScreen({
         {editorEnabled ? <EditorBar /> : null}
         <PageRenderer page={page} commerceSettings={toPublicCommerceSettings(commerceSettings)} mediaAssetsById={mediaAssetsById} />
         {editorEnabled ? <EditorSheet /> : null}
+        {editorEnabled ? <SeoEditorPanel /> : null}
         {editorEnabled ? <MediaLibraryDialog /> : null}
       </div>
     </EditorProvider>

@@ -14,9 +14,44 @@ export type SitePageRecord = {
   id: string;
   slug: string;
   title: string;
+  seo: PageSeo;
   source: "database" | "supabase";
   availablePages: Array<{ id: string; slug: string; title: string }>;
   blocks: SiteBlockRecord[];
+};
+
+export type SeoLocale = "ru" | "en";
+
+export type LocalizedSeoText = Partial<Record<SeoLocale, string>>;
+
+export type PageSeo = {
+  title: LocalizedSeoText;
+  description: LocalizedSeoText;
+  canonicalPath?: string;
+  ogImageAssetId?: string;
+  noIndex?: boolean;
+};
+
+export type SiteSeoSettings = {
+  siteName: string;
+  defaultOgImageAssetId?: string;
+  socialProfileUrls: string[];
+  defaultRobots: "index" | "noindex";
+};
+
+export const DEFAULT_PAGE_SEO: PageSeo = {
+  title: {},
+  description: {},
+  canonicalPath: "",
+  ogImageAssetId: "",
+  noIndex: false
+};
+
+export const DEFAULT_SITE_SEO_SETTINGS: SiteSeoSettings = {
+  siteName: "Olga Schmid",
+  defaultOgImageAssetId: "",
+  socialProfileUrls: [],
+  defaultRobots: "index"
 };
 
 export type MediaCategory = string;
@@ -192,7 +227,9 @@ export function toEditorCommerceSettings(settings: SiteCommerceSettings): SiteCo
   };
 }
 
-export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source">;
+export type SeedPageDefinition = Omit<SitePageRecord, "availablePages" | "source" | "seo"> & {
+  seo?: PageSeo;
+};
 
 const cyrillicToLatinMap: Record<string, string> = {
   а: "a",

@@ -10,7 +10,7 @@ import { useEditor } from "./editor-provider";
 
 export function EditorBar() {
   const t = useTranslations();
-  const { publish, draftState, page } = useEditor();
+  const { publish, draftState, page, openSeoPanel } = useEditor();
 
   return (
     <div className="editor-bar editor-bar--compact" data-testid={testIds.publishBar}>
@@ -27,6 +27,9 @@ export function EditorBar() {
       <Link className="editor-button" href="/media?editor=1">
         {t("media.libraryTitle")}
       </Link>
+      <button className="editor-button" type="button" onClick={openSeoPanel}>
+        {t("seo.shortLabel")}
+      </button>
       <Link className="editor-button" href="/settings?editor=1">
         {t("editor.settings")}
       </Link>

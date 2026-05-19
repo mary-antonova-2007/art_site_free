@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 
 import { apiErrorResponse, requireEditorApi } from "@/lib/api-auth";
 import { toEditorCommerceSettings } from "@/lib/content";
-import { getCommerceSettings, saveCommerceSettings } from "@/lib/content-service";
-import type { SiteCommerceSettings } from "@/lib/content";
+import { getCommerceSettings, getSeoSettings, saveCommerceSettings, saveSeoSettings } from "@/lib/content-service";
+import type { SiteCommerceSettings, SiteSeoSettings } from "@/lib/content";
 
 export async function GET() {
   try {
     const auth = await requireEditorApi();
     if (auth.response) return auth.response;
 
-    const settings = await getCommerceSettings();
-    return NextResponse.json({ settings: toEditorCommerceSettings(settings) });
+    const [settings, seoSettings] = await Promise.all([getCommerceSettings(), getSeoSettings()]);
+    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings });
   } catch (error) {
     return apiErrorResponse(error, "Failed to load settings");
   }
@@ -22,7 +22,7 @@ export async function PATCH(request: Request) {
     const auth = await requireEditorApi();
     if (auth.response) return auth.response;
 
-    const body = (await request.json()) as Partial<SiteCommerceSettings>;
+    const body = (await request.json()) as Partial<SiteCommerceSettings> & { seoSettings?: SiteSeoSettings };
     const settings = await saveCommerceSettings({
       cartEnabled: body.cartEnabled ?? true,
       printFormats: Array.isArray(body.printFormats) ? body.printFormats : [],
@@ -43,7 +43,9 @@ export async function PATCH(request: Request) {
       }
     });
 
-    return NextResponse.json({ settings: toEditorCommerceSettings(settings) });
+    const seoSettings = body.seoSettings ? await saveSeoSettings(body.seoSettings) : await getSeoSettings();
+
+    return NextResponse.json({ settings: toEditorCommerceSettings(settings), seoSettings });
   } catch (error) {
     return apiErrorResponse(error, "Failed to save settings");
   }

@@ -9,17 +9,19 @@ import { getBlockDefinition, type BlockType } from "@artsite/blocks";
 
 import { getBlockAnchorId } from "@/lib/block-navigation";
 import { useTranslations } from "@/lib/i18n/client";
-import type { MediaCategory, MediaLibraryAsset, SiteBlockRecord, SitePageRecord } from "@/lib/content";
+import type { MediaCategory, MediaLibraryAsset, PageSeo, SiteBlockRecord, SitePageRecord } from "@/lib/content";
 
 type EditorContextValue = {
   enabled: boolean;
   page: SitePageRecord;
   blocks: SiteBlockRecord[];
+  pageSeo: PageSeo;
   compactNavigation: boolean;
   setCompactNavigation: Dispatch<SetStateAction<boolean>>;
   activeBlockId: string | null;
   setActiveBlockId: (id: string | null) => void;
   updateBlockField: (blockId: string, field: string, value: unknown) => void;
+  updatePageSeo: (seo: PageSeo) => void;
   insertBlockAt: (index: number, type: BlockType) => void;
   moveBlock: (blockId: string, direction: "up" | "down") => void;
   moveBlockToIndex: (blockId: string, index: number) => void;
@@ -54,9 +56,12 @@ type EditorContextValue = {
   closeMediaLibrary: () => void;
   setMediaLibraryCategory: (category: MediaCategory) => void;
   panelOpen: boolean;
+  seoPanelOpen: boolean;
   openPanel: () => void;
   closePanel: () => void;
   togglePanel: () => void;
+  openSeoPanel: () => void;
+  closeSeoPanel: () => void;
   blockLibraryOpen: boolean;
   openBlockLibrary: () => void;
   closeBlockLibrary: () => void;
@@ -80,6 +85,7 @@ export function EditorProvider({
   const t = useTranslations();
   const router = useRouter();
   const [blocks, setBlocks] = useState(page.blocks);
+  const [pageSeo, setPageSeo] = useState(page.seo);
   const [compactNavigation, setCompactNavigation] = useState(false);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [pages, setPages] = useState(page.availablePages);
@@ -96,6 +102,7 @@ export function EditorProvider({
   const [mediaLibraryMode, setMediaLibraryMode] = useState<"replace" | "append">("replace");
   const [mediaLibraryCategory, setMediaLibraryCategoryState] = useState<MediaCategory>("featured");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [seoPanelOpen, setSeoPanelOpen] = useState(false);
   const [blockLibraryOpen, setBlockLibraryOpen] = useState(false);
   const [createPageOpen, setCreatePageOpen] = useState(false);
   const mediaLibraryRequestRef = useRef<Promise<void> | null>(null);
@@ -103,9 +110,10 @@ export function EditorProvider({
 
   useEffect(() => {
     setBlocks(page.blocks);
+    setPageSeo(page.seo);
     setPages(page.availablePages);
     setActiveBlockId(null);
-  }, [page.id]);
+  }, [page.id, page.blocks, page.seo, page.availablePages]);
 
   useEffect(() => {
     if (!pendingScrollBlockIdRef.current || typeof window === "undefined") {
@@ -128,6 +136,7 @@ export function EditorProvider({
       enabled,
       page,
       blocks,
+      pageSeo,
       compactNavigation,
       setCompactNavigation,
       activeBlockId,
@@ -142,6 +151,7 @@ export function EditorProvider({
       mediaLibraryMode,
       mediaLibraryCategory,
       panelOpen,
+      seoPanelOpen,
       blockLibraryOpen,
       createPageOpen,
       async openMediaLibrary(blockId, mode = "replace") {
@@ -192,12 +202,24 @@ export function EditorProvider({
       },
       openPanel() {
         setPanelOpen(true);
+        setSeoPanelOpen(false);
       },
       closePanel() {
         setPanelOpen(false);
       },
       togglePanel() {
-        setPanelOpen((current) => !current);
+        setPanelOpen((current) => {
+          const next = !current;
+          if (next) setSeoPanelOpen(false);
+          return next;
+        });
+      },
+      openSeoPanel() {
+        setSeoPanelOpen(true);
+        setPanelOpen(false);
+      },
+      closeSeoPanel() {
+        setSeoPanelOpen(false);
       },
       openBlockLibrary() {
         setBlockLibraryOpen(true);
@@ -235,6 +257,11 @@ export function EditorProvider({
               : block
           )
         );
+        setDraftState("dirty");
+        setStatusMessage(t("editor.unpublishedChanges"));
+      },
+      updatePageSeo(seo) {
+        setPageSeo(seo);
         setDraftState("dirty");
         setStatusMessage(t("editor.unpublishedChanges"));
       },
@@ -492,6 +519,7 @@ export function EditorProvider({
           },
           body: JSON.stringify({
             title: page.title,
+            seo: pageSeo,
             blocks
           })
         });
@@ -509,6 +537,7 @@ export function EditorProvider({
 
         if (payload.page) {
           setBlocks(payload.page.blocks);
+          setPageSeo(payload.page.seo);
           setPages(payload.page.availablePages);
         }
         setLastSavedAt(payload.savedAt ?? new Date().toISOString());
@@ -525,6 +554,7 @@ export function EditorProvider({
           },
           body: JSON.stringify({
             title: page.title,
+            seo: pageSeo,
             blocks
           })
         });
@@ -542,6 +572,7 @@ export function EditorProvider({
 
         if (payload.page) {
           setBlocks(payload.page.blocks);
+          setPageSeo(payload.page.seo);
           setPages(payload.page.availablePages);
         }
         setDraftState("published");
@@ -735,9 +766,11 @@ export function EditorProvider({
       mediaLibraryMode,
       mediaLibraryOpenForBlockId,
       page,
+      pageSeo,
       pages,
       panelOpen,
       router,
+      seoPanelOpen,
       statusMessage,
       t
     ]

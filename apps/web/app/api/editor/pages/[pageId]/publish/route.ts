@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { apiErrorResponse } from "@/lib/api-auth";
 import { publishPageChanges } from "@/lib/content-service";
-import type { SiteBlockRecord } from "@/lib/content";
+import type { PageSeo, SiteBlockRecord } from "@/lib/content";
 
 export async function POST(
   request: Request,
@@ -10,7 +10,7 @@ export async function POST(
 ) {
   try {
     const { pageId } = await context.params;
-    const body = (await request.json()) as { title?: string; blocks?: SiteBlockRecord[] };
+    const body = (await request.json()) as { title?: string; seo?: PageSeo; blocks?: SiteBlockRecord[] };
 
     if (!body.title || !body.blocks) {
       return NextResponse.json({ error: "Invalid publish payload." }, { status: 400 });
@@ -19,6 +19,7 @@ export async function POST(
     const page = await publishPageChanges({
       pageId,
       title: body.title,
+      seo: body.seo,
       blocks: body.blocks
     });
 
