@@ -668,7 +668,7 @@ export function createSeedPages(): SeedPageDefinition[] {
           data: {
             ...createDefaultBlock("sectionHeader"),
             eyebrow: "About the practice",
-            title: "A poetic system of fragments, thresholds, and elemental memory.",
+            title: "About the artist: interior collages, art prints and contemporary paintings",
             description:
               "This page is prepared in English first. The site already keeps its language switcher, so the same structure can later be translated into Russian, Armenian, French, Spanish, or Swiss German."
           }
@@ -716,7 +716,7 @@ export function createSeedPages(): SeedPageDefinition[] {
           data: {
             ...createDefaultBlock("sectionHeader"),
             eyebrow: "Contact",
-            title: "Speak with the studio.",
+            title: "Order interior art, posters and art prints",
             description: "For acquisitions, commissions, exhibitions, publications, and private viewings."
           }
         },
