@@ -4,7 +4,7 @@ import type { SitePageRecord, SiteSeoSettings } from "@/lib/content";
 import { buildPageMetadata, normalizeCanonicalPath, pageShouldBeInSitemap, resolveOgImage } from "@/lib/seo";
 
 const settings: SiteSeoSettings = {
-  siteName: "Olga Schmid",
+  siteName: "Olga Schmid Collage",
   defaultOgImageAssetId: "/default-og.jpg",
   socialProfileUrls: [],
   defaultRobots: "index"

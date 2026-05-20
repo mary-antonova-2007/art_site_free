@@ -1,7 +1,7 @@
 export const ruMessages = {
   app: {
-    title: "Olga Schmid",
-    description: "Страницы художницы, избранные работы и доступные печатные издания."
+    title: "Olga Schmid Collage",
+    description: "Современные коллажи, интерьерные картины, арт-принты и постеры Olga Schmid."
   },
   locale: {
     label: "Язык",

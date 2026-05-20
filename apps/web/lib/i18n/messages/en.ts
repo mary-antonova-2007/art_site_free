@@ -1,7 +1,7 @@
 export const enMessages = {
   app: {
-    title: "Olga Schmid",
-    description: "Artist pages, selected works, and available print editions."
+    title: "Olga Schmid Collage",
+    description: "Contemporary collage art, interior paintings, art prints and poster reproductions by Olga Schmid."
   },
   locale: {
     label: "Language",

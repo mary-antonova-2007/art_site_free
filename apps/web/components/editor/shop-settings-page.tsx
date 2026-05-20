@@ -543,7 +543,7 @@ export function ShopSettingsPage({
               <span>Sender name</span>
               <input
                 value={settings.emailNotifications.fromName ?? ""}
-                placeholder="Olga Schmid"
+                placeholder="Olga Schmid Collage"
                 onChange={(event) => updateEmailNotifications({ fromName: event.currentTarget.value })}
               />
             </label>

@@ -947,7 +947,7 @@ async function ensureLocalDatabaseReady() {
   });
 
   await db.insert(siteSettings).values({
-    siteName: "Olga Schmid",
+    siteName: "Olga Schmid Collage",
     defaultLocale: "en",
     homepagePageId: homepage?.id ?? null,
     metadata: {

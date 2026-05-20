@@ -53,7 +53,7 @@ export const DEFAULT_PAGE_SEO: PageSeo = {
 };
 
 export const DEFAULT_SITE_SEO_SETTINGS: SiteSeoSettings = {
-  siteName: "Olga Schmid",
+  siteName: "Olga Schmid Collage",
   defaultOgImageAssetId: "",
   socialProfileUrls: [],
   defaultRobots: "index"
